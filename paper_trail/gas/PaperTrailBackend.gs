@@ -21,8 +21,8 @@ const PT_SHEETS = {
 };
 
 const PT_HEADERS = {
-  Students: ['student_id','nickname','domain','created_at','updated_at','is_active'],
-  Notebooks: ['notebook_id','student_id','nickname','doi','title','reading_level','schema_version','shared','created_at','updated_at','notebook_json'],
+  Students: ['student_id','real_name','nickname','display_name','display_mode','domain','created_at','updated_at','is_active'],
+  Notebooks: ['notebook_id','student_id','display_name','doi','title','reading_level','schema_version','shared','created_at','updated_at','notebook_json'],
   Trails: ['trail_id','student_id','from_notebook_id','from_doi','to_doi','to_title','reason','created_at'],
   Activity: ['activity_id','student_id','action','target_id','created_at','detail_json'],
   PaperCache: ['cache_key','source','saved_at','expires_at','payload_json']
@@ -55,6 +55,15 @@ function route_(action, params, payload) {
         break;
       case 'registerNickname':
         data = registerNickname_(user, payload.nickname);
+        break;
+      case 'saveProfile':
+        data = saveProfile_(user, payload);
+        break;
+      case 'openAlexWorkByDoi':
+        data = openAlexWorkByDoi_(payload.doi || params.doi);
+        break;
+      case 'openAlexSearch':
+        data = openAlexSearch_(payload.q || params.q, payload.year || params.year);
         break;
       case 'saveNotebook':
         data = saveNotebook_(user, payload);
@@ -112,27 +121,37 @@ function currentUser_() {
 }
 
 function whoAmI_(user) {
-  const student = findStudent_(user.studentId);
-  if (!student) {
-    upsertStudent_(user, user.studentId);
-  }
-  const latest = findStudent_(user.studentId);
-  return {
-    studentId:user.studentId,
-    nickname:latest.nickname || user.studentId,
-    domain:user.domain,
-    isAdmin:user.isAdmin,
-    mode:'gas'
-  };
+  let student=findStudent_(user.studentId);
+  if(!student) student=upsertStudent_(user,{});
+  return publicProfile_(user,student);
 }
 
-function registerNickname_(user, nickname) {
-  nickname = sanitizeNickname_(nickname);
-  upsertStudent_(user, nickname);
-  logActivity_(user.studentId, 'nickname_updated', user.studentId, {nickname});
+function registerNickname_(user,nickname){
+  const existing=findStudent_(user.studentId)||{};
+  return saveProfile_(user,{
+    realName:existing.real_name||'',
+    nickname:nickname,
+    displayMode:'nickname'
+  });
+}
+
+function saveProfile_(user,payload){
+  const realName=sanitizeText_(payload.realName,50,true,'氏名');
+  const nickname=sanitizeText_(payload.nickname,30,false,'表示名');
+  const displayMode=payload.displayMode==='nickname'?'nickname':'real_name';
+  if(displayMode==='nickname'&&!nickname) throw new Error('カスタム表示名を入力してください。');
+  const record=upsertStudent_(user,{realName,nickname,displayMode});
+  logActivity_(user.studentId,'profile_updated',user.studentId,{displayMode});
+  return publicProfile_(user,record);
+}
+
+function publicProfile_(user,row){
   return {
     studentId:user.studentId,
-    nickname,
+    realName:row.real_name||'',
+    nickname:row.nickname||'',
+    displayName:row.display_name||row.real_name||row.nickname||user.studentId,
+    displayMode:row.display_mode||'real_name',
     domain:user.domain,
     isAdmin:user.isAdmin,
     mode:'gas'
@@ -143,7 +162,7 @@ function saveNotebook_(user, payload) {
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
-    const student = findStudent_(user.studentId) || upsertStudent_(user, user.studentId);
+    const student = findStudent_(user.studentId) || upsertStudent_(user, {});
     const sheet = sheet_(PT_SHEETS.NOTEBOOKS);
     const rows = sheetData_(sheet);
     const notebookId = String(payload.notebookId || Utilities.getUuid());
@@ -157,7 +176,7 @@ function saveNotebook_(user, payload) {
     const record = {
       notebook_id:notebookId,
       student_id:user.studentId,
-      nickname:student.nickname || user.studentId,
+      display_name:student.display_name || student.real_name || student.nickname || user.studentId,
       doi:String(payload.doi || ''),
       title:String(payload.title || 'Untitled'),
       reading_level:String(payload.readingLevel || 'quick'),
@@ -229,7 +248,7 @@ function getDashboard_(user) {
   students.forEach(student => {
     byStudent[student.student_id] = {
       studentId:student.student_id,
-      nickname:student.nickname || student.student_id,
+      displayName:student.display_name || student.real_name || student.nickname || student.student_id,
       quickCount:0,
       carefulCount:0,
       deepCount:0,
@@ -240,7 +259,7 @@ function getDashboard_(user) {
   notebooks.forEach(nb => {
     const item = byStudent[nb.student_id] || (byStudent[nb.student_id] = {
       studentId:nb.student_id,
-      nickname:nb.nickname || nb.student_id,
+      displayName:nb.display_name || nb.student_id,
       quickCount:0,carefulCount:0,deepCount:0,lastUpdatedAt:''
     });
     if (nb.reading_level === 'deep') item.deepCount++;
@@ -255,19 +274,27 @@ function getDashboard_(user) {
   };
 }
 
-function upsertStudent_(user, nickname) {
-  const sheet = sheet_(PT_SHEETS.STUDENTS);
-  const existing = findStudent_(user.studentId);
-  const now = new Date().toISOString();
-  const record = {
+function upsertStudent_(user,profile){
+  profile=profile||{};
+  const sheet=sheet_(PT_SHEETS.STUDENTS);
+  const existing=findStudent_(user.studentId)||{};
+  const now=new Date().toISOString();
+  const realName=profile.realName!==undefined?String(profile.realName):String(existing.real_name||'');
+  const nickname=profile.nickname!==undefined?String(profile.nickname):String(existing.nickname||'');
+  const displayMode=profile.displayMode==='nickname'?'nickname':String(existing.display_mode||'real_name');
+  const displayName=displayMode==='nickname'?(nickname||realName||user.studentId):(realName||nickname||user.studentId);
+  const record={
     student_id:user.studentId,
-    nickname:sanitizeNickname_(nickname || (existing && existing.nickname) || user.studentId),
+    real_name:realName,
+    nickname:nickname,
+    display_name:displayName,
+    display_mode:displayMode,
     domain:user.domain,
-    created_at:existing ? existing.created_at : now,
+    created_at:existing.created_at||now,
     updated_at:now,
     is_active:true
   };
-  upsertRow_(sheet, 'student_id', record);
+  upsertRow_(sheet,'student_id',record);
   return record;
 }
 
@@ -276,17 +303,17 @@ function findStudent_(studentId) {
     .find(row => row.student_id === String(studentId || ''));
 }
 
-function sanitizeNickname_(value) {
-  const nickname = String(value || '').trim().replace(/[<>]/g,'').slice(0,30);
-  if (!nickname) throw new Error('表示名を入力してください。');
-  return nickname;
+function sanitizeText_(value,maxLength,required,label){
+  const text=String(value||'').trim().replace(/[<>]/g,'').slice(0,maxLength);
+  if(required&&!text) throw new Error((label||'値')+'を入力してください。');
+  return text;
 }
 
 function publicNotebook_(row, includeJson) {
   const result = {
     notebookId:row.notebook_id,
     studentId:row.student_id,
-    nickname:row.nickname,
+    displayName:row.display_name,
     doi:row.doi,
     title:row.title,
     readingLevel:row.reading_level,
@@ -326,21 +353,24 @@ function logActivity_(studentId, action, targetId, detail) {
   });
 }
 
-function ensureSheets_() {
-  const ss = spreadsheet_();
-  Object.keys(PT_HEADERS).forEach(name => {
-    let sheet = ss.getSheetByName(name);
-    if (!sheet) sheet = ss.insertSheet(name);
-    const headers = PT_HEADERS[name];
-    if (sheet.getLastRow() === 0) {
+function ensureSheets_(){
+  const ss=spreadsheet_();
+  Object.keys(PT_HEADERS).forEach(name=>{
+    let sheet=ss.getSheetByName(name);
+    if(!sheet)sheet=ss.insertSheet(name);
+    const headers=PT_HEADERS[name];
+    if(sheet.getLastRow()===0){
       sheet.getRange(1,1,1,headers.length).setValues([headers]);
       sheet.setFrozenRows(1);
-    } else {
-      const current = sheet.getRange(1,1,1,headers.length).getValues()[0];
-      if (current.join('|') !== headers.join('|')) {
-        throw new Error(name + 'シートのヘッダーが仕様と異なります。');
-      }
+      return;
     }
+    const current=sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0].map(String);
+    headers.forEach(header=>{
+      if(current.indexOf(header)<0){
+        sheet.getRange(1,sheet.getLastColumn()+1).setValue(header);
+        current.push(header);
+      }
+    });
   });
 }
 
@@ -400,8 +430,67 @@ function truthy_(value) {
   return value === true || String(value).toLowerCase() === 'true' || String(value) === '1';
 }
 
+
+function openAlexWorkByDoi_(doi){
+  doi=normalizeDoi_(doi);
+  if(!doi)throw new Error('DOIを入力してください。');
+  const cacheKey='doi:'+doi.toLowerCase();
+  const cached=paperCacheGet_(cacheKey);
+  if(cached)return cached;
+  const data=openAlexFetch_('/works/'+encodeURIComponent('doi:'+doi),{});
+  paperCachePut_(cacheKey,'openalex',data,30);
+  return data;
+}
+
+function openAlexSearch_(q,year){
+  q=String(q||'').trim();
+  if(q.length<3)throw new Error('検索語を入力してください。');
+  const cacheKey='search:'+Utilities.base64EncodeWebSafe(q.toLowerCase()+'|'+String(year||''));
+  const cached=paperCacheGet_(cacheKey);
+  if(cached)return cached;
+  const params={search:q,per_page:5};
+  if(/^\d{4}$/.test(String(year||'')))params.filter='publication_year:'+year;
+  const data=openAlexFetch_('/works',params);
+  paperCachePut_(cacheKey,'openalex',data,7);
+  return data;
+}
+
+function openAlexFetch_(path,params){
+  const key=PropertiesService.getScriptProperties().getProperty('OPENALEX_API_KEY');
+  if(!key)throw new Error('OPENALEX_API_KEYが設定されていません。');
+  const query=Object.assign({},params||{},{api_key:key});
+  const url='https://api.openalex.org'+path+'?'+Object.keys(query)
+    .map(k=>encodeURIComponent(k)+'='+encodeURIComponent(String(query[k]))).join('&');
+  const res=UrlFetchApp.fetch(url,{muteHttpExceptions:true,headers:{Accept:'application/json'}});
+  if(res.getResponseCode()<200||res.getResponseCode()>=300)throw new Error('OpenAlex error '+res.getResponseCode());
+  return JSON.parse(res.getContentText());
+}
+
+function normalizeDoi_(v){
+  return String(v||'').trim().replace(/^https?:\/\/(dx\.)?doi\.org\//i,'').replace(/^doi:\s*/i,'');
+}
+
+function paperCacheGet_(key){
+  const row=sheetData_(sheet_(PT_SHEETS.PAPER_CACHE)).find(r=>r.cache_key===key);
+  if(!row)return null;
+  if(row.expires_at&&new Date(row.expires_at).getTime()<Date.now())return null;
+  try{return JSON.parse(row.payload_json||'null')}catch(_){return null}
+}
+
+function paperCachePut_(key,source,payload,days){
+  const now=new Date();
+  const expires=new Date(now.getTime()+days*86400000);
+  upsertRow_(sheet_(PT_SHEETS.PAPER_CACHE),'cache_key',{
+    cache_key:key,source:source,saved_at:now.toISOString(),expires_at:expires.toISOString(),payload_json:JSON.stringify(payload)
+  });
+}
+
 function json_(body) {
   return ContentService
     .createTextOutput(JSON.stringify(body))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function setupPaperTrail(){
+  ensureSheets_();
 }

@@ -1,4 +1,4 @@
-const KEY="papertrail_notebook_v250";
+const KEY="papertrail_notebook_v260";
 const NOTEBOOK_ID_KEY="papertrail_current_notebook_id";
 let serverSaveTimer=null;
 let currentNotebookId=localStorage.getItem(NOTEBOOK_ID_KEY)||"";
@@ -710,3 +710,8 @@ function bindOpenAlexCitationButtons(root){
 updateOpenAlexKeyUI();
 
 show("page-quick-basic");
+window.addEventListener("papertrail:user-ready",event=>{
+  const user=event.detail||{};
+  const el=document.querySelector("#notebookAuthor");
+  if(el)el.textContent=user.displayName||user.realName||user.nickname||user.studentId||"—";
+});

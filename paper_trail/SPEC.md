@@ -343,3 +343,6 @@ GASウェブアプリで大学Googleアカウントを確認する。`Session.ge
 - PaperCache：外部書誌情報
 
 Notebook JSONには必ず `schema_version` を含める。
+
+## v2.6.0 Profile
+Students列: student_id, real_name, nickname, display_name, display_mode, domain, created_at, updated_at, is_active。本名またはカスタム表示名を選択可能。

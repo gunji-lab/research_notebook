@@ -220,3 +220,10 @@ APIキーはNotebookデータには含めず、ブラウザのlocalStorageにの
 - GAS未設定時に使えるローカル試用モード
 - 右下のアカウント設定UI
 - Spreadsheet用CSVヘッダーテンプレートを同梱
+
+## v2.6.0
+- 氏名・カスタム表示名・表示モードを追加
+- 初期表示は本名、任意でカスタム表示名へ切替
+- Notebook末尾に Notebook by 表示
+- GASへOpenAlex DOI検索・書誌検索・PaperCacheを統合
+- 既存シートへ列を追加できる移行対応setup

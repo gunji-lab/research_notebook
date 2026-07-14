@@ -87,7 +87,10 @@
     if (!session) {
       session = {
         studentId: "local-user",
-        nickname: "Local User",
+        realName:"Local User",
+        nickname:"Local",
+        displayMode:"real_name",
+        displayName:"Local User",
         domain: "local",
         isAdmin: true,
         mode: "local"
@@ -113,7 +116,10 @@
     const next = {
       notebookId,
       studentId: localStudent().studentId,
-      nickname: localStudent().nickname,
+      realName:localStudent().realName||"",
+      nickname:localStudent().nickname||"",
+      displayName:localStudent().displayName||localStudent().realName||localStudent().nickname,
+      displayMode:localStudent().displayMode||"real_name",
       doi: payload.doi || "",
       title: payload.title || "Untitled",
       readingLevel: payload.readingLevel || "quick",
@@ -145,6 +151,21 @@
       return user;
     }
     const user = await request("registerNickname", { nickname }, "POST");
+    setSession(user);
+    return user;
+  }
+
+
+  async function saveProfile(profile) {
+    const config=getConfig();
+    if(config.mode==="local"||!config.apiUrl){
+      const current=localStudent();
+      const next={...current,...profile};
+      next.displayName=profile.displayMode==="nickname"?(profile.nickname||profile.realName):profile.realName;
+      setSession(next);
+      return next;
+    }
+    const user=await request("saveProfile",profile,"POST");
     setSession(user);
     return user;
   }
@@ -205,7 +226,10 @@
       return {
         students: [{
           studentId: localStudent().studentId,
-          nickname: localStudent().nickname,
+          realName:localStudent().realName||"",
+      nickname:localStudent().nickname||"",
+      displayName:localStudent().displayName||localStudent().realName||localStudent().nickname,
+      displayMode:localStudent().displayMode||"real_name",
           quickCount: items.filter(x => ["quick", "quick-complete"].includes(x.readingLevel)).length,
           carefulCount: items.filter(x => x.readingLevel === "careful").length,
           deepCount: items.filter(x => x.readingLevel === "deep").length,
@@ -224,6 +248,7 @@
     setSession,
     whoAmI,
     registerNickname,
+    saveProfile,
     saveNotebook,
     listMyNotebooks,
     listLabNotebooks,

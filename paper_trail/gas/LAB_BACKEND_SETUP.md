@@ -132,3 +132,15 @@ Notebookの可変部分は `notebook_json` 1セルへ保存します。
 ```
 
 検索・集計に使う主要項目（DOI、タイトル、読書レベル、更新日時）は独立した列にも保存します。
+
+## v2.6.0への更新
+
+既存の5シートを削除する必要はありません。新しい `PaperTrailBackend.gs` に差し替えたあと、公開関数 `setupPaperTrail` を実行してください。足りない列が右端に追加されます。
+
+コード末尾に次がない場合は追加してください。
+
+```javascript
+function setupPaperTrail() {
+  ensureSheets_();
+}
+```

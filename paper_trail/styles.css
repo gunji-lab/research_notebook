@@ -1367,3 +1367,10 @@ input,textarea,select{background:#fff !important}
   .papertrail-account{right:10px;bottom:10px}
   .account-chip strong{max-width:120px;overflow:hidden;text-overflow:ellipsis}
 }
+
+.display-mode-fieldset{border:0;padding:0;margin:16px 0;display:flex;gap:10px;flex-wrap:wrap}
+.display-mode-fieldset legend{font-weight:800;margin-bottom:8px;width:100%}
+.display-mode-fieldset label{flex-direction:row;align-items:center;padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:#fff}
+.display-mode-fieldset input{width:auto}
+.notebook-signature{max-width:1040px;margin:24px auto 0;padding:18px 24px;display:flex;justify-content:flex-end;gap:8px;box-shadow:none}
+.notebook-signature span{color:var(--muted)}
