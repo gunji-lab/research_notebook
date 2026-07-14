@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Research Notebook | PaperTrail</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar home-topbar">
+  <div class="papertrail-header">
+    <div class="papertrail-lockup">
+      <img class="papertrail-logo" src="assets/logo.svg" alt="PaperTrail">
+      <div class="papertrail-brand">
+        <h1>PaperTrail</h1>
+        <p class="rtc">Read. Think. Connect.</p>
+      </div>
+    </div>
+    <div class="papertrail-copy editorial">
+      <div class="copy-inner">
+        <p>論文を読む最初の一歩を、もっとやさしく。</p>
+      </div>
+    </div>
+    <div class="prototype-label">Research Notebook · v2.5.0</div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="メインメニュー">
+  <a class="tab tab-link" href="index.html">ホーム</a>
+  <a class="tab tab-link" href="starter.html">Research Starter</a>
+  <a class="tab tab-link active" href="notebook.html">Research Notebook</a>
+</nav>
+
+<main class="rn-main">
+  <section class="rn-hero">
+    <span class="eyebrow">RESEARCH NOTEBOOK</span>
+    <h2>一つの論文を、少しずつ育てて読む。</h2>
+    <p>すべての論文は「さくっと」から。必要に応じて「じっくり」「深掘り」へ進みます。</p>
+  </section>
+
+  <aside class="reading-map card">
+    <div class="reading-map-item active" id="map-quick">
+      <span>🌱</span>
+      <div><strong>さくっと</strong><small>基本情報・Abstract</small></div>
+    </div>
+    <div class="reading-map-line"></div>
+    <div class="reading-map-item locked" id="map-careful">
+      <span>🌿</span>
+      <div><strong>じっくり</strong><small>結果・背景・考察・方法</small></div>
+    </div>
+    <div class="reading-map-line"></div>
+    <div class="reading-map-item locked" id="map-deep">
+      <span>🌳</span>
+      <div><strong>深掘り</strong><small>引用・解析・自分の研究へ</small></div>
+    </div>
+  </aside>
+
+  <section class="rn-policy card">
+    <strong>保存するのは、あなたが考えて書いたことだけ。</strong>
+    <p>原文、翻訳文、図表画像は作業中のみ使用し、Notebookには保存しません。</p>
+  </section>
+
+
+  <details class="openalex-settings card">
+    <summary>
+      <span>
+        <strong>OpenAlex連携設定</strong>
+        <small id="openalexKeyState">APIキー未設定</small>
+      </span>
+      <span class="settings-chevron">⌄</span>
+    </summary>
+    <div class="openalex-settings-body">
+      <p>無料のOpenAlex APIキーを入力すると、DOIからの自動入力と引用文献検索が使えます。キーはこのブラウザ内だけに保存され、Notebookデータには含まれません。</p>
+      <div class="api-key-row">
+        <label>OpenAlex APIキー
+          <input id="openalexApiKey" type="password" autocomplete="off" placeholder="OpenAlex API key">
+        </label>
+        <button type="button" class="primary" id="saveOpenAlexKey">このブラウザに保存</button>
+        <button type="button" class="secondary" id="clearOpenAlexKey">削除</button>
+      </div>
+      <p class="openalex-settings-note">共有パソコンでは、利用後にAPIキーを削除してください。</p>
+    </div>
+  </details>
+
+
+  <!-- QUICK: PAGE 1 -->
+  <section class="rn-page active" id="page-quick-basic">
+    <div class="rn-page-head">
+      <span class="eyebrow">LEVEL 1 · PAGE 1</span>
+      <h2>さくっと読む準備</h2>
+      <p>まずは論文の基本情報と、読む理由を記録します。</p>
+    </div>
+
+    <section class="card rn-block">
+      <span class="rn-block-no">01</span>
+      <h3>論文の基本情報</h3>
+      <div class="form-grid">
+        <label>DOI
+          <div class="input-action-row">
+            <input id="doi" placeholder="10.xxxx/xxxxx">
+            <button type="button" class="secondary compact-button" id="lookupDoi">OpenAlexから読み込む</button>
+          </div>
+          <small class="field-status" id="doiLookupStatus" aria-live="polite"></small>
+        </label>
+        <label>タイトル
+          <input id="title" placeholder="論文タイトル">
+        </label>
+        <label>著者
+          <input id="authors" placeholder="Smith et al.">
+        </label>
+        <label>雑誌
+          <input id="journal" placeholder="Journal name">
+        </label>
+        <label>出版年
+          <input id="year" inputmode="numeric" placeholder="2026">
+        </label>
+        <label>タグ
+          <input id="tags" placeholder="GLMM, PCA, 水鳥">
+        </label>
+      </div>
+
+      <div id="openAlexPaperPreview" class="openalex-paper-preview" hidden></div>
+
+      <fieldset class="pill-fieldset">
+        <legend>PDFは入手できた？</legend>
+        <label><input type="radio" name="pdfStatus" value="入手済み"> 入手済み</label>
+        <label><input type="radio" name="pdfStatus" value="Abstractのみ"> Abstractのみ閲覧可能</label>
+        <label><input type="radio" name="pdfStatus" value="探している途中"> 探している途中</label>
+        <label><input type="radio" name="pdfStatus" value="入手できなかった"> 入手できなかった</label>
+      </fieldset>
+    </section>
+
+    <section class="card rn-block">
+      <span class="rn-block-no">02</span>
+      <h3>なぜこの論文を読む？</h3>
+      <div class="choice-row">
+        <label><input type="checkbox" name="reasonType" value="検索で見つけた"> 検索で見つけた</label>
+        <label><input type="checkbox" name="reasonType" value="別の論文で引用されていた"> 別の論文で引用されていた</label>
+        <label><input type="checkbox" name="reasonType" value="教員・先輩に勧められた"> 教員・先輩に勧められた</label>
+        <label><input type="checkbox" name="reasonType" value="自分の研究に関係する"> 自分の研究に関係する</label>
+        <label><input type="checkbox" name="reasonType" value="方法・解析が参考になりそう"> 方法・解析が参考になりそう</label>
+      </div>
+      <label>具体的な理由
+        <textarea id="reason" rows="4"></textarea>
+      </label>
+    </section>
+
+    <section class="card rn-block">
+      <span class="rn-block-no">03</span>
+      <h3>今日はどこまで読む？</h3>
+      <div class="reading-mode-grid">
+        <article class="reading-mode selected">
+          <span>🌱</span><strong>さくっと</strong>
+          <small>最初は必ずここから</small>
+          <p>基本情報とAbstractを読み、1〜3点で概要をまとめます。</p>
+        </article>
+        <article class="reading-mode disabled">
+          <span>🌿</span><strong>じっくり</strong>
+          <small>さくっと完了後に解放</small>
+        </article>
+        <article class="reading-mode disabled">
+          <span>🌳</span><strong>深掘り</strong>
+          <small>じっくり完了後に解放</small>
+        </article>
+      </div>
+    </section>
+
+    <div class="rn-actions">
+      <button type="button" class="primary" data-go="page-quick-abstract">Abstractを読む →</button>
+    </div>
+  </section>
+
+  <!-- QUICK: PAGE 2 -->
+  <section class="rn-page" id="page-quick-abstract">
+    <div class="rn-page-head">
+      <span class="eyebrow">LEVEL 1 · PAGE 2</span>
+      <h2>Abstractから概要をつかむ</h2>
+      <p>原文と翻訳は一時メモ。保存されるのは、自分の言葉で作った要約だけです。</p>
+    </div>
+
+    <section class="card rn-block">
+      <div class="support-grid">
+        <label>Abstract 原文（一時メモ）
+          <textarea id="abstractOriginal" rows="10"></textarea>
+        </label>
+        <label>日本語訳（一時表示・保存なし）
+          <textarea id="abstractTranslation" rows="10" placeholder="翻訳APIは次フェーズで接続予定"></textarea>
+        </label>
+      </div>
+      <button type="button" class="secondary" id="translateAbstract">読むサポート（デモ）</button>
+
+      <div class="summary-panel">
+        <h3>自分の言葉で1〜3点にまとめよう</h3>
+        <div id="abstractSummaryList"></div>
+        <button type="button" class="secondary small" id="addAbstractSummary">＋ 要約を追加</button>
+      </div>
+
+      <div class="form-grid single">
+        <label>この研究の対象は？
+          <textarea id="quickSubject" rows="3"></textarea>
+        </label>
+        <label>この研究は何を知ろうとしている？
+          <textarea id="quickPurpose" rows="3"></textarea>
+        </label>
+      </div>
+    </section>
+
+    <div class="rn-actions split">
+      <button type="button" class="secondary" data-go="page-quick-basic">← 戻る</button>
+      <button type="button" class="primary" id="finishQuick">さくっと読了として保存</button>
+    </div>
+  </section>
+
+  <!-- QUICK COMPLETE -->
+  <section class="rn-page" id="page-quick-complete">
+    <div class="completion card">
+      <div class="completion-icon">🌱</div>
+      <span class="eyebrow">QUICK READING COMPLETE</span>
+      <h2>さくっと読了！</h2>
+      <p>この論文の概要がつかめました。Abstractしか読めない論文は、ここで完了にして大丈夫です。</p>
+      <div class="completion-actions">
+        <button type="button" class="secondary" data-go="page-quick-abstract">内容を見直す</button>
+        <button type="button" class="primary" id="startCareful">この論文をじっくり読む →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAREFUL OVERVIEW -->
+  <section class="rn-page" id="page-careful-overview">
+    <div class="rn-page-head">
+      <span class="eyebrow">LEVEL 2</span>
+      <h2>じっくり読む</h2>
+      <p>おすすめの順番は「結果 → 背景 → 考察 → 方法」。どこから始めても大丈夫です。</p>
+    </div>
+
+    <div class="section-map">
+      <button class="section-card card" data-open="results-map">
+        <span class="map-order">おすすめ 1</span>
+        <h3>結果</h3>
+        <p>図表番号を登録し、1つずつ読んでいきます。</p>
+        <span class="section-status" data-status="results">未着手</span>
+      </button>
+      <button class="section-card card" data-open="background-overview">
+        <span class="map-order">おすすめ 2</span>
+        <h3>背景</h3>
+        <p>Topic sentenceから全体像をつかみ、1段落ずつ整理します。</p>
+        <span class="section-status" data-status="background">未着手</span>
+      </button>
+      <button class="section-card card" data-open="discussion-overview">
+        <span class="map-order">おすすめ 3</span>
+        <h3>考察</h3>
+        <p>Topic sentenceから論理の流れを見て、1段落ずつ整理します。</p>
+        <span class="section-status" data-status="discussion">未着手</span>
+      </button>
+      <button class="section-card card" data-open="methods-page">
+        <span class="map-order">おすすめ 4</span>
+        <h3>方法</h3>
+        <p>対象、測定、解析を整理します。</p>
+        <span class="section-status" data-status="methods">未着手</span>
+      </button>
+    </div>
+
+    <div class="rn-actions split">
+      <button type="button" class="secondary" data-go="page-quick-complete">← さくっとへ戻る</button>
+      <button type="button" class="primary" id="startDeep" disabled>深掘りへ進む</button>
+    </div>
+  </section>
+
+  <!-- RESULTS MAP -->
+  <section class="rn-page" id="results-map">
+    <div class="rn-page-head">
+      <span class="eyebrow">じっくり読む · 結果</span>
+      <h2>まず、図表の地図をつくる</h2>
+      <p>最初はFigure / Table番号だけ登録します。</p>
+    </div>
+    <section class="card rn-block">
+      <label>図表はいくつありますか？
+        <input id="figureCount" type="number" min="1" max="30" value="3">
+      </label>
+      <button type="button" class="secondary" id="buildFigureMap">図表一覧を作る</button>
+      <div id="figureMapList" class="compact-list"></div>
+    </section>
+    <div class="rn-actions split">
+      <button type="button" class="secondary" data-go="page-careful-overview">← 全体像へ戻る</button>
+      <button type="button" class="primary" id="startFigureReading">最初の図表を読む →</button>
+    </div>
+  </section>
+
+  <!-- FIGURE ONE-BY-ONE -->
+  <section class="rn-page" id="figure-reader">
+    <div class="rn-page-head">
+      <span class="eyebrow">じっくり読む · 結果</span>
+      <h2 id="figureReaderTitle">Figure 1を読む</h2>
+      <p>いま読む図表だけに集中します。</p>
+    </div>
+    <section class="card rn-block">
+      <div class="form-grid">
+        <label>図表番号
+          <input id="figNumber" readonly>
+        </label>
+        <label>重要度
+          <select id="figImportance">
+            <option value="1">★ 補足的</option>
+            <option value="2">★★ 理解に役立つ</option>
+            <option value="3" selected>★★★ 主要な結果</option>
+            <option value="4">★★★★ 結論を強く支える</option>
+            <option value="5">★★★★★ 論文の中心</option>
+          </select>
+        </label>
+        <label>図の種類
+          <select id="figType">
+            <option>散布図</option><option>棒グラフ</option><option>箱ひげ図</option>
+            <option>折れ線図</option><option>PCAプロット</option><option>系統樹</option>
+            <option>ヒートマップ</option><option>生存曲線</option><option>概念図・模式図</option><option>その他</option>
+          </select>
+        </label>
+        <label>解析手法
+          <input id="figAnalysis" placeholder="GLMM, PCA, Cox など">
+        </label>
+      </div>
+      <label>この図表は何を示している？
+        <textarea id="figSummary" rows="4"></textarea>
+      </label>
+      <label>なぜ重要だと思った？
+        <textarea id="figWhy" rows="3"></textarea>
+      </label>
+      <label>この図表を見て生まれた疑問
+        <textarea id="figQuestion" rows="3"></textarea>
+      </label>
+    </section>
+    <div class="rn-actions split">
+      <button type="button" class="secondary" id="prevFigure">← 前の図表</button>
+      <button type="button" class="primary" id="saveFigureNext">保存して次へ →</button>
+    </div>
+  </section>
+
+  <!-- PARAGRAPH OVERVIEW BACKGROUND -->
+  <section class="rn-page" id="background-overview">
+    <div class="rn-page-head">
+      <span class="eyebrow">じっくり読む · 背景</span>
+      <h2>まず、全体の流れをつかむ</h2>
+      <p>全段落のTopic sentenceだけを入力します。</p>
+    </div>
+    <section class="card rn-block">
+      <div class="paragraph-builder">
+        <label>Introductionは何段落ありますか？
+          <input id="backgroundCount" type="number" min="1" max="30" value="4">
+        </label>
+        <button type="button" class="secondary" id="buildBackgroundOverview">入力欄を作る</button>
+      </div>
+      <div id="backgroundOverviewList"></div>
+      <button type="button" class="secondary" id="translateBackgroundAll">読むサポート（全段落・デモ）</button>
+    </section>
+    <div class="rn-actions split">
+      <button type="button" class="secondary" data-go="page-careful-overview">← 全体像へ戻る</button>
+      <button type="button" class="primary" id="startBackgroundReading">1段落目を読む →</button>
+    </div>
+  </section>
+
+  <!-- PARAGRAPH READER SHARED -->
+  <section class="rn-page" id="paragraph-reader">
+    <div class="rn-page-head">
+      <span class="eyebrow" id="paragraphSectionLabel">じっくり読む · 背景</span>
+      <h2 id="paragraphReaderTitle">Paragraph 1を読む</h2>
+      <p>いま読む1段落だけに集中します。</p>
+    </div>
+    <section class="card rn-block">
+      <label>Topic sentence 原文（一時メモ）
+        <textarea id="paragraphOriginal" rows="2" readonly></textarea>
+      </label>
+      <label>日本語訳（一時表示・保存なし）
+        <textarea id="paragraphTranslation" rows="2" readonly></textarea>
+      </label>
+      <div class="form-grid">
+        <label>自分の言葉で段落タイトル
+          <input id="paragraphTitle">
+        </label>
+        <label>この段落の役割
+          <select id="paragraphRole"></select>
+        </label>
+      </div>
+      <label>自分の言葉で一文にすると？
+        <textarea id="paragraphSummary" rows="2"></textarea>
+      </label>
+      <label>メモ
+        <textarea id="paragraphNote" rows="2"></textarea>
+      </label>
+    </section>
+    <div class="rn-actions split">
+      <button type="button" class="secondary" id="prevParagraph">← 前の段落</button>
+      <button type="button" class="primary" id="saveParagraphNext">保存して次へ →</button>
+    </div>
+  </section>
+
+  <!-- DISCUSSION OVERVIEW -->
+  <section class="rn-page" id="discussion-overview">
+    <div class="rn-page-head">
+      <span class="eyebrow">じっくり読む · 考察</span>
+      <h2>まず、全体の流れをつかむ</h2>
+      <p>全段落のTopic sentenceだけを入力します。</p>
+    </div>
+    <section class="card rn-block">
+      <div class="paragraph-builder">
+        <label>Discussionは何段落ありますか？
+          <input id="discussionCount" type="number" min="1" max="30" value="4">
+        </label>
+        <button type="button" class="secondary" id="buildDiscussionOverview">入力欄を作る</button>
+      </div>
+      <div id="discussionOverviewList"></div>
+      <button type="button" class="secondary" id="translateDiscussionAll">読むサポート（全段落・デモ）</button>
+    </section>
+    <div class="rn-actions split">
+      <button type="button" class="secondary" data-go="page-careful-overview">← 全体像へ戻る</button>
+      <button type="button" class="primary" id="startDiscussionReading">1段落目を読む →</button>
+    </div>
+  </section>
+
+  <!-- SECTION REFLECTION -->
+  <section class="rn-page" id="section-summary-page">
+    <div class="rn-page-head">
+      <span class="eyebrow" id="summarySectionLabel">SECTION REFLECTION</span>
+      <h2 id="summarySectionTitle">セクション全体を振り返る</h2>
+      <p id="summarySectionLead">段落タイトルと役割を眺めながら、次の一歩を記録します。</p>
+    </div>
+
+    <section class="card rn-block">
+      <h3>段落の流れ</h3>
+      <div id="roleFlow" class="role-flow"></div>
+
+      <h3 class="subsection-title">あなたが付けた段落タイトル</h3>
+      <div id="titleFlow" class="title-flow"></div>
+
+      <div id="backgroundReflection" class="reflection-panel">
+        <div class="title-row">
+          <div>
+            <span class="eyebrow">NEXT TRAIL</span>
+            <h3>背景の中で気になった論文はあった？</h3>
+            <p class="hint">参考文献リストを見ながら、分かる範囲で入力してください。</p>
+          </div>
+          <button type="button" class="secondary small" id="addCitationCandidate">＋ 論文を追加</button>
+        </div>
+
+        <div id="citationCandidateList"></div>
+
+        <div class="future-note">
+          <strong>次の実装予定</strong>
+          <p>入力した著者名・年・論文タイトル・ジャーナル名などを使ってOpenAlexで候補を検索し、選んだ論文を新しい「さくっと読む」Notebookとして登録します。</p>
+        </div>
+      </div>
+
+      <div id="discussionReflection" class="reflection-panel" hidden>
+        <label>著者は、結果をどのように解釈していた？
+          <textarea id="discussionTakeaway" rows="3"></textarea>
+        </label>
+        <label>考察を読んで、新しく気になったこと
+          <textarea id="discussionQuestion" rows="3"></textarea>
+        </label>
+      </div>
+    </section>
+
+    <div class="rn-actions">
+      <button type="button" class="primary" id="finishSectionSummary">保存して全体像へ戻る</button>
+    </div>
+  </section>
+
+  <template id="citationCandidateTemplate">
+    <article class="entry-card citation-candidate">
+      <div class="entry-top">
+        <strong>気になった論文</strong>
+        <button type="button" class="icon-button remove-citation" aria-label="削除">×</button>
+      </div>
+
+      <div class="form-grid citation-grid">
+        <label>著者名
+          <input class="citation-authors" placeholder="Smith et al.">
+        </label>
+        <label>出版年
+          <input class="citation-year" inputmode="numeric" placeholder="2021">
+        </label>
+        <label class="wide">論文タイトル
+          <input class="citation-title" placeholder="分かる範囲で入力">
+        </label>
+        <label>ジャーナル名
+          <input class="citation-journal" placeholder="Journal name">
+        </label>
+        <label>巻
+          <input class="citation-volume" placeholder="282">
+        </label>
+        <label>号
+          <input class="citation-issue" placeholder="4">
+        </label>
+        <label>ページ
+          <input class="citation-pages" placeholder="100–112">
+        </label>
+        <label>DOI（分かれば）
+          <input class="citation-doi" placeholder="10.xxxx/xxxxx">
+        </label>
+      </div>
+
+      <label>どうして気になった？
+        <textarea class="citation-reason" rows="2"></textarea>
+      </label>
+
+      <div class="citation-actions">
+        <button type="button" class="secondary small citation-search">OpenAlexで論文情報を探す</button>
+        <button type="button" class="secondary small citation-register">新しい「さくっと」Notebookに登録</button>
+      </div>
+
+      <p class="citation-status" aria-live="polite"></p>
+      <div class="openalex-candidate-results"></div>
+    </article>
+  </template>
+
+
+  <!-- METHODS -->
+  <section class="rn-page" id="methods-page">
+    <div class="rn-page-head">
+      <span class="eyebrow">じっくり読む · 方法</span>
+      <h2>研究の設計を整理する</h2>
+    </div>
+    <section class="card rn-block">
+      <div class="form-grid single">
+        <label>研究対象
+          <textarea id="methodSubject" rows="3"></textarea>
+        </label>
+        <label>サンプル数
+          <textarea id="sampleSize" rows="2"></textarea>
+        </label>
+        <label>実験・観察デザイン
+          <textarea id="studyDesign" rows="4"></textarea>
+        </label>
+        <label>測定項目
+          <textarea id="measurements" rows="4"></textarea>
+        </label>
+        <label>解析手法
+          <textarea id="analyses" rows="4" placeholder="GLMM, PCA, Cox, ANOVA など"></textarea>
+        </label>
+        <label>自分の研究で参考になりそうな点
+          <textarea id="methodReference" rows="4"></textarea>
+        </label>
+        <label>分からなかった点
+          <textarea id="methodQuestion" rows="3"></textarea>
+        </label>
+      </div>
+    </section>
+    <div class="rn-actions split">
+      <button type="button" class="secondary" data-go="page-careful-overview">← 全体像へ戻る</button>
+      <button type="button" class="primary" id="saveMethods">方法を保存</button>
+    </div>
+  </section>
+
+  <!-- DEEP -->
+  <section class="rn-page" id="deep-page">
+    <div class="rn-page-head">
+      <span class="eyebrow">LEVEL 3</span>
+      <h2>深掘りする</h2>
+      <p>引用、解析、限界、自分の研究とのつながりを整理します。</p>
+    </div>
+    <section class="card rn-block">
+      <div class="form-grid single">
+        <label>特に詳しく調べたい手法・解析
+          <textarea id="deepAnalysis" rows="4"></textarea>
+        </label>
+        <label>重要な引用文献
+          <textarea id="deepCitations" rows="4"></textarea>
+        </label>
+        <label>研究の限界
+          <textarea id="limitations" rows="4"></textarea>
+        </label>
+        <label>自分なら次に何を研究する？
+          <textarea id="nextStudy" rows="4"></textarea>
+        </label>
+        <label>自分の研究との関係
+          <textarea id="relation" rows="4"></textarea>
+        </label>
+      </div>
+    </section>
+    <div class="rn-actions split">
+      <button type="button" class="secondary" data-go="page-careful-overview">← じっくりへ戻る</button>
+      <button type="button" class="primary" id="saveDeep">深掘りを保存</button>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>© Megu GUNJI <span class="footer-sep">[</span> Toyo University <span class="footer-sep">]</span></p>
+</footer>
+
+<script src="papertrail_api.js"></script>
+<script src="papertrail_auth.js"></script>
+<script src="notebook.js"></script>
+</body>
+</html>
