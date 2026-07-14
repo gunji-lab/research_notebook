@@ -227,3 +227,22 @@ APIキーはNotebookデータには含めず、ブラウザのlocalStorageにの
 - Notebook末尾に Notebook by 表示
 - GASへOpenAlex DOI検索・書誌検索・PaperCacheを統合
 - 既存シートへ列を追加できる移行対応setup
+
+## v2.8.0 — GitHub Frontend + Signed GAS Bridge
+
+- UIをGitHub Pagesへ戻し、pushだけで更新可能
+- Google Identity Servicesによる大学アカウントログイン
+- Google署名付きIDトークンをGASで検証
+- GitHubとGASの通信はGAS iframe bridge + postMessage
+- 認証付きGASへの直接fetchを廃止
+- 学生のGAS URL入力・OpenAlex APIキー入力を廃止
+- GAS URLとGoogle Client IDは管理者がconfigへ一度設定
+
+## v2.8.1 — Physics Trainer認証方式
+
+- Google Cloud Client IDを廃止
+- GASの`?view=auth`で大学アカウントを確認
+- 署名付き・有効期限付きトークンをGitHub Pagesへ返却
+- API呼び出しごとにGASでトークンを検証
+- GitHub側の更新はpushだけ
+- 学生はGAS URLやAPIキーを入力しない

@@ -21,7 +21,7 @@
         <p>論文を読む最初の一歩を、もっとやさしく。</p>
       </div>
     </div>
-    <div class="prototype-label">Research Notebook · v2.6.0</div>
+    <div class="prototype-label">Research Notebook · v2.8.1</div>
   </div>
 </header>
 
@@ -59,31 +59,7 @@
     <strong>保存するのは、あなたが考えて書いたことだけ。</strong>
     <p>原文、翻訳文、図表画像は作業中のみ使用し、Notebookには保存しません。</p>
   </section>
-
-
-  <details class="openalex-settings card">
-    <summary>
-      <span>
-        <strong>OpenAlex連携設定</strong>
-        <small id="openalexKeyState">APIキー未設定</small>
-      </span>
-      <span class="settings-chevron">⌄</span>
-    </summary>
-    <div class="openalex-settings-body">
-      <p>無料のOpenAlex APIキーを入力すると、DOIからの自動入力と引用文献検索が使えます。キーはこのブラウザ内だけに保存され、Notebookデータには含まれません。</p>
-      <div class="api-key-row">
-        <label>OpenAlex APIキー
-          <input id="openalexApiKey" type="password" autocomplete="off" placeholder="OpenAlex API key">
-        </label>
-        <button type="button" class="primary" id="saveOpenAlexKey">このブラウザに保存</button>
-        <button type="button" class="secondary" id="clearOpenAlexKey">削除</button>
-      </div>
-      <p class="openalex-settings-note">共有パソコンでは、利用後にAPIキーを削除してください。</p>
-    </div>
-  </details>
-
-
-  <!-- QUICK: PAGE 1 -->
+<!-- QUICK: PAGE 1 -->
   <section class="rn-page active" id="page-quick-basic">
     <div class="rn-page-head">
       <span class="eyebrow">LEVEL 1 · PAGE 1</span>
@@ -586,9 +562,11 @@
 <footer class="site-footer">
   <p>© Megu GUNJI <span class="footer-sep">[</span> Toyo University <span class="footer-sep">]</span></p>
 </footer>
+  <script src="papertrail_config.js"></script>
+  <script src="papertrail_api.js"></script>
+  <script src="papertrail_auth.js"></script>
 
-<script src="papertrail_api.js"></script>
-<script src="papertrail_auth.js"></script>
+
 <script src="notebook.js"></script>
 </body>
 </html>

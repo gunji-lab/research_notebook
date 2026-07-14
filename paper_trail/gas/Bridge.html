@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PaperTrail API Bridge</title>
+</head>
+<body>
+<script>
+(() => {
+  const ALLOWED_ORIGIN = <?!= JSON.stringify(frontendOrigin) ?>;
+
+  function reply(target, origin, payload) {
+    target.postMessage(payload, origin);
+  }
+
+  window.addEventListener("message", event => {
+    if (event.origin !== ALLOWED_ORIGIN) return;
+    const request = event.data || {};
+    if (request.type !== "papertrail:request" || !request.id) return;
+
+    google.script.run
+      .withSuccessHandler(result => {
+        reply(event.source, event.origin, {
+          type: "papertrail:response",
+          id: request.id,
+          ok: Boolean(result && result.ok),
+          data: result && result.data,
+          error: result && result.error
+        });
+      })
+      .withFailureHandler(error => {
+        reply(event.source, event.origin, {
+          type: "papertrail:response",
+          id: request.id,
+          ok: false,
+          error: error && error.message ? error.message : String(error)
+        });
+      })
+      .bridgeRequest({
+        method: request.method,
+        args: request.args || {},
+        authToken: request.authToken || ""
+      });
+  });
+
+  parent.postMessage({type:"papertrail:bridge-ready"}, "*");
+})();
+</script>
+</body>
+</html>

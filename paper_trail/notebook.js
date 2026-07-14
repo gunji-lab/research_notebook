@@ -1,4 +1,4 @@
-const KEY="papertrail_notebook_v260";
+const KEY="papertrail_notebook_v281";
 const NOTEBOOK_ID_KEY="papertrail_current_notebook_id";
 let serverSaveTimer=null;
 let currentNotebookId=localStorage.getItem(NOTEBOOK_ID_KEY)||"";
@@ -326,7 +326,7 @@ $("#saveDeep").addEventListener("click",()=>{state.level="deep";save();saveToPap
 function collect(){
   const v=id=>$("#"+id)?.value||"";
   return {
-    schema_version:"2.5.0",
+    schema_version:"2.8.1",
     saved_at:new Date().toISOString(),
     state,
     paper:{doi:v("doi"),title:v("title"),authors:v("authors"),journal:v("journal"),year:v("year"),tags:v("tags"),
@@ -381,82 +381,17 @@ document.body.addEventListener("input",()=>{
 /* =========================================================
    OpenAlex integration v2.3.0
    ========================================================= */
-const OPENALEX_KEY_STORAGE="papertrail_openalex_api_key";
-const OPENALEX_BASE="https://api.openalex.org";
-
-function getOpenAlexKey(){
-  return localStorage.getItem(OPENALEX_KEY_STORAGE)||"";
-}
-
-function updateOpenAlexKeyUI(){
-  const key=getOpenAlexKey();
-  const input=$("#openalexApiKey");
-  const stateEl=$("#openalexKeyState");
-  if(input)input.value=key;
-  if(stateEl){
-    stateEl.textContent=key?"APIキー設定済み":"APIキー未設定";
-    stateEl.classList.toggle("ready",Boolean(key));
-  }
-}
-
-$("#saveOpenAlexKey")?.addEventListener("click",()=>{
-  const key=$("#openalexApiKey").value.trim();
-  if(!key){
-    alert("OpenAlex APIキーを入力してください。");
-    return;
-  }
-  localStorage.setItem(OPENALEX_KEY_STORAGE,key);
-  updateOpenAlexKeyUI();
-  alert("APIキーをこのブラウザに保存しました。");
-});
-
-$("#clearOpenAlexKey")?.addEventListener("click",()=>{
-  localStorage.removeItem(OPENALEX_KEY_STORAGE);
-  $("#openalexApiKey").value="";
-  updateOpenAlexKeyUI();
-});
-
-function requireOpenAlexKey(){
-  const key=getOpenAlexKey();
-  if(!key){
-    document.querySelector(".openalex-settings")?.setAttribute("open","");
-    $("#openalexApiKey")?.focus();
-    throw new Error("OpenAlex APIキーを設定してください。");
-  }
-  return key;
-}
-
 async function openAlexFetch(path,params={}){
-  const key=requireOpenAlexKey();
-  const url=new URL(OPENALEX_BASE+path);
-  url.searchParams.set("api_key",key);
-  Object.entries(params).forEach(([name,value])=>{
-    if(value!==undefined&&value!==null&&String(value)!==""){
-      url.searchParams.set(name,String(value));
-    }
-  });
-
-  const response=await fetch(url.toString(),{
-    method:"GET",
-    headers:{"Accept":"application/json"}
-  });
-
-  if(!response.ok){
-    let message=`OpenAlexエラー（${response.status}）`;
-    try{
-      const body=await response.json();
-      message=body.message||body.error||message;
-    }catch(_){}
-    if(response.status===401||response.status===403){
-      message="APIキーを確認してください。";
-    }else if(response.status===404){
-      message="該当する論文が見つかりませんでした。";
-    }else if(response.status===429){
-      message="OpenAlexの利用上限に達しました。時間を置いて試してください。";
-    }
-    throw new Error(message);
+  if(path.startsWith("/works/")){
+    const raw=decodeURIComponent(path.slice("/works/".length));
+    const doi=raw.replace(/^doi:/i,"");
+    return window.PaperTrailAPI.openAlexWorkByDoi(doi);
   }
-  return response.json();
+  if(path==="/works"){
+    const match=String(params.filter||"").match(/publication_year:(\d{4})/);
+    return window.PaperTrailAPI.openAlexSearch(params.search||"",match?match[1]:"");
+  }
+  throw new Error("未対応のOpenAlexリクエストです。");
 }
 
 function normalizeDoi(value=""){
@@ -707,7 +642,7 @@ function bindOpenAlexCitationButtons(root){
   });
 }
 
-updateOpenAlexKeyUI();
+
 
 show("page-quick-basic");
 window.addEventListener("papertrail:user-ready",event=>{

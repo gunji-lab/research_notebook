@@ -1,29 +1,94 @@
 /**
- * PaperTrail identity UI v2.6.0
+ * PaperTrail authentication v2.8.1
+ *
+ * Same policy as Physics Trainer:
+ * 1. Redirect to GAS ?view=auth
+ * 2. GAS checks the active university Google account
+ * 3. GAS issues a signed, time-limited token
+ * 4. GitHub Pages stores the token and attaches it to API calls
  */
 (() => {
   const $ = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => [...r.querySelectorAll(s)];
 
-  function injectAuthUI(){
-    if($("#papertrail-account")) return;
-    const wrap=document.createElement("div");
-    wrap.id="papertrail-account";
-    wrap.className="papertrail-account";
-    wrap.innerHTML=`
+  function config() {
+    const cfg = window.PAPERTRAIL_CONFIG || {};
+    if (!cfg.GAS_WEB_APP_URL || cfg.GAS_WEB_APP_URL.includes("PASTE_")) {
+      throw new Error("管理者によるPaperTrail API設定が必要です。");
+    }
+    return cfg;
+  }
+
+  function tokenKey() {
+    return config().TOKEN_STORAGE_KEY || "paperTrailAuthV1";
+  }
+
+  function getToken() {
+    try { return localStorage.getItem(tokenKey()) || ""; }
+    catch (_) { return ""; }
+  }
+
+  function setToken(token) {
+    try {
+      if (token) localStorage.setItem(tokenKey(), token);
+      else localStorage.removeItem(tokenKey());
+    } catch (_) {}
+  }
+
+  function cleanUrl() {
+    return location.href.replace(/#.*$/, "");
+  }
+
+  function readAuthFromHash() {
+    const params = new URLSearchParams(location.hash.slice(1));
+    const token = params.get("auth");
+    if (!token) return false;
+    setToken(token);
+    history.replaceState(null, document.title, location.pathname + location.search);
+    return true;
+  }
+
+  function loginUrl() {
+    const cfg = config();
+    return cfg.GAS_WEB_APP_URL
+      + "?view=auth&return="
+      + encodeURIComponent(cleanUrl());
+  }
+
+  function injectAccountUI() {
+    if ($("#papertrail-account")) return;
+
+    const wrap = document.createElement("div");
+    wrap.id = "papertrail-account";
+    wrap.className = "papertrail-account";
+    wrap.innerHTML = `
       <button type="button" class="account-chip" id="accountChip">
         <span class="account-avatar">PT</span>
-        <span><strong id="accountDisplayName">接続確認中</strong><small id="accountStudentId">PaperTrail</small></span>
+        <span>
+          <strong id="accountDisplayName">ログイン確認中</strong>
+          <small id="accountStudentId">PaperTrail</small>
+        </span>
       </button>
+
       <dialog id="accountDialog" class="account-dialog">
         <form method="dialog">
           <div class="dialog-head">
-            <div><span class="eyebrow">ACCOUNT</span><h2>PaperTrailのプロフィール</h2></div>
+            <div>
+              <span class="eyebrow">ACCOUNT</span>
+              <h2>PaperTrailのプロフィール</h2>
+            </div>
             <button class="icon-button" value="cancel" aria-label="閉じる">×</button>
           </div>
 
-          <section class="account-section">
+          <section class="account-section" id="loginSection">
+            <h3>大学Googleアカウントでログイン</h3>
+            <p>GAS URLやOpenAlex APIキーを入力する必要はありません。</p>
+            <a class="primary button-link" id="loginLink" href="#">大学アカウントでログイン</a>
+            <p class="field-status" id="loginStatus"></p>
+          </section>
+
+          <section class="account-section" id="profileSection" hidden>
             <h3>本人情報</h3>
-            <p>氏名はPaperTrail内の著者表示と教員による確認に使用します。</p>
             <label>氏名
               <input id="accountRealName" maxlength="50" placeholder="例：郡司 めぐ">
             </label>
@@ -37,120 +102,130 @@
               <label><input type="radio" name="displayMode" value="nickname"> カスタム表示名を使う</label>
             </fieldset>
 
-            <button type="button" class="primary" id="saveProfileButton">プロフィールを保存</button>
+            <div class="account-actions">
+              <button type="button" class="primary" id="saveProfileButton">プロフィールを保存</button>
+              <button type="button" class="secondary" id="signOutButton">ログアウト</button>
+            </div>
             <p class="field-status" id="profileStatus"></p>
           </section>
 
-          <section class="account-section">
-            <h3>PaperTrail API</h3>
-            <label>GASウェブアプリURL
-              <input id="accountApiUrl" placeholder="https://script.google.com/macros/s/.../exec">
-            </label>
-            <div class="connection-mode-grid">
-              <label class="connection-mode-card">
-                <input type="radio" name="backendMode" value="gas">
-                <span><strong>大学アカウントで接続</strong><small>Spreadsheetへ保存</small></span>
-              </label>
-              <label class="connection-mode-card">
-                <input type="radio" name="backendMode" value="local">
-                <span><strong>ローカル試用</strong><small>このブラウザだけに保存</small></span>
-              </label>
-            </div>
-            <div class="account-actions">
-              <button type="button" class="primary" id="saveBackendButton">接続設定を保存</button>
-              <button type="button" class="secondary" id="testBackendButton">接続を確認</button>
-            </div>
-            <p class="field-status" id="backendStatus"></p>
-          </section>
-
-          <section class="account-section account-details">
+          <section class="account-section account-details" id="accountDetails" hidden>
             <h3>現在の情報</h3>
             <dl>
               <div><dt>学籍番号</dt><dd id="detailStudentId">—</dd></div>
               <div><dt>氏名</dt><dd id="detailRealName">—</dd></div>
               <div><dt>表示名</dt><dd id="detailDisplayName">—</dd></div>
-              <div><dt>表示モード</dt><dd id="detailDisplayMode">—</dd></div>
-              <div><dt>ドメイン</dt><dd id="detailDomain">—</dd></div>
+              <div><dt>接続</dt><dd>大学Googleアカウント</dd></div>
             </dl>
           </section>
         </form>
-      </dialog>`;
+      </dialog>
+    `;
     document.body.appendChild(wrap);
 
-    const dialog=$("#accountDialog");
-    $("#accountChip").addEventListener("click",()=>dialog.showModal());
+    const dialog = $("#accountDialog");
+    $("#accountChip").addEventListener("click", () => dialog.showModal());
 
-    const config=window.PaperTrailAPI.getConfig();
-    $("#accountApiUrl").value=config.apiUrl||"";
-    $$('input[name="backendMode"]',wrap).forEach(i=>i.checked=i.value===(config.mode||"gas"));
+    try {
+      $("#loginLink").href = loginUrl();
+    } catch (error) {
+      $("#loginStatus").textContent = error.message;
+    }
 
-    $("#saveBackendButton").addEventListener("click",async()=>{
-      const apiUrl=$("#accountApiUrl").value.trim();
-      const mode=$('input[name="backendMode"]:checked',wrap)?.value||"gas";
-      window.PaperTrailAPI.setConfig({apiUrl,mode});
-      $("#backendStatus").textContent=mode==="local"?"ローカル試用モードです。":"API設定を保存しました。";
-      await refreshUser();
-    });
+    $("#saveProfileButton").addEventListener("click", async () => {
+      const realName = $("#accountRealName").value.trim();
+      const nickname = $("#accountNickname").value.trim();
+      const displayMode = $('input[name="displayMode"]:checked')?.value || "real_name";
 
-    $("#testBackendButton").addEventListener("click",async()=>{
-      $("#backendStatus").textContent="接続確認中…";
-      try{
-        const user=await window.PaperTrailAPI.whoAmI();
-        renderUser(user);
-        $("#backendStatus").textContent=`${user.studentId} として接続できました。`;
-      }catch(e){$("#backendStatus").textContent=e.message;}
-    });
-
-    $("#saveProfileButton").addEventListener("click",async()=>{
-      const realName=$("#accountRealName").value.trim();
-      const nickname=$("#accountNickname").value.trim();
-      const displayMode=$('input[name="displayMode"]:checked',wrap)?.value||"real_name";
-      if(!realName){$("#profileStatus").textContent="氏名を入力してください。";return;}
-      if(displayMode==="nickname"&&!nickname){$("#profileStatus").textContent="カスタム表示名を入力してください。";return;}
-      $("#profileStatus").textContent="保存中…";
-      try{
-        const user=await window.PaperTrailAPI.saveProfile({realName,nickname,displayMode});
-        renderUser(user);
-        $("#profileStatus").textContent="プロフィールを保存しました。";
-      }catch(e){$("#profileStatus").textContent=e.message;}
-    });
-  }
-
-  function $$(s,r=document){return [...r.querySelectorAll(s)]}
-
-  function renderUser(user){
-    if(!user)return;
-    const display=user.displayName||user.realName||user.nickname||user.studentId||"PaperTrail";
-    $("#accountDisplayName").textContent=display;
-    $("#accountStudentId").textContent=user.studentId||"PaperTrail";
-    $("#accountRealName").value=user.realName||"";
-    $("#accountNickname").value=user.nickname||"";
-    $$('input[name="displayMode"]').forEach(i=>i.checked=i.value===(user.displayMode||"real_name"));
-    $("#detailStudentId").textContent=user.studentId||"—";
-    $("#detailRealName").textContent=user.realName||"未設定";
-    $("#detailDisplayName").textContent=display;
-    $("#detailDisplayMode").textContent=(user.displayMode||"real_name")==="real_name"?"本名":"カスタム表示名";
-    $("#detailDomain").textContent=user.domain||"—";
-    $(".account-avatar").textContent=display.slice(0,2).toUpperCase();
-  }
-
-  async function refreshUser(){
-    try{
-      const user=await window.PaperTrailAPI.whoAmI();
-      renderUser(user);
-      window.dispatchEvent(new CustomEvent("papertrail:user-ready",{detail:user}));
-      if(!user.realName){
-        $("#accountDialog")?.showModal();
-        $("#profileStatus").textContent="最初に氏名と表示方法を設定してください。";
+      if (!realName) {
+        $("#profileStatus").textContent = "氏名を入力してください。";
+        return;
       }
-      return user;
-    }catch(e){
-      $("#accountDisplayName").textContent="接続設定";
-      $("#accountStudentId").textContent="クリックして確認";
-      return null;
+      if (displayMode === "nickname" && !nickname) {
+        $("#profileStatus").textContent = "カスタム表示名を入力してください。";
+        return;
+      }
+
+      $("#profileStatus").textContent = "保存中…";
+      try {
+        const profile = await window.PaperTrailAPI.saveProfile({ realName, nickname, displayMode });
+        renderProfile(profile);
+        $("#profileStatus").textContent = "プロフィールを保存しました。";
+      } catch (error) {
+        $("#profileStatus").textContent = error.message;
+      }
+    });
+
+    $("#signOutButton").addEventListener("click", () => {
+      setToken("");
+      location.reload();
+    });
+  }
+
+  function renderProfile(profile) {
+    const display = profile.displayName || profile.realName || profile.nickname || profile.studentId || "PaperTrail";
+    $("#accountDisplayName").textContent = display;
+    $("#accountStudentId").textContent = profile.studentId || "PaperTrail";
+    $("#accountRealName").value = profile.realName || "";
+    $("#accountNickname").value = profile.nickname || "";
+    $$('input[name="displayMode"]').forEach(input => {
+      input.checked = input.value === (profile.displayMode || "real_name");
+    });
+    $("#detailStudentId").textContent = profile.studentId || "—";
+    $("#detailRealName").textContent = profile.realName || "未設定";
+    $("#detailDisplayName").textContent = display;
+    $(".account-avatar").textContent = display.slice(0, 2).toUpperCase();
+    $("#loginSection").hidden = true;
+    $("#profileSection").hidden = false;
+    $("#accountDetails").hidden = false;
+  }
+
+  async function refreshUser() {
+    const token = getToken();
+    if (!token) return null;
+
+    try {
+      const profile = await window.PaperTrailAPI.whoAmI();
+      renderProfile(profile);
+      window.dispatchEvent(new CustomEvent("papertrail:user-ready", { detail: profile }));
+      if (!profile.realName) {
+        $("#accountDialog")?.showModal();
+        $("#profileStatus").textContent = "最初に氏名と表示方法を設定してください。";
+      }
+      return profile;
+    } catch (error) {
+      setToken("");
+      throw error;
     }
   }
 
-  document.addEventListener("DOMContentLoaded",async()=>{injectAuthUI();await refreshUser();});
-  window.PaperTrailAuth={refreshUser,renderUser};
+  async function boot() {
+    injectAccountUI();
+    readAuthFromHash();
+
+    if (!getToken()) {
+      $("#accountDisplayName").textContent = "ログイン";
+      $("#accountStudentId").textContent = "大学Googleアカウント";
+      $("#accountDialog")?.showModal();
+      return;
+    }
+
+    $("#loginStatus").textContent = "本人確認中…";
+    try {
+      await refreshUser();
+      $("#loginStatus").textContent = "";
+    } catch (error) {
+      $("#loginStatus").textContent = error.message;
+      $("#accountDialog")?.showModal();
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", boot);
+
+  window.PaperTrailAuth = {
+    getToken,
+    setToken,
+    loginUrl,
+    refreshUser
+  };
 })();

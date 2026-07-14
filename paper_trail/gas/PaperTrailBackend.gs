@@ -1,5 +1,5 @@
 /**
- * PaperTrail Lab Backend v2.5.0
+ * PaperTrail Physics-Style Auth API v2.8.1
  *
  * Script Properties:
  *   SPREADSHEET_ID   required
@@ -29,7 +29,32 @@ const PT_HEADERS = {
 };
 
 function doGet(e) {
-  return route_((e && e.parameter && e.parameter.action) || '', e ? e.parameter : {}, null);
+  const params=(e&&e.parameter)||{};
+  const view=String(params.view||"");
+  const action=String(params.action||"");
+
+  if(action==="health"){
+    return json_({
+      ok:true,
+      data:{status:"ok",service:"PaperTrail Physics-Style Auth API",version:"2.8.1"}
+    });
+  }
+
+  if(view==="auth"){
+    return serveAuth_(params);
+  }
+
+  if(view==="bridge"){
+    const template=HtmlService.createTemplateFromFile("Bridge");
+    template.frontendOrigin=paperTrailFrontendOrigin_();
+    return template.evaluate()
+      .setTitle("PaperTrail API Bridge")
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+
+  return HtmlService.createHtmlOutput(
+    "<p>PaperTrailの入口URLからアクセスしてください。</p>"
+  ).setTitle("PaperTrail");
 }
 
 function doPost(e) {
@@ -489,6 +514,210 @@ function json_(body) {
   return ContentService
     .createTextOutput(JSON.stringify(body))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+
+
+/* =========================================================
+ * Physics Trainer style authentication v2.8.1
+ * ========================================================= */
+
+function serveAuth_(params) {
+  const returnUrl=validateReturnUrl_(String(params.return||""));
+  const email=String(Session.getActiveUser().getEmail()||"").trim().toLowerCase();
+  const allowedDomain=String(
+    PropertiesService.getScriptProperties().getProperty("ALLOWED_DOMAIN")||"toyo.jp"
+  ).trim().toLowerCase();
+
+  if(!email||email.split("@")[1]!==allowedDomain){
+    const selfUrl=ScriptApp.getService().getUrl();
+    const chooser="https://accounts.google.com/AccountChooser?hd="
+      +encodeURIComponent(allowedDomain)
+      +"&continue="+encodeURIComponent(
+        selfUrl+"?view=auth&return="+encodeURIComponent(returnUrl)
+      );
+
+    return HtmlService.createHtmlOutput(
+      '<!doctype html><html lang="ja"><meta charset="utf-8">'
+      +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+      +'<title>PaperTrail Login</title>'
+      +'<body style="margin:0;background:#f6f7f8;font-family:system-ui,-apple-system,'
+      +"'Hiragino Sans','Yu Gothic',sans-serif;color:#252525\">"
+      +'<main style="width:min(620px,calc(100% - 32px));margin:8vh auto">'
+      +'<section style="background:#fff;border:1px solid #ddd;border-radius:20px;'
+      +'padding:28px;box-shadow:0 12px 32px #00000010">'
+      +'<h1 style="margin-top:0">大学Googleアカウントでログイン</h1>'
+      +'<p style="line-height:1.8">PaperTrailは <strong>@'+escapeHtml_(allowedDomain)
+      +'</strong> の大学アカウント専用です。</p>'
+      +'<a href="'+escapeHtml_(chooser)+'" style="display:block;padding:14px 18px;'
+      +'border-radius:12px;background:#a96524;color:#fff;text-decoration:none;'
+      +'font-weight:900;text-align:center">大学アカウントを選ぶ</a>'
+      +'</section></main></body></html>'
+    ).setTitle("PaperTrail Login");
+  }
+
+  const user=currentUser_();
+  const token=createPaperTrailAuthToken_(user);
+  const destination=returnUrl+"#auth="+encodeURIComponent(token);
+
+  return HtmlService.createHtmlOutput(
+    '<!doctype html><html lang="ja"><meta charset="utf-8">'
+    +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+    +'<title>PaperTrail Login</title>'
+    +'<body style="font-family:system-ui;text-align:center;padding:48px">'
+    +'<p>PaperTrailへ戻ります…</p>'
+    +'<script>location.replace('+JSON.stringify(destination)+');</script>'
+    +'</body></html>'
+  ).setTitle("PaperTrail Login");
+}
+
+function createPaperTrailAuthToken_(user) {
+  const now=Date.now();
+  const hours=Number(
+    PropertiesService.getScriptProperties().getProperty("AUTH_TOKEN_HOURS")||12
+  );
+  const payload={
+    v:1,
+    sid:user.studentId,
+    domain:user.domain,
+    admin:Boolean(user.isAdmin),
+    iat:now,
+    exp:now+hours*60*60*1000,
+    nonce:Utilities.getUuid()
+  };
+  const body=base64UrlEncode_(JSON.stringify(payload));
+  return body+"."+signPaperTrailTokenBody_(body);
+}
+
+function verifyPaperTrailAuthToken_(token) {
+  token=String(token||"").trim();
+  const parts=token.split(".");
+  if(parts.length!==2)throw new Error("ログイン情報が不正です。");
+
+  const body=parts[0];
+  const supplied=parts[1];
+  const expected=signPaperTrailTokenBody_(body);
+
+  if(!constantTimeEquals_(supplied,expected)){
+    throw new Error("ログイン情報の署名を確認できません。");
+  }
+
+  let payload;
+  try{
+    payload=JSON.parse(
+      Utilities.newBlob(Utilities.base64DecodeWebSafe(body)).getDataAsString()
+    );
+  }catch(_){
+    throw new Error("ログイン情報を読み取れません。");
+  }
+
+  if(Number(payload.exp||0)<=Date.now()){
+    throw new Error("ログインの有効期限が切れました。");
+  }
+
+  const allowedDomain=String(
+    PropertiesService.getScriptProperties().getProperty("ALLOWED_DOMAIN")||"toyo.jp"
+  ).trim().toLowerCase();
+
+  if(String(payload.domain||"").toLowerCase()!==allowedDomain){
+    throw new Error("許可されていない大学アカウントです。");
+  }
+
+  return {
+    email:"",
+    studentId:String(payload.sid||""),
+    domain:String(payload.domain||""),
+    isAdmin:Boolean(payload.admin)
+  };
+}
+
+function signPaperTrailTokenBody_(body) {
+  const secret=getPaperTrailTokenSecret_();
+  const bytes=Utilities.computeHmacSha256Signature(
+    body,
+    secret,
+    Utilities.Charset.UTF_8
+  );
+  return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/,"");
+}
+
+function getPaperTrailTokenSecret_() {
+  const props=PropertiesService.getScriptProperties();
+  let secret=String(props.getProperty("AUTH_TOKEN_SECRET")||"");
+  if(!secret){
+    secret=Utilities.getUuid()+Utilities.getUuid()+Utilities.getUuid();
+    props.setProperty("AUTH_TOKEN_SECRET",secret);
+  }
+  return secret;
+}
+
+function base64UrlEncode_(text) {
+  return Utilities.base64EncodeWebSafe(
+    Utilities.newBlob(text).getBytes()
+  ).replace(/=+$/,"");
+}
+
+function constantTimeEquals_(a,b) {
+  a=String(a||"");
+  b=String(b||"");
+  if(a.length!==b.length)return false;
+  let diff=0;
+  for(let i=0;i<a.length;i++){
+    diff|=a.charCodeAt(i)^b.charCodeAt(i);
+  }
+  return diff===0;
+}
+
+function validateReturnUrl_(url) {
+  const origin=paperTrailFrontendOrigin_();
+  if(!url)return origin+"/";
+  if(url===origin||url.indexOf(origin+"/")===0)return url;
+  throw new Error("戻り先URLが許可されていません。");
+}
+
+function paperTrailFrontendOrigin_() {
+  const origin=String(
+    PropertiesService.getScriptProperties().getProperty("FRONTEND_ORIGIN")||""
+  ).trim().replace(/\/$/,"");
+  if(!origin)throw new Error("FRONTEND_ORIGINが設定されていません。");
+  return origin;
+}
+
+function bridgeRequest(request) {
+  try{
+    ensureSheets_();
+    request=request||{};
+    const method=String(request.method||"");
+    const args=request.args||{};
+    const user=verifyPaperTrailAuthToken_(request.authToken);
+
+    let data;
+    switch(method){
+      case "whoAmI": data=whoAmI_(user); break;
+      case "saveProfile": data=saveProfile_(user,args); break;
+      case "saveNotebook": data=saveNotebook_(user,args); break;
+      case "listMyNotebooks": data=listMyNotebooks_(user); break;
+      case "listLabNotebooks": data=listLabNotebooks_(user); break;
+      case "getNotebook": data=getNotebook_(user,args.notebookId); break;
+      case "saveTrail": data=saveTrail_(user,args); break;
+      case "getDashboard": data=getDashboard_(user); break;
+      case "openAlexWorkByDoi": data=openAlexWorkByDoi_(args.doi); break;
+      case "openAlexSearch": data=openAlexSearch_(args.query,args.year); break;
+      default: throw new Error("Unknown bridge method: "+method);
+    }
+    return {ok:true,data:data};
+  }catch(error){
+    return {ok:false,error:error.message||String(error)};
+  }
+}
+
+function escapeHtml_(value) {
+  return String(value||"")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 }
 
 function setupPaperTrail(){

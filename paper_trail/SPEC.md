@@ -346,3 +346,15 @@ Notebook JSONには必ず `schema_version` を含める。
 
 ## v2.6.0 Profile
 Students列: student_id, real_name, nickname, display_name, display_mode, domain, created_at, updated_at, is_active。本名またはカスタム表示名を選択可能。
+
+## v2.8.0 Authentication
+
+GitHub PagesでGoogle Identity Servicesを使ってIDトークンを取得する。GASはtokeninfoでトークンを検証し、aud、iss、exp、email_verified、大学ドメインを確認する。
+
+GitHubからGASへの通信は、GAS HTML Serviceで配信するBridge iframeを経由する。親画面とBridgeはpostMessageで通信し、Bridgeからgoogle.script.runでバックエンドを呼び出す。
+
+## v2.8.1 Authentication
+
+Physics Trainerと同じリダイレクト型認証を使用する。GASはSession.getActiveUser()で大学アカウントを確認し、学籍番号・期限・nonceを含むトークンへHMAC-SHA256署名を付ける。
+
+GitHub Pagesは`#auth=`からトークンを受け取りlocalStorageに保存する。以後のAPI呼び出しにトークンを添付し、GASは署名・期限・ドメインを毎回検証する。

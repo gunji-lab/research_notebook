@@ -526,7 +526,7 @@ async function renderBackendLabNotebooks(){
       <article class="paper-card">
         <div class="paper-card-top">
           <span class="level-badge">${readingLevelLabel(item.readingLevel)}</span>
-          <span class="nickname-badge">${escapeHtml(item.nickname||"Lab member")}</span>
+          <span class="nickname-badge">${escapeHtml(item.displayName||item.nickname||"Lab member")}</span>
         </div>
         <h3>${escapeHtml(item.title||"Untitled")}</h3>
         <p>${escapeHtml(item.doi||"")}</p>
@@ -545,7 +545,7 @@ async function renderBackendDashboard(){
     const data=await window.PaperTrailAPI.getDashboard();
     const rows=(data.students||[]).map(student=>`
       <tr>
-        <td>${escapeHtml(student.nickname||student.studentId)}</td>
+        <td>${escapeHtml(student.displayName||student.nickname||student.studentId)}</td>
         <td>${student.quickCount||0}</td>
         <td>${student.carefulCount||0}</td>
         <td>${student.deepCount||0}</td>

@@ -1,259 +1,113 @@
 /**
- * PaperTrail Client API v2.5.0
- * GAS backend + local prototype fallback.
+ * PaperTrail API v2.8.1
+ *
+ * GitHub Pages communicates with a GAS-hosted iframe through postMessage.
+ * The iframe calls google.script.run, so no cross-origin fetch is needed.
  */
 (() => {
-  const CONFIG_KEY = "papertrail_backend_config_v1";
-  const SESSION_KEY = "papertrail_user_session_v1";
-  const LOCAL_NOTEBOOKS_KEY = "papertrail_local_notebooks_v1";
-  const LOCAL_TRAILS_KEY = "papertrail_local_trails_v1";
+  const TIMEOUT_MS = 30000;
+  const pending = new Map();
+  let frame = null;
+  let readyPromise = null;
 
-  const DEFAULT_CONFIG = {
-    apiUrl: "",
-    allowedDomain: "toyo.jp",
-    mode: "gas"
-  };
-
-  function readJson(key, fallback) {
-    try {
-      const value = JSON.parse(localStorage.getItem(key) || "");
-      return value && typeof value === "object" ? value : fallback;
-    } catch (_) {
-      return fallback;
+  function cfg() {
+    const value = window.PAPERTRAIL_CONFIG || {};
+    if (!value.GAS_WEB_APP_URL || value.GAS_WEB_APP_URL.includes("PASTE_")) {
+      throw new Error("PaperTrail APIが設定されていません。");
     }
+    return value;
   }
 
-  function getConfig() {
-    return { ...DEFAULT_CONFIG, ...readJson(CONFIG_KEY, {}) };
-  }
+  function ensureBridge() {
+    if (readyPromise) return readyPromise;
 
-  function setConfig(next) {
-    const config = { ...getConfig(), ...next };
-    localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
-    return config;
-  }
+    readyPromise = new Promise((resolve, reject) => {
+      let config;
+      try { config = cfg(); }
+      catch (error) { reject(error); return; }
 
-  function getSession() {
-    return readJson(SESSION_KEY, null);
-  }
+      frame = document.createElement("iframe");
+      frame.id = "papertrail-api-bridge";
+      frame.hidden = true;
+      frame.setAttribute("aria-hidden", "true");
+      frame.title = "PaperTrail API bridge";
 
-  function setSession(session) {
-    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    else localStorage.removeItem(SESSION_KEY);
-  }
+      const url = new URL(config.GAS_WEB_APP_URL);
+      url.searchParams.set("view", "bridge");
+      frame.src = url.toString();
 
-  async function request(action, payload = {}, method = "GET") {
-    const config = getConfig();
-    if (!config.apiUrl) {
-      throw new Error("PaperTrail API URLが未設定です。");
-    }
+      const timer = setTimeout(() => {
+        reject(new Error("PaperTrail APIへ接続できませんでした。"));
+      }, TIMEOUT_MS);
 
-    if (method === "GET") {
-      const url = new URL(config.apiUrl);
-      url.searchParams.set("action", action);
-      Object.entries(payload).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-          url.searchParams.set(key, typeof value === "string" ? value : JSON.stringify(value));
-        }
-      });
-      const response = await fetch(url.toString(), {
-        method: "GET",
-        credentials: "include",
-        redirect: "follow"
-      });
-      const data = await response.json();
-      if (!data.ok) throw new Error(data.error || "PaperTrail APIエラー");
-      return data.data;
-    }
+      function onReady(event) {
+        if (event.source !== frame.contentWindow) return;
+        if (event.data?.type !== "papertrail:bridge-ready") return;
+        clearTimeout(timer);
+        window.removeEventListener("message", onReady);
+        resolve();
+      }
 
-    // application/x-www-form-urlencoded avoids a CORS preflight with GAS.
-    const body = new URLSearchParams();
-    body.set("action", action);
-    body.set("payload", JSON.stringify(payload));
-    const response = await fetch(config.apiUrl, {
-      method: "POST",
-      credentials: "include",
-      redirect: "follow",
-      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-      body: body.toString()
+      window.addEventListener("message", onReady);
+      frame.onerror = () => reject(new Error("PaperTrail APIを読み込めませんでした。"));
+      document.body.appendChild(frame);
     });
-    const data = await response.json();
-    if (!data.ok) throw new Error(data.error || "PaperTrail APIエラー");
-    return data.data;
+
+    return readyPromise;
   }
 
-  function localStudent() {
-    let session = getSession();
-    if (!session) {
-      session = {
-        studentId: "local-user",
-        realName:"Local User",
-        nickname:"Local",
-        displayMode:"real_name",
-        displayName:"Local User",
-        domain: "local",
-        isAdmin: true,
-        mode: "local"
-      };
-      setSession(session);
-    }
-    return session;
+  async function call(method, args={}) {
+    await ensureBridge();
+
+    const token = window.PaperTrailAuth?.getToken?.() || "";
+    if (!token) throw new Error("大学Googleアカウントでログインしてください。");
+
+    const id = crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        pending.delete(id);
+        reject(new Error("PaperTrail APIがタイムアウトしました。"));
+      }, TIMEOUT_MS);
+
+      pending.set(id, { resolve, reject, timer });
+      frame.contentWindow.postMessage({
+        type: "papertrail:request",
+        id,
+        method,
+        args,
+        authToken: token
+      }, "*");
+    });
   }
 
-  function getLocalNotebooks() {
-    return readJson(LOCAL_NOTEBOOKS_KEY, []);
-  }
+  window.addEventListener("message", event => {
+    if (!frame || event.source !== frame.contentWindow) return;
+    const data = event.data || {};
+    if (data.type !== "papertrail:response" || !data.id) return;
 
-  function setLocalNotebooks(items) {
-    localStorage.setItem(LOCAL_NOTEBOOKS_KEY, JSON.stringify(items));
-  }
+    const request = pending.get(data.id);
+    if (!request) return;
 
-  function localSaveNotebook(payload) {
-    const items = getLocalNotebooks();
-    const now = new Date().toISOString();
-    const notebookId = payload.notebookId || `nb-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    const existingIndex = items.findIndex(item => item.notebookId === notebookId);
-    const next = {
-      notebookId,
-      studentId: localStudent().studentId,
-      realName:localStudent().realName||"",
-      nickname:localStudent().nickname||"",
-      displayName:localStudent().displayName||localStudent().realName||localStudent().nickname,
-      displayMode:localStudent().displayMode||"real_name",
-      doi: payload.doi || "",
-      title: payload.title || "Untitled",
-      readingLevel: payload.readingLevel || "quick",
-      schemaVersion: payload.schemaVersion || "2.5.0",
-      updatedAt: now,
-      createdAt: existingIndex >= 0 ? items[existingIndex].createdAt : now,
-      shared: Boolean(payload.shared),
-      notebookJson: payload.notebookJson || {}
-    };
-    if (existingIndex >= 0) items[existingIndex] = next;
-    else items.unshift(next);
-    setLocalNotebooks(items);
-    return next;
-  }
+    clearTimeout(request.timer);
+    pending.delete(data.id);
 
-  async function whoAmI() {
-    const config = getConfig();
-    if (config.mode === "local" || !config.apiUrl) return localStudent();
-    const user = await request("whoAmI");
-    setSession(user);
-    return user;
-  }
-
-  async function registerNickname(nickname) {
-    const config = getConfig();
-    if (config.mode === "local" || !config.apiUrl) {
-      const user = { ...localStudent(), nickname: String(nickname || "").trim() || "Local User" };
-      setSession(user);
-      return user;
-    }
-    const user = await request("registerNickname", { nickname }, "POST");
-    setSession(user);
-    return user;
-  }
-
-
-  async function saveProfile(profile) {
-    const config=getConfig();
-    if(config.mode==="local"||!config.apiUrl){
-      const current=localStudent();
-      const next={...current,...profile};
-      next.displayName=profile.displayMode==="nickname"?(profile.nickname||profile.realName):profile.realName;
-      setSession(next);
-      return next;
-    }
-    const user=await request("saveProfile",profile,"POST");
-    setSession(user);
-    return user;
-  }
-
-  async function saveNotebook(payload) {
-    const config = getConfig();
-    const enriched = {
-      ...payload,
-      schemaVersion: payload.schemaVersion || "2.5.0"
-    };
-    if (config.mode === "local" || !config.apiUrl) return localSaveNotebook(enriched);
-    return request("saveNotebook", enriched, "POST");
-  }
-
-  async function listMyNotebooks() {
-    const config = getConfig();
-    if (config.mode === "local" || !config.apiUrl) return getLocalNotebooks();
-    return request("listMyNotebooks");
-  }
-
-  async function listLabNotebooks() {
-    const config = getConfig();
-    if (config.mode === "local" || !config.apiUrl) {
-      return getLocalNotebooks().filter(item => item.shared);
-    }
-    return request("listLabNotebooks");
-  }
-
-  async function getNotebook(notebookId) {
-    const config = getConfig();
-    if (config.mode === "local" || !config.apiUrl) {
-      return getLocalNotebooks().find(item => item.notebookId === notebookId) || null;
-    }
-    return request("getNotebook", { notebookId });
-  }
-
-  async function saveTrail(payload) {
-    const config = getConfig();
-    if (config.mode === "local" || !config.apiUrl) {
-      const items = readJson(LOCAL_TRAILS_KEY, []);
-      const row = {
-        trailId: `trail-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        studentId: localStudent().studentId,
-        createdAt: new Date().toISOString(),
-        ...payload
-      };
-      items.unshift(row);
-      localStorage.setItem(LOCAL_TRAILS_KEY, JSON.stringify(items));
-      return row;
-    }
-    return request("saveTrail", payload, "POST");
-  }
-
-  async function getDashboard() {
-    const config = getConfig();
-    if (config.mode === "local" || !config.apiUrl) {
-      const items = getLocalNotebooks();
-      return {
-        students: [{
-          studentId: localStudent().studentId,
-          realName:localStudent().realName||"",
-      nickname:localStudent().nickname||"",
-      displayName:localStudent().displayName||localStudent().realName||localStudent().nickname,
-      displayMode:localStudent().displayMode||"real_name",
-          quickCount: items.filter(x => ["quick", "quick-complete"].includes(x.readingLevel)).length,
-          carefulCount: items.filter(x => x.readingLevel === "careful").length,
-          deepCount: items.filter(x => x.readingLevel === "deep").length,
-          lastUpdatedAt: items[0]?.updatedAt || ""
-        }],
-        recentNotebooks: items.slice(0, 10)
-      };
-    }
-    return request("getDashboard");
-  }
+    if (data.ok) request.resolve(data.data);
+    else request.reject(new Error(data.error || "PaperTrail APIエラー"));
+  });
 
   window.PaperTrailAPI = {
-    getConfig,
-    setConfig,
-    getSession,
-    setSession,
-    whoAmI,
-    registerNickname,
-    saveProfile,
-    saveNotebook,
-    listMyNotebooks,
-    listLabNotebooks,
-    getNotebook,
-    saveTrail,
-    getDashboard
+    whoAmI: () => call("whoAmI"),
+    saveProfile: profile => call("saveProfile", profile),
+    saveNotebook: payload => call("saveNotebook", payload),
+    listMyNotebooks: () => call("listMyNotebooks"),
+    listLabNotebooks: () => call("listLabNotebooks"),
+    getNotebook: notebookId => call("getNotebook", { notebookId }),
+    saveTrail: payload => call("saveTrail", payload),
+    getDashboard: () => call("getDashboard"),
+    openAlexWorkByDoi: doi => call("openAlexWorkByDoi", { doi }),
+    openAlexSearch: (query, year="") => call("openAlexSearch", { query, year })
   };
 })();
