@@ -53,6 +53,17 @@ function doGet(e) {
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
 
+  if(view==="app"){
+    const user=currentUser_();
+    const template=HtmlService.createTemplateFromFile("AppShell");
+    template.frontendUrl=paperTrailFrontendUrl_();
+    template.frontendOrigin=paperTrailFrontendOrigin_();
+    template.authToken=createPaperTrailAuthToken_(user);
+    return template.evaluate()
+      .setTitle("PaperTrail")
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+
   return HtmlService.createHtmlOutput(
     "<p>PaperTrailの入口URLからアクセスしてください。</p>"
   ).setTitle("PaperTrail");
@@ -687,8 +698,21 @@ function paperTrailFrontendOrigin_() {
   const origin=String(
     PropertiesService.getScriptProperties().getProperty("FRONTEND_ORIGIN")||""
   ).trim().replace(/\/$/,"");
-  if(!origin)throw new Error("FRONTEND_ORIGINが設定されていません。");
-  return origin;
+  const source=origin||paperTrailFrontendUrl_();
+  const match=source.match(/^https?:\/\/[^/]+/i);
+  if(!match)throw new Error("FRONTEND_ORIGINが正しくありません。");
+  return match[0].replace(/\/$/,"");
+}
+
+function paperTrailFrontendUrl_() {
+  const props=PropertiesService.getScriptProperties();
+  const url=String(
+    props.getProperty("FRONTEND_URL")
+    ||props.getProperty("FRONTEND_ORIGIN")
+    ||""
+  ).trim().replace(/\/$/,"");
+  if(!url)throw new Error("FRONTEND_URLまたはFRONTEND_ORIGINが設定されていません。");
+  return url;
 }
 
 function bridgeRequest(request) {

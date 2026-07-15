@@ -20,14 +20,46 @@
     return value;
   }
 
-  function ensureBridge() {
-    if (readyPromise) return readyPromise;
+  function createBridgeId() {
+    return crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  }
 
-    readyPromise = new Promise((resolve, reject) => {
-      let config;
-      try { config = cfg(); }
-      catch (error) { reject(error); return; }
+  function ensureParentBridge() {
+    bridgeId = createBridgeId();
 
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(new Error("PaperTrail APIへ接続できませんでした。"));
+      }, TIMEOUT_MS);
+
+      function onReady(event) {
+        if (event.source !== window.parent) return;
+        if (event.data?.type !== "papertrail:bridge-ready") return;
+        if (event.data?.bridgeId !== bridgeId) return;
+        bridgeWindow = event.source || window.parent;
+        clearTimeout(timer);
+        window.removeEventListener("message", onReady);
+        resolve();
+      }
+
+      function sayHello() {
+        window.parent.postMessage({
+          type: "papertrail:hello",
+          bridgeId
+        }, "*");
+      }
+
+      window.addEventListener("message", onReady);
+      sayHello();
+      setTimeout(sayHello, 500);
+      setTimeout(sayHello, 1500);
+    });
+  }
+
+  function ensureIframeBridge(config) {
+    return new Promise((resolve, reject) => {
       frame = document.createElement("iframe");
       frame.id = "papertrail-api-bridge";
       frame.hidden = true;
@@ -36,9 +68,7 @@
 
       const url = new URL(config.GAS_WEB_APP_URL);
       url.searchParams.set("view", "bridge");
-      bridgeId = crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      bridgeId = createBridgeId();
       url.searchParams.set("bridge", bridgeId);
       frame.src = url.toString();
 
@@ -59,6 +89,19 @@
       frame.onerror = () => reject(new Error("PaperTrail APIを読み込めませんでした。"));
       document.body.appendChild(frame);
     });
+  }
+
+  function ensureBridge() {
+    if (readyPromise) return readyPromise;
+
+    try {
+      const config = cfg();
+      readyPromise = window.parent && window.parent !== window
+        ? ensureParentBridge()
+        : ensureIframeBridge(config);
+    } catch (error) {
+      readyPromise = Promise.reject(error);
+    }
 
     return readyPromise;
   }
@@ -80,7 +123,14 @@
       }, TIMEOUT_MS);
 
       pending.set(id, { resolve, reject, timer });
-      (bridgeWindow || frame.contentWindow).postMessage({
+      const target = bridgeWindow || frame?.contentWindow;
+      if (!target) {
+        pending.delete(id);
+        clearTimeout(timer);
+        reject(new Error("PaperTrail APIへ接続できませんでした。"));
+        return;
+      }
+      target.postMessage({
         type: "papertrail:request",
         bridgeId,
         id,

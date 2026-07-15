@@ -48,6 +48,7 @@ OPENALEX_API_KEY
 
 ```text
 FRONTEND_ORIGIN = GitHub Pagesのオリジン
+FRONTEND_URL = GitHub PagesのPaperTrail URL
 AUTH_TOKEN_HOURS = 12
 ```
 
@@ -55,6 +56,7 @@ AUTH_TOKEN_HOURS = 12
 
 ```text
 FRONTEND_ORIGIN = https://gunji-lab.github.io
+FRONTEND_URL = https://gunji-lab.github.io/research_notebook/paper_trail
 AUTH_TOKEN_HOURS = 12
 ```
 
@@ -65,8 +67,10 @@ AUTH_TOKEN_HOURS = 12
 1. `gas/PaperTrailBackend.gs`の内容で現在のバックエンドを上書き
 2. GASにHTMLファイル`Bridge`を追加
 3. `gas/Bridge.html`の内容を貼り付け
-4. `setupPaperTrail`を実行
-5. 新しいバージョンとして再デプロイ
+4. GASにHTMLファイル`AppShell`を追加
+5. `gas/AppShell.html`の内容を貼り付け
+6. `setupPaperTrail`を実行
+7. 新しいバージョンとして再デプロイ
 
 ## 4. GASのデプロイ
 
@@ -84,10 +88,9 @@ ZIPのルート一式をGitHubへpushします。
 
 ## 6. 動作確認
 
-1. GitHub Pagesを開く
-2. 「大学アカウントでログイン」を押す
-3. GASで大学アカウントを確認
-4. GitHub Pagesへ自動で戻る
+1. GASのWebアプリURLに`?view=app`を付けて開く
+2. GASで大学アカウントを確認
+3. GAS画面内にPaperTrailが表示される
 5. 氏名と表示方法を保存
 6. DOI検索を試す
 7. Notebookを保存
@@ -95,7 +98,14 @@ ZIPのルート一式をGitHubへpushします。
 
 ## 学生に渡すURL
 
-GitHub PagesのURLだけです。
+保存まで使う場合は、GASのWebアプリURLに`?view=app`を付けたURLです。
+
+```text
+https://script.google.com/a/macros/toyo.jp/s/XXXX/exec?view=app
+```
+
+この入口はPhysics Trainerと同じ方式で、GAS画面の中にGitHub Pages版PaperTrailを表示し、
+保存リクエストは親のGASページが`google.script.run`で処理します。
 
 学生は以下を入力しません。
 
