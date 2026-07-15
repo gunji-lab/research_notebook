@@ -20,7 +20,11 @@ const state={
 
 function show(id){
   $$(".rn-page").forEach(p=>p.classList.toggle("active",p.id===id));
-  window.scrollTo({top:180,behavior:"smooth"});
+  const policy=$(".rn-policy");
+  const top=policy
+    ? policy.getBoundingClientRect().bottom+window.scrollY+12
+    : 180;
+  window.scrollTo({top,behavior:"smooth"});
 }
 $$("[data-go]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.go)));
 $$("[data-open]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.open)));
@@ -65,6 +69,7 @@ $("#translateAbstract").addEventListener("click",()=>{
 $("#finishQuick").addEventListener("click",()=>{
   state.level="quick-complete";
   $("#map-careful").classList.remove("locked");
+  $("#map-deep").classList.remove("locked");
   save();
   saveToPaperTrail({silent:true});
   show("page-quick-complete");
@@ -357,15 +362,21 @@ $("#saveMethods").addEventListener("click",()=>{markComplete("methods");save();s
 function markComplete(section){
   state.completed[section]=true;
   const el=$(`[data-status="${section}"]`);if(el){el.textContent="完了";el.classList.add("done")}
-  const count=Object.values(state.completed).filter(Boolean).length;
-  if(count>=3){$("#map-deep").classList.remove("locked");$("#startDeep").disabled=false}
+  $("#map-deep").classList.remove("locked");
 }
-$("#startDeep").addEventListener("click",()=>{
-  state.level="careful-complete";
+function openDeepReading(){
+  if(state.level==="quick"){
+    show("page-quick-basic");
+    return;
+  }
+  state.level="deep";
   save();
   saveToPaperTrail({silent:true});
-  show("page-careful-complete");
-});
+  $("#map-deep").classList.remove("locked");
+  show("deep-page");
+}
+$("#startDeep").addEventListener("click",openDeepReading);
+$("#map-deep").addEventListener("click",openDeepReading);
 $("#continueToDeep")?.addEventListener("click",()=>{
   state.level="deep";
   save();
