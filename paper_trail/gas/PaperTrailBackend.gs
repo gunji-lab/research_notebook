@@ -531,11 +531,12 @@ function serveAuth_(params) {
 
   if(!email||email.split("@")[1]!==allowedDomain){
     const selfUrl=ScriptApp.getService().getUrl();
+    const authUrl=selfUrl+"?view=auth&return="+encodeURIComponent(returnUrl);
+    const addSession="https://accounts.google.com/AddSession?hl=ja&continue="
+      +encodeURIComponent(authUrl);
     const chooser="https://accounts.google.com/AccountChooser?hd="
       +encodeURIComponent(allowedDomain)
-      +"&continue="+encodeURIComponent(
-        selfUrl+"?view=auth&return="+encodeURIComponent(returnUrl)
-      );
+      +"&continue="+encodeURIComponent(authUrl);
 
     return HtmlService.createHtmlOutput(
       '<!doctype html><html lang="ja"><meta charset="utf-8">'
@@ -548,10 +549,16 @@ function serveAuth_(params) {
       +'padding:28px;box-shadow:0 12px 32px #00000010">'
       +'<h1 style="margin-top:0">大学Googleアカウントでログイン</h1>'
       +'<p style="line-height:1.8">PaperTrailは <strong>@'+escapeHtml_(allowedDomain)
-      +'</strong> の大学アカウント専用です。</p>'
-      +'<a href="'+escapeHtml_(chooser)+'" style="display:block;padding:14px 18px;'
+      +'</strong> の大学アカウント専用です。個人Googleアカウントだけでログインしている場合は、先に大学アカウントを追加してください。</p>'
+      +'<div style="display:grid;gap:12px;margin:22px 0">'
+      +'<a href="'+escapeHtml_(addSession)+'" style="display:block;padding:14px 18px;'
       +'border-radius:12px;background:#a96524;color:#fff;text-decoration:none;'
-      +'font-weight:900;text-align:center">大学アカウントを選ぶ</a>'
+      +'font-weight:900;text-align:center">大学アカウントを追加してログイン</a>'
+      +'<a href="'+escapeHtml_(chooser)+'" style="display:block;padding:14px 18px;'
+      +'border-radius:12px;background:#fff4e8;color:#8a4d19;text-decoration:none;'
+      +'font-weight:900;text-align:center">追加済みの大学アカウントを選ぶ</a>'
+      +'</div>'
+      +'<p style="line-height:1.8;color:#666">うまく切り替わらない場合は、シークレット／プライベートウィンドウで開き、大学アカウントだけでログインしてください。</p>'
       +'</section></main></body></html>'
     ).setTitle("PaperTrail Login");
   }
