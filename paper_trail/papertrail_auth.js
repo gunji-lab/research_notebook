@@ -48,6 +48,31 @@
     return true;
   }
 
+  function decodeTokenPayload(token) {
+    try {
+      const body = String(token || "").split(".")[0];
+      if (!body) return null;
+      const padded = body.replace(/-/g, "+").replace(/_/g, "/")
+        + "=".repeat((4 - body.length % 4) % 4);
+      return JSON.parse(decodeURIComponent(escape(atob(padded))));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function profileFromToken(token) {
+    const payload = decodeTokenPayload(token);
+    if (!payload?.sid) return null;
+    return {
+      studentId: payload.sid,
+      realName: "",
+      nickname: "",
+      displayName: payload.sid,
+      displayMode: "real_name",
+      isPendingApi: true
+    };
+  }
+
   function loginUrl() {
     const cfg = config();
     return cfg.GAS_WEB_APP_URL
@@ -194,7 +219,10 @@
       }
       return profile;
     } catch (error) {
-      setToken("");
+      const authErrorPattern = /ログイン情報|有効期限|許可されていない/;
+      if (authErrorPattern.test(error.message || "")) {
+        setToken("");
+      }
       throw error;
     }
   }
@@ -210,12 +238,24 @@
       return;
     }
 
+    const provisionalProfile = profileFromToken(getToken());
+    if (provisionalProfile) {
+      renderProfile(provisionalProfile);
+      $("#profileStatus").textContent = "ログイン済みです。保存機能の接続を確認中…";
+    }
     $("#loginStatus").textContent = "本人確認中…";
     try {
       await refreshUser();
       $("#loginStatus").textContent = "";
+      $("#profileStatus").textContent = "";
     } catch (error) {
-      $("#loginStatus").textContent = error.message;
+      const hasToken = Boolean(getToken());
+      $("#accountDisplayName").textContent = hasToken ? "ログイン済み" : "ログイン";
+      $("#accountStudentId").textContent = provisionalProfile?.studentId || "大学Googleアカウント";
+      $("#loginStatus").textContent = hasToken
+        ? "ログインは完了しています。保存機能の接続だけ確認できていません。"
+        : error.message;
+      $("#profileStatus").textContent = error.message;
       $("#accountDialog")?.showModal();
     }
   }
