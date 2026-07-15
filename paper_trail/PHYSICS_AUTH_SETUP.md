@@ -42,6 +42,8 @@ ADMIN_EMAILS
 OPENALEX_API_KEY
 ```
 
+`OPENALEX_API_KEY` は、OpenAlex検索をGAS経由にする場合だけ任意で使います。通常の画面上のOpenAlex検索はブラウザから直接行うため、初期設定では不要です。
+
 追加する項目：
 
 ```text

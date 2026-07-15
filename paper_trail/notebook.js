@@ -504,16 +504,25 @@ document.body.addEventListener("input",()=>{
    OpenAlex integration v2.3.0
    ========================================================= */
 async function openAlexFetch(path,params={}){
-  if(path.startsWith("/works/")){
-    const raw=decodeURIComponent(path.slice("/works/".length));
-    const doi=raw.replace(/^doi:/i,"");
-    return window.PaperTrailAPI.openAlexWorkByDoi(doi);
+  const url=new URL("https://api.openalex.org"+path);
+  Object.entries(params||{}).forEach(([key,value])=>{
+    if(value!==undefined&&value!==null&&String(value)!=="")url.searchParams.set(key,String(value));
+  });
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),12000);
+  try{
+    const response=await fetch(url.toString(),{
+      headers:{Accept:"application/json"},
+      signal:controller.signal
+    });
+    if(!response.ok)throw new Error(`OpenAlex error ${response.status}`);
+    return await response.json();
+  }catch(error){
+    if(error.name==="AbortError")throw new Error("OpenAlexの応答が遅いため中断しました。もう一度試してください。");
+    throw error;
+  }finally{
+    clearTimeout(timer);
   }
-  if(path==="/works"){
-    const match=String(params.filter||"").match(/publication_year:(\d{4})/);
-    return window.PaperTrailAPI.openAlexSearch(params.search||"",match?match[1]:"");
-  }
-  throw new Error("未対応のOpenAlexリクエストです。");
 }
 
 function normalizeDoi(value=""){
