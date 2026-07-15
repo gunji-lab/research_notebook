@@ -112,3 +112,21 @@ GitHub PagesのURLだけです。
 - API呼び出しごとにGASが署名と期限を検証
 - メールアドレス全体はSpreadsheetへ保存しない
 - 戻り先URLはFRONTEND_ORIGIN配下だけ許可
+
+
+# v2.8.5 Reading preparation refinement
+
+The Quick stage should be psychologically lightweight.
+
+Preparation is organized into three small cards:
+
+1. STEP1 / 論文の基本情報
+2. STEP2 / なぜこの論文を読む？
+3. STEP3 / この論文をどの検索ツール・経路で見つけた？
+
+The amount of information is unchanged. Only the presentation changes so that students feel they are completing a sequence of small steps rather than facing one large form.
+
+Future UI:
+- each card becomes an independent page
+- progress indicator (●○○ → ●●○ → ●●●)
+- transition screen: 「🌱 準備完了！まずはAbstractを読んでみましょう。」

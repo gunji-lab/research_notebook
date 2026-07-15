@@ -1,4 +1,4 @@
-const KEY="papertrail_notebook_v283";
+const KEY="papertrail_notebook_v284";
 const NOTEBOOK_ID_KEY="papertrail_current_notebook_id";
 let serverSaveTimer=null;
 let currentNotebookId=localStorage.getItem(NOTEBOOK_ID_KEY)||"";
@@ -26,17 +26,21 @@ $$("[data-go]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.go)));
 $$("[data-open]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.open)));
 
 function addSummary(value=""){
+  const list=$("#abstractSummaryList");
+  if(!list)return;
   const row=document.createElement("div");
   row.className="summary-row";
   row.innerHTML='<input class="abstract-summary" placeholder="自分の言葉で要約"><button type="button" class="icon-button">×</button>';
   $(".abstract-summary",row).value=value;
   $("button",row).addEventListener("click",()=>row.remove());
-  $("#abstractSummaryList").appendChild(row);
+  list.appendChild(row);
 }
 addSummary();addSummary();addSummary();
-$("#addAbstractSummary").addEventListener("click",()=>addSummary());
+$("#addAbstractSummary")?.addEventListener("click",()=>addSummary());
 
-function addVocabularyRow(japanese="",english="",note=""){
+function addStageVocabularyRow(stage,japanese="",english="",note=""){
+  const list=$("#"+stage+"VocabularyList");
+  if(!list)return;
   const row=document.createElement("div");
   row.className="vocabulary-row";
   row.innerHTML=`
@@ -45,10 +49,12 @@ function addVocabularyRow(japanese="",english="",note=""){
     <input class="vocab-note" placeholder="短いメモ（任意）" value="${escapeHtml(note)}">
     <button type="button" class="icon-button" aria-label="削除">×</button>`;
   $("button",row).addEventListener("click",()=>{row.remove();save()});
-  $("#vocabularyList")?.appendChild(row);
+  list.appendChild(row);
 }
-$("#addVocabulary")?.addEventListener("click",()=>addVocabularyRow());
-if($("#vocabularyList"))addVocabularyRow();
+$("#addCarefulVocabulary")?.addEventListener("click",()=>addStageVocabularyRow("careful"));
+$("#addDeepVocabulary")?.addEventListener("click",()=>addStageVocabularyRow("deep"));
+addStageVocabularyRow("careful");
+addStageVocabularyRow("deep");
 
 
 $("#translateAbstract").addEventListener("click",()=>{
@@ -154,6 +160,12 @@ $("#startDiscussionReading").addEventListener("click",()=>{syncOverview("discuss
 function startParagraphs(section){
   state.paragraphSection=section;state.paragraphIndex=0;loadParagraph();show("paragraph-reader");
 }
+function scrollToParagraphReader(){
+  const page=$("#paragraph-reader");
+  if(!page)return;
+  const top=page.getBoundingClientRect().top+window.scrollY+70;
+  window.scrollTo({top,behavior:"smooth"});
+}
 function loadParagraph(){
   const section=state.paragraphSection,p=state.paragraphs[section][state.paragraphIndex];
   $("#paragraphSectionLabel").textContent=`じっくり読む · ${section==="background"?"背景":"考察"}`;
@@ -163,17 +175,30 @@ function loadParagraph(){
   const roles=section==="background"?bgRoles:discRoles;
   $("#paragraphRole").innerHTML=roles.map(r=>`<option>${r}</option>`).join("");
   $("#paragraphRole").value=p.role;
-  $("#prevParagraph").disabled=state.paragraphIndex===0;
+  $("#prevParagraph").textContent="← ひとつ戻る";
   $("#saveParagraphNext").textContent=state.paragraphIndex===state.paragraphs[section].length-1?"保存して全体をまとめる":"保存して次へ →";
 }
 function storeParagraph(){
   const p=state.paragraphs[state.paragraphSection][state.paragraphIndex];
   p.title=$("#paragraphTitle").value;p.role=$("#paragraphRole").value;p.summary=$("#paragraphSummary").value;p.note=$("#paragraphNote").value;
 }
-$("#prevParagraph").addEventListener("click",()=>{storeParagraph();state.paragraphIndex--;loadParagraph()});
+$("#prevParagraph").addEventListener("click",()=>{
+  storeParagraph();
+  if(state.paragraphIndex>0){
+    state.paragraphIndex--;
+    loadParagraph();
+    scrollToParagraphReader();
+  }else{
+    show(state.paragraphSection==="background"?"background-overview":"discussion-overview");
+  }
+});
 $("#saveParagraphNext").addEventListener("click",()=>{
   storeParagraph();
-  if(state.paragraphIndex<state.paragraphs[state.paragraphSection].length-1){state.paragraphIndex++;loadParagraph()}
+  if(state.paragraphIndex<state.paragraphs[state.paragraphSection].length-1){
+    state.paragraphIndex++;
+    loadParagraph();
+    scrollToParagraphReader();
+  }
   else{loadSectionSummary();show("section-summary-page")}
 });
 function loadSectionSummary(){
@@ -335,13 +360,33 @@ function markComplete(section){
   const count=Object.values(state.completed).filter(Boolean).length;
   if(count>=3){$("#map-deep").classList.remove("locked");$("#startDeep").disabled=false}
 }
-$("#startDeep").addEventListener("click",()=>show("deep-page"));
-$("#saveDeep").addEventListener("click",()=>{state.level="deep";save();saveToPaperTrail({silent:false})});
+$("#startDeep").addEventListener("click",()=>{
+  state.level="careful-complete";
+  save();
+  saveToPaperTrail({silent:true});
+  show("page-careful-complete");
+});
+$("#continueToDeep")?.addEventListener("click",()=>{
+  state.level="deep";
+  save();
+  show("deep-page");
+});
+$("#saveDeep").addEventListener("click",()=>{
+  state.level="deep-complete";
+  save();
+  saveToPaperTrail({silent:true});
+  show("page-deep-complete");
+});
+$("#finishDeepNotebook")?.addEventListener("click",async()=>{
+  state.level="deep-complete";
+  save();
+  await saveToPaperTrail({silent:false});
+});
 
 function collect(){
   const v=id=>$("#"+id)?.value||"";
   return {
-    schema_version:"2.8.3",
+    schema_version:"2.8.4",
     saved_at:new Date().toISOString(),
     state,
     paper:{
@@ -358,23 +403,50 @@ function collect(){
         background:v("abstractBackground"),gap:v("abstractGap"),objective:v("abstractObjective"),
         result:v("abstractResult"),interpretation:v("abstractInterpretation")
       },
-      summaries:$$(".abstract-summary").map(x=>x.value).filter(Boolean),
-      subject:v("quickSubject"),purpose:v("quickPurpose"),
-      vocabulary:$$(".vocabulary-row").map(row=>({
-        japanese:$(".vocab-ja",row)?.value||"",
-        english:$(".vocab-en",row)?.value||"",
-        note:$(".vocab-note",row)?.value||""
-      })).filter(item=>item.japanese||item.english||item.note),
-      question:v("quickQuestion"),
-      harvest:$$('input[name="harvest"]:checked').map(x=>x.value),
-      recommendation:{
-        level:$('input[name="recommendLab"]:checked')?.value||"",
-        reason:v("recommendReason")
+      summaries:$$(".abstract-summary").map(x=>x.value).filter(Boolean)
+    },
+    reflections:{
+      careful:{
+        vocabulary:$$("#carefulVocabularyList .vocabulary-row").map(row=>({
+          japanese:$(".vocab-ja",row)?.value||"",
+          english:$(".vocab-en",row)?.value||"",
+          note:$(".vocab-note",row)?.value||""
+        })).filter(item=>item.japanese||item.english||item.note),
+        question:v("carefulQuestion"),
+        harvest:$$('input[name="carefulHarvest"]:checked').map(x=>x.value),
+        recommendation:{
+          level:$('input[name="carefulRecommendLab"]:checked')?.value||"",
+          reason:v("carefulRecommendReason")
+        }
+      },
+      deep:{
+        vocabulary:$$("#deepVocabularyList .vocabulary-row").map(row=>({
+          japanese:$(".vocab-ja",row)?.value||"",
+          english:$(".vocab-en",row)?.value||"",
+          note:$(".vocab-note",row)?.value||""
+        })).filter(item=>item.japanese||item.english||item.note),
+        question:v("deepQuestion"),
+        harvest:$$('input[name="deepHarvest"]:checked').map(x=>x.value),
+        recommendation:{
+          level:$('input[name="deepRecommendLab"]:checked')?.value||"",
+          reason:v("deepRecommendReason")
+        }
       }
     },
     methods:{subject:v("methodSubject"),sampleSize:v("sampleSize"),design:v("studyDesign"),measurements:v("measurements"),
       analyses:v("analyses"),reference:v("methodReference"),question:v("methodQuestion")},
-    deep:{analysis:v("deepAnalysis"),citations:v("deepCitations"),limitations:v("limitations"),nextStudy:v("nextStudy"),relation:v("relation")}
+    deep:{
+      focus:v("deepFocus"),
+      thinking:v("deepThinking"),
+      questions:v("deepQuestions"),
+      nextStep:v("deepNextStep"),
+      connection:v("deepConnection"),
+      analysis:v("deepAnalysis"),
+      citations:v("deepCitations"),
+      limitations:v("limitations"),
+      nextStudy:v("nextStudy"),
+      relation:v("relation")
+    }
   };
 }
 function notebookPayload(){

@@ -967,8 +967,8 @@ input,textarea,select{background:#fff !important}
 /* =========================================================
    v2.0.0 — Research Notebook Full Rewrite
    ========================================================= */
-.rn-main{max-width:1040px;margin:0 auto;padding:28px 24px 72px}
-.rn-hero{text-align:center;padding:40px 18px 26px}
+.rn-main{max-width:1040px;margin:0 auto;padding:34px 28px 84px}
+.rn-hero{text-align:center;padding:52px 18px 34px}
 .rn-hero h2{font-size:clamp(2rem,4.2vw,3.25rem);margin-bottom:12px}
 .rn-hero p{color:var(--muted);line-height:1.8}
 .reading-map{display:flex;align-items:center;gap:12px;padding:16px 18px;box-shadow:none;margin-bottom:16px}
@@ -978,15 +978,23 @@ input,textarea,select{background:#fff !important}
 .reading-map-item small{color:var(--muted)}
 .reading-map-item.locked{opacity:.38}
 .reading-map-line{height:1px;background:var(--line);flex:1}
-.rn-policy{padding:18px 22px;box-shadow:none;border-left:4px solid var(--orange);margin-bottom:16px}
+.rn-policy{padding:20px 24px;box-shadow:none;border-left:4px solid var(--orange);margin-bottom:26px}
 .rn-policy p{margin:6px 0 0;color:var(--muted)}
 .rn-page{display:none}
 .rn-page.active{display:block}
-.rn-page-head{text-align:center;padding:34px 18px 22px}
+.rn-page-head{text-align:center;padding:42px 18px 30px}
 .rn-page-head h2{font-size:clamp(2rem,4vw,3rem);margin-bottom:10px}
 .rn-page-head p{color:var(--muted);line-height:1.8}
-.rn-block{padding:28px;margin-bottom:16px;box-shadow:none;position:relative}
+.rn-block{padding:36px;margin-bottom:24px;box-shadow:none;position:relative}
 .rn-block-no{position:absolute;right:22px;top:18px;font-size:2.2rem;font-weight:900;color:#ece6dd}
+.helper-copy{margin:0 0 16px;color:var(--muted);line-height:1.7}
+.first-step-grid{grid-template-columns:minmax(0,1fr)}
+.optional-details{margin-top:20px;border-top:1px solid var(--line);padding-top:16px}
+.optional-details summary{cursor:pointer;color:var(--orange-deep);font-weight:850;list-style:none}
+.optional-details summary::-webkit-details-marker{display:none}
+.optional-details summary::before{content:"+";display:inline-grid;place-items:center;width:24px;height:24px;margin-right:8px;border:1px solid #ead7b3;border-radius:50%;background:#fffaf2;color:var(--orange-deep);font-size:.9rem}
+.optional-details[open] summary::before{content:"-"}
+.optional-details .form-grid,.optional-details .pill-fieldset{margin-top:16px}
 .pill-fieldset{border:0;padding:0;margin:22px 0 0;display:flex;gap:8px;flex-wrap:wrap}
 .pill-fieldset legend{font-weight:800;margin-bottom:10px;width:100%}
 .pill-fieldset label{flex-direction:row;align-items:center;padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:#fff}
@@ -1006,6 +1014,10 @@ input,textarea,select{background:#fff !important}
 .completion h2{font-size:2.4rem;margin-bottom:12px}
 .completion p{max-width:650px;margin:0 auto 24px;color:var(--muted);line-height:1.8}
 .completion-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.preparation-complete-card{padding:34px 28px;text-align:center;box-shadow:none;border-color:#ead7b3;background:#fffdf8}
+.preparation-complete-card h3{font-size:1.7rem;margin:4px 0 10px}
+.preparation-complete-card p{max-width:620px;margin:0 auto;color:var(--muted);line-height:1.8}
+.preparation-complete-card .rn-actions{justify-content:center}
 .section-map{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
 .section-card{text-align:left;padding:24px;box-shadow:none}
 .section-card:hover{border-color:#dfb66a}
@@ -1463,6 +1475,13 @@ input,textarea,select{background:#fff !important}
 }
 .papertrail-message strong{font-size:1.08rem}
 .papertrail-message span{color:var(--muted);font-style:italic}
+.completion-message{
+  max-width:560px;
+  border-left:0;
+  border-top:3px solid var(--orange);
+  text-align:center;
+  justify-items:center;
+}
 @media(max-width:760px){
   .guided-note-head{display:block}
   .guided-note-head p{margin-top:8px}
@@ -1470,4 +1489,28 @@ input,textarea,select{background:#fff !important}
   .guided-note-grid label:last-child{grid-column:auto}
   .vocabulary-row{grid-template-columns:1fr 1fr auto}
   .vocabulary-row .vocab-note{grid-column:1/3}
+}
+
+
+/* v2.8.4 — stage completion refinement */
+.stage-completion-card{
+  max-width:1040px;
+}
+.stage-reflection{
+  margin-top:22px;
+  text-align:left;
+}
+.stage-reflection .guided-note-head{
+  max-width:860px;
+  margin:0 auto 16px;
+}
+.completion-message{
+  margin-top:8px;
+  margin-bottom:16px;
+}
+.button-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
 }
