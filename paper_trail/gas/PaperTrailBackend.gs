@@ -47,6 +47,7 @@ function doGet(e) {
   if(view==="bridge"){
     const template=HtmlService.createTemplateFromFile("Bridge");
     template.frontendOrigin=paperTrailFrontendOrigin_();
+    template.bridgeId=String(params.bridge||"");
     return template.evaluate()
       .setTitle("PaperTrail API Bridge")
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);

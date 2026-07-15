@@ -7,15 +7,25 @@
 <body>
 <script>
 (() => {
-  const ALLOWED_ORIGIN = <?!= JSON.stringify(frontendOrigin) ?>;
+  const ALLOWED_ORIGIN = new URL(<?!= JSON.stringify(frontendOrigin) ?>).origin;
+  const BRIDGE_ID = <?!= JSON.stringify(bridgeId) ?>;
 
   function reply(target, origin, payload) {
-    target.postMessage(payload, origin);
+    target.postMessage(Object.assign({bridgeId: BRIDGE_ID}, payload), origin);
+  }
+
+  function announceReady() {
+    const payload = {type:"papertrail:bridge-ready", bridgeId: BRIDGE_ID};
+    try { parent.postMessage(payload, "*"); } catch (_) {}
+    try {
+      if (top !== parent) top.postMessage(payload, ALLOWED_ORIGIN);
+    } catch (_) {}
   }
 
   window.addEventListener("message", event => {
     if (event.origin !== ALLOWED_ORIGIN) return;
     const request = event.data || {};
+    if (request.bridgeId !== BRIDGE_ID) return;
     if (request.type !== "papertrail:request" || !request.id) return;
 
     google.script.run
@@ -43,7 +53,9 @@
       });
   });
 
-  parent.postMessage({type:"papertrail:bridge-ready"}, "*");
+  announceReady();
+  setTimeout(announceReady, 500);
+  setTimeout(announceReady, 1500);
 })();
 </script>
 </body>
