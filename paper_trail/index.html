@@ -300,31 +300,69 @@
       </form>
     </section>
 
-    <section id="view-mine" class="view"><div id="my-list" class="grid"></div>
-      <div class="section-head">
+    <section id="view-mine" class="view">
+      <section class="my-notebook-home card">
         <div>
           <span class="eyebrow">MY NOTEBOOK</span>
-          <h2>自分のカード</h2>
-          <p>自分が読んだ論文と、そこから生まれた問いの足跡。</p>
+          <h2>今日は、どの論文を開いてみますか？</h2>
+          <p id="my-last-note">前回の続きからでも、新しい一本からでも大丈夫です。</p>
         </div>
-        <div class="head-actions">
-          <button class="secondary" id="export-json">JSONを書き出す</button>
-          <label class="secondary file-label">JSONを読み込む
-            <input type="file" id="import-json" accept=".json,application/json" hidden />
-          </label>
+        <div class="my-notebook-actions">
+          <button type="button" class="primary" id="continue-latest">続きを読む</button>
+          <a class="secondary button-link" href="notebook.html">新しい論文を読む</a>
         </div>
-      </div>
-      <div class="filters card">
-        <input id="my-search" placeholder="タイトル・タグ・要約から検索" />
-        <select id="my-role-filter">
-          <option value="">すべての役割</option>
-          <option value="未解明点">未解明点だけ</option>
-          <option value="研究目的">研究目的だけ</option>
-          <option value="限界">限界だけ</option>
-          <option value="先行研究">先行研究だけ</option>
-        </select>
-      </div>
-      <div id="my-cards" class="cards-grid"></div>
+      </section>
+
+      <section class="my-notebook-section">
+        <div class="section-head compact">
+          <div>
+            <span class="eyebrow">RECENT</span>
+            <h2>最近読んだ論文</h2>
+            <p>前回の続きに戻るための入口です。</p>
+          </div>
+        </div>
+        <div id="my-list" class="my-notebook-board"></div>
+      </section>
+
+      <section class="my-notebook-section">
+        <div class="section-head compact">
+          <div>
+            <span class="eyebrow">BOOKSHELF</span>
+            <h2>あなたの本棚</h2>
+            <p>タイトル、DOI、著者、キーワード、「へぇ！」や「なんで？」から探せます。</p>
+          </div>
+          <div class="head-actions">
+            <button class="secondary" id="export-json">JSONを書き出す</button>
+            <label class="secondary file-label">JSONを読み込む
+              <input type="file" id="import-json" accept=".json,application/json" hidden />
+            </label>
+          </div>
+        </div>
+        <div class="filters card">
+          <input id="my-search" placeholder="タイトル・DOI・著者・キーワード・へぇ！・なんで？" />
+          <select id="my-role-filter">
+            <option value="">すべての記録</option>
+            <option value="未解明点">「なんで？」につながる記録</option>
+            <option value="研究目的">研究目的</option>
+            <option value="限界">限界</option>
+            <option value="先行研究">先行研究</option>
+          </select>
+        </div>
+        <div id="my-cards" class="my-notebook-board"></div>
+      </section>
+
+      <section class="my-notebook-reflections">
+        <article class="card">
+          <span class="eyebrow">HEH</span>
+          <h3>最近見つけた「へぇ！」</h3>
+          <div id="my-heh-list" class="mini-note-list"></div>
+        </article>
+        <article class="card">
+          <span class="eyebrow">WHY</span>
+          <h3>最近見つけた「なんで？」</h3>
+          <div id="my-why-list" class="mini-note-list"></div>
+        </article>
+      </section>
     </section>
 
     <section id="view-lab" class="view"><div id="lab-list" class="grid"></div>

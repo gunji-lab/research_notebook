@@ -170,22 +170,48 @@ $("#clear-form").addEventListener("click",()=>{
   if(confirm("入力内容をクリアしますか？")) resetForm();
 });
 
+function formatDate(value){
+  if(!value)return "日付なし";
+  return String(value).slice(0,10);
+}
+function cardStage(card){
+  return card.readingMode || card.readingLevel || "さくっと";
+}
+function cardHeh(card){
+  return card.interpretation || card.results || card.purpose || "";
+}
+function cardWhy(card){
+  return card.question || card.gap || "";
+}
 function cardHtml(card, {lab=false}={}){
   const tags = (card.tags||[]).map(t=>`<span class="tag">#${escapeHtml(t)}</span>`).join("");
-  const snippet = card.gap || card.purpose || card.results || "まだ要約はありません";
+  const snippet = cardHeh(card) || cardWhy(card) || card.wantToKnow || "まだ短いメモはありません";
   const badge = card.teacherRecommended ? `<span class="teacher-badge">🟠 教員おすすめ</span>` : "";
   const reactions = card.reactions || {like:0,curious:0,useful:0};
+  const meta = [card.journal, card.authors, card.year].filter(Boolean).join(" · ");
   return `<article class="paper-card card" data-id="${escapeHtml(card.id)}">
     ${badge}
-    <div class="meta">${escapeHtml(card.owner||"自分")}・${escapeHtml(card.year||"年不明")}・${escapeHtml(card.readingMode||"")}</div>
+    <div class="paper-card-top">
+      <span class="level-badge">${escapeHtml(cardStage(card))}</span>
+      <small>${escapeHtml(formatDate(card.updatedAt||card.createdAt))}</small>
+    </div>
     <h3>${escapeHtml(card.title)}</h3>
+    <p class="meta">${escapeHtml(meta || card.doi || "自分のNotebook")}</p>
     <div class="tags">${tags}</div>
     <div class="snippet">${escapeHtml(snippet)}</div>
+    <div class="notebook-markers">
+      <span>🌱 へぇ！ ${escapeHtml(cardHeh(card) || "未記入")}</span>
+      <span>🤔 なんで？ ${escapeHtml(cardWhy(card) || "未記入")}</span>
+    </div>
     <div class="card-actions">
-      <button class="reaction" data-reaction="like">👍 いいね！ ${reactions.like||0}</button>
-      <button class="reaction" data-reaction="curious">📚 気になる！ ${reactions.curious||0}</button>
-      <button class="reaction" data-reaction="useful">💡 参考になった ${reactions.useful||0}</button>
-      ${lab ? "" : `<button class="reaction edit-card">編集</button><button class="reaction delete-card">削除</button>`}
+      ${lab ? `
+        <button class="reaction" data-reaction="like">👍 いいね！ ${reactions.like||0}</button>
+        <button class="reaction" data-reaction="curious">📚 気になる！ ${reactions.curious||0}</button>
+        <button class="reaction" data-reaction="useful">💡 参考になった ${reactions.useful||0}</button>
+      ` : `
+        <button class="primary small edit-card">続きを読む</button>
+        <button class="secondary small delete-card">削除</button>
+      `}
     </div>
   </article>`;
 }
@@ -214,12 +240,57 @@ function searchMatches(card, q){
   const hay = JSON.stringify(card).toLowerCase();
   return hay.includes(q.toLowerCase());
 }
+function renderMiniNotes(target, cards, picker, emptyText){
+  if(!target)return;
+  const notes=cards
+    .map(card=>({title:card.title,text:picker(card),id:card.id}))
+    .filter(item=>item.text)
+    .slice(0,4);
+  target.innerHTML=notes.length?notes.map(item=>`
+    <button type="button" class="mini-note" data-mini-id="${escapeHtml(item.id)}">
+      <strong>${escapeHtml(item.title)}</strong>
+      <span>${escapeHtml(item.text)}</span>
+    </button>
+  `).join(""):`<p class="empty-mini">${escapeHtml(emptyText)}</p>`;
+  $$("[data-mini-id]",target).forEach(button=>button.addEventListener("click",()=>editCard(button.dataset.miniId)));
+}
+function renderMyNotebookHome(cards){
+  const latest=cards[0];
+  const lastNote=$("#my-last-note");
+  const continueButton=$("#continue-latest");
+  if(latest){
+    const stage=cardStage(latest);
+    if(lastNote)lastNote.textContent=`前回は「${latest.title}」の${stage}まで読みました。`;
+    if(continueButton){
+      continueButton.disabled=false;
+      continueButton.textContent="続きを読む";
+      continueButton.onclick=()=>editCard(latest.id);
+    }
+  }else{
+    if(lastNote)lastNote.textContent="まだNotebookはありません。気になる論文を一本、さくっと読んでみましょう。";
+    if(continueButton){
+      continueButton.disabled=false;
+      continueButton.textContent="論文を登録する";
+      continueButton.onclick=()=>{location.href="notebook.html"};
+    }
+  }
+  renderMiniNotes($("#my-heh-list"),cards,cardHeh,"まだ「へぇ！」はありません。");
+  renderMiniNotes($("#my-why-list"),cards,cardWhy,"まだ「なんで？」はありません。");
+}
 function renderMyCards(){
   const q=$("#my-search").value.trim();
   const role=$("#my-role-filter").value;
-  const cards=getCards().filter(c=>searchMatches(c,q) && roleMatches(c,role));
+  const allCards=getCards();
+  renderMyNotebookHome(allCards);
+  const recentBox=$("#my-list");
+  if(recentBox){
+    const recent=allCards.slice(0,3);
+    recentBox.innerHTML=recent.length?recent.map(c=>cardHtml(c)).join(""):`<div class="empty-state"><p>まだNotebookはありません。気になる論文を一本、さくっと読んでみましょう。</p><a class="primary button-link" href="notebook.html">論文を登録する</a></div>`;
+    bindCardActions(recentBox,false);
+  }
+  const cards=allCards.filter(c=>searchMatches(c,q) && roleMatches(c,role));
   const box=$("#my-cards");
-  box.innerHTML = cards.length ? cards.map(c=>cardHtml(c)).join("") : `<div class="empty-state"><p>該当するカードはありません。</p></div>`;
+  box.innerHTML = cards.length ? cards.map(c=>cardHtml(c)).join("") : `<div class="empty-state"><p>該当するNotebookはありません。</p></div>`;
   bindCardActions(box,false);
 }
 function renderLabCards(){
@@ -496,23 +567,38 @@ function readingLevelLabel(level){
 async function renderBackendMyNotebooks(){
   const target=document.querySelector("#my-list");
   if(!target)return;
+  if(!window.PAPERTRAIL_CONFIG?.GAS_WEB_APP_URL || window.PAPERTRAIL_CONFIG.GAS_WEB_APP_URL.includes("PASTE_"))return;
   target.innerHTML='<div class="empty">PaperTrailから読み込み中…</div>';
   try{
     const items=await window.PaperTrailAPI.listMyNotebooks();
+    const latest=items[0];
+    const lastNote=$("#my-last-note");
+    const continueButton=$("#continue-latest");
+    if(latest){
+      if(lastNote)lastNote.textContent=`前回は「${latest.title||"Untitled"}」の${readingLevelLabel(latest.readingLevel)}まで読みました。`;
+      if(continueButton){
+        continueButton.textContent="続きを読む";
+        continueButton.onclick=()=>{location.href=`notebook.html?notebook=${encodeURIComponent(latest.notebookId)}`};
+      }
+    }
     target.innerHTML=items.length?items.map(item=>`
-      <article class="paper-card">
+      <article class="paper-card card">
         <div class="paper-card-top">
           <span class="level-badge">${readingLevelLabel(item.readingLevel)}</span>
           <small>${escapeHtml((item.updatedAt||"").slice(0,10))}</small>
         </div>
         <h3>${escapeHtml(item.title||"Untitled")}</h3>
-        <p>${escapeHtml(item.doi||"DOI未登録")}</p>
+        <p class="meta">${escapeHtml([item.journal,item.year].filter(Boolean).join(" · ") || item.doi || "DOI未登録")}</p>
+        <div class="notebook-markers">
+          <span>🌱 へぇ！ ${escapeHtml(item.shortSummary||item.usefulPoint||"未記入")}</span>
+          <span>🤔 なんで？ ${escapeHtml(item.question||"未記入")}</span>
+        </div>
         <div class="paper-card-actions">
           <a class="secondary button-link" href="notebook.html?notebook=${encodeURIComponent(item.notebookId)}">続きを読む</a>
         </div>
       </article>`).join(""):'<div class="empty">まだ保存されたNotebookはありません。</div>';
   }catch(error){
-    target.innerHTML=`<div class="empty">${escapeHtml(error.message)}</div>`;
+    if(!getCards().length)target.innerHTML=`<div class="empty">${escapeHtml(error.message)}</div>`;
   }
 }
 

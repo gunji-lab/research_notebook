@@ -156,6 +156,46 @@ textarea{resize:vertical;line-height:1.65}
 .reaction{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px;font-size:.82rem}
 .teacher-badge{display:inline-flex;align-items:center;gap:5px;background:#fff1d6;color:#a85b00;border-radius:999px;padding:5px 9px;font-size:.76rem;font-weight:900}
 .filters{display:grid;grid-template-columns:1fr 220px;gap:12px;padding:14px;margin-bottom:16px}
+.my-notebook-home{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:22px;
+  align-items:center;
+  padding:30px;
+  margin-bottom:28px;
+  box-shadow:none;
+  background:#fffdf8;
+}
+.my-notebook-home h2{font-size:clamp(1.9rem,3.2vw,2.7rem);margin:0 0 8px}
+.my-notebook-home p{margin:0;color:var(--muted);line-height:1.75}
+.my-notebook-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.my-notebook-section{margin-bottom:28px}
+.section-head.compact{margin-bottom:14px}
+.my-notebook-board{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.my-notebook-reflections{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+.my-notebook-reflections .card{padding:22px;box-shadow:none}
+.mini-note-list{display:grid;gap:10px;margin-top:12px}
+.mini-note{
+  text-align:left;
+  border:1px solid var(--line);
+  background:#fffdf8;
+  border-radius:14px;
+  padding:13px 14px;
+  display:grid;
+  gap:5px;
+}
+.mini-note strong{font-size:.92rem}
+.mini-note span,.empty-mini{color:var(--muted);font-size:.88rem;line-height:1.6}
+.notebook-markers{display:grid;gap:7px;margin-top:auto}
+.notebook-markers span{
+  display:block;
+  padding:9px 10px;
+  border-radius:12px;
+  background:#fff9ea;
+  color:#6f5940;
+  font-size:.84rem;
+  line-height:1.45;
+}
 .notice{padding:18px;margin-bottom:16px;background:#fff7dd}
 .notice p{margin:6px 0 0;color:var(--muted)}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
@@ -192,7 +232,8 @@ textarea{resize:vertical;line-height:1.65}
   main{padding-left:14px;padding-right:14px}
   .tabs{padding-left:14px;padding-right:14px}
   .hero{padding:24px}
-  .grid-3,.cards-grid,.dashboard-grid,.form-grid,.filters{grid-template-columns:1fr}
+  .grid-3,.cards-grid,.dashboard-grid,.form-grid,.filters,.my-notebook-home,.my-notebook-board,.my-notebook-reflections{grid-template-columns:1fr}
+  .my-notebook-actions{justify-content:flex-start}
   .step-card{grid-template-columns:1fr;padding:18px}
   .step-badge{width:38px;height:38px}
   .save-panel{align-items:stretch;flex-direction:column}
