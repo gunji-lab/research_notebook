@@ -706,13 +706,15 @@ function paperTrailFrontendOrigin_() {
 
 function paperTrailFrontendUrl_() {
   const props=PropertiesService.getScriptProperties();
+  const explicitUrl=String(props.getProperty("FRONTEND_URL")||"").trim().replace(/\/$/,"");
+  if(explicitUrl)return explicitUrl;
+
   const url=String(
-    props.getProperty("FRONTEND_URL")
-    ||props.getProperty("FRONTEND_ORIGIN")
+    props.getProperty("FRONTEND_ORIGIN")
     ||""
   ).trim().replace(/\/$/,"");
   if(!url)throw new Error("FRONTEND_URLまたはFRONTEND_ORIGINが設定されていません。");
-  return url;
+  return url+"/research_notebook/paper_trail";
 }
 
 function bridgeRequest(request) {

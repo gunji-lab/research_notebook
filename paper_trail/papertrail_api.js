@@ -142,7 +142,7 @@
   }
 
   window.addEventListener("message", event => {
-    if (!frame) return;
+    if (!frame && !bridgeWindow) return;
     if (bridgeWindow && event.source !== bridgeWindow) return;
     const data = event.data || {};
     if (data.bridgeId !== bridgeId) return;
