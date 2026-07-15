@@ -31,7 +31,9 @@ OPENALEX_API_KEY = OpenAlexのAPIキー（OpenAlexも同じGASへ統合する場
 
 ## 4. 初期セットアップ
 
-GASエディタから `ensureSheets_` を一度実行し、権限を承認します。
+GASエディタから `setupPaperTrail` を一度実行し、権限を承認します。
+
+`ensureSheets_` は内部用のヘルパー関数なので、GASエディタの実行関数リストには表示されない場合があります。
 
 次の5シートが作成されます。
 
