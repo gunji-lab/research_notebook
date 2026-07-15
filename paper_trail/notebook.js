@@ -1,4 +1,4 @@
-const KEY="papertrail_notebook_v281";
+const KEY="papertrail_notebook_v283";
 const NOTEBOOK_ID_KEY="papertrail_current_notebook_id";
 let serverSaveTimer=null;
 let currentNotebookId=localStorage.getItem(NOTEBOOK_ID_KEY)||"";
@@ -35,6 +35,21 @@ function addSummary(value=""){
 }
 addSummary();addSummary();addSummary();
 $("#addAbstractSummary").addEventListener("click",()=>addSummary());
+
+function addVocabularyRow(japanese="",english="",note=""){
+  const row=document.createElement("div");
+  row.className="vocabulary-row";
+  row.innerHTML=`
+    <input class="vocab-ja" placeholder="日本語" value="${escapeHtml(japanese)}">
+    <input class="vocab-en" placeholder="English" value="${escapeHtml(english)}">
+    <input class="vocab-note" placeholder="短いメモ（任意）" value="${escapeHtml(note)}">
+    <button type="button" class="icon-button" aria-label="削除">×</button>`;
+  $("button",row).addEventListener("click",()=>{row.remove();save()});
+  $("#vocabularyList")?.appendChild(row);
+}
+$("#addVocabulary")?.addEventListener("click",()=>addVocabularyRow());
+if($("#vocabularyList"))addVocabularyRow();
+
 
 $("#translateAbstract").addEventListener("click",()=>{
   $("#abstractTranslation").placeholder="ここに翻訳結果を表示します。翻訳文は保存されません。";
@@ -326,13 +341,37 @@ $("#saveDeep").addEventListener("click",()=>{state.level="deep";save();saveToPap
 function collect(){
   const v=id=>$("#"+id)?.value||"";
   return {
-    schema_version:"2.8.1",
+    schema_version:"2.8.3",
     saved_at:new Date().toISOString(),
     state,
-    paper:{doi:v("doi"),title:v("title"),authors:v("authors"),journal:v("journal"),year:v("year"),tags:v("tags"),
+    paper:{
+      doi:v("doi"),title:v("title"),authors:v("authors"),journal:v("journal"),year:v("year"),
+      keywordsJa:v("keywordsJa"),keywordsEn:v("keywordsEn"),
+      discoverySource:v("discoverySource"),introducedBy:v("introducedBy"),searchKeywords:v("searchKeywords"),
       pdfStatus:$('input[name="pdfStatus"]:checked')?.value||"",
-      reasons:$$('input[name="reasonType"]:checked').map(x=>x.value),reason:v("reason")},
-    quick:{summaries:$$(".abstract-summary").map(x=>x.value).filter(Boolean),subject:v("quickSubject"),purpose:v("quickPurpose")},
+      reasons:$$('input[name="reasonType"]:checked').map(x=>x.value),
+      usePurposes:$$('input[name="usePurpose"]:checked').map(x=>x.value),
+      reason:v("reason")
+    },
+    quick:{
+      abstractMap:{
+        background:v("abstractBackground"),gap:v("abstractGap"),objective:v("abstractObjective"),
+        result:v("abstractResult"),interpretation:v("abstractInterpretation")
+      },
+      summaries:$$(".abstract-summary").map(x=>x.value).filter(Boolean),
+      subject:v("quickSubject"),purpose:v("quickPurpose"),
+      vocabulary:$$(".vocabulary-row").map(row=>({
+        japanese:$(".vocab-ja",row)?.value||"",
+        english:$(".vocab-en",row)?.value||"",
+        note:$(".vocab-note",row)?.value||""
+      })).filter(item=>item.japanese||item.english||item.note),
+      question:v("quickQuestion"),
+      harvest:$$('input[name="harvest"]:checked').map(x=>x.value),
+      recommendation:{
+        level:$('input[name="recommendLab"]:checked')?.value||"",
+        reason:v("recommendReason")
+      }
+    },
     methods:{subject:v("methodSubject"),sampleSize:v("sampleSize"),design:v("studyDesign"),measurements:v("measurements"),
       analyses:v("analyses"),reference:v("methodReference"),question:v("methodQuestion")},
     deep:{analysis:v("deepAnalysis"),citations:v("deepCitations"),limitations:v("limitations"),nextStudy:v("nextStudy"),relation:v("relation")}
@@ -484,8 +523,8 @@ function fillMainPaper(work){
   $("#authors").value=paper.authors;
   $("#journal").value=paper.journal;
   $("#year").value=paper.year;
-  if(paper.primaryTopic&&!$("#tags").value){
-    $("#tags").value=paper.primaryTopic;
+  if(paper.primaryTopic&&!$("#keywordsEn").value){
+    $("#keywordsEn").value=paper.primaryTopic;
   }
   if(paper.abstract&&!$("#abstractOriginal").value){
     $("#abstractOriginal").value=paper.abstract;

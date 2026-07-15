@@ -90,12 +90,41 @@
         <label>出版年
           <input id="year" inputmode="numeric" placeholder="2026">
         </label>
-        <label>タグ
-          <input id="tags" placeholder="GLMM, PCA, 水鳥">
+        <label>キーワード（日本語）
+          <input id="keywordsJa" placeholder="例：水鳥、尾羽、比較解剖">
+        </label>
+        <label>Keywords（English）
+          <input id="keywordsEn" placeholder="e.g. waterbirds, tail feather, comparative anatomy">
         </label>
       </div>
 
       <div id="openAlexPaperPreview" class="openalex-paper-preview" hidden></div>
+
+      <div class="note-support-box">
+        <h4>この論文をどこで見つけた？</h4>
+        <p>検索の経路を残すと、あとで「良い論文の探し方」が見えてきます。</p>
+        <div class="form-grid">
+          <label>検索エンジン・見つけた場所
+            <select id="discoverySource">
+              <option value="">選択してください</option>
+              <option>Google Scholar</option>
+              <option>PubMed</option>
+              <option>OpenAlex</option>
+              <option>Web of Science</option>
+              <option>Scopus</option>
+              <option>別の論文の引用文献</option>
+              <option>授業・ゼミ・学会</option>
+              <option>その他</option>
+            </select>
+          </label>
+          <label>紹介してくれた人
+            <input id="introducedBy" placeholder="例：郡司先生、○○先輩（いなければ空欄）">
+          </label>
+          <label class="wide">検索に使ったキーワード
+            <textarea id="searchKeywords" rows="2" placeholder="例：bird tail biomechanics / waterbird feather stiffness"></textarea>
+          </label>
+        </div>
+      </div>
 
       <fieldset class="pill-fieldset">
         <legend>PDFは入手できた？</legend>
@@ -117,8 +146,17 @@
         <label><input type="checkbox" name="reasonType" value="方法・解析が参考になりそう"> 方法・解析が参考になりそう</label>
       </div>
       <label>具体的な理由
-        <textarea id="reason" rows="4"></textarea>
+        <textarea id="reason" rows="3" placeholder="例：自分の卒研と近い対象を扱っていたから"></textarea>
       </label>
+      <fieldset class="pill-fieldset compact-fieldset">
+        <legend>この論文のどこを参考にしたい？</legend>
+        <label><input type="checkbox" name="usePurpose" value="背景を学ぶ"> 背景を学ぶ</label>
+        <label><input type="checkbox" name="usePurpose" value="方法を学ぶ"> 方法を学ぶ</label>
+        <label><input type="checkbox" name="usePurpose" value="結果を知る"> 結果を知る</label>
+        <label><input type="checkbox" name="usePurpose" value="図表を参考にする"> 図表を参考にする</label>
+        <label><input type="checkbox" name="usePurpose" value="解析を参考にする"> 解析を参考にする</label>
+        <label><input type="checkbox" name="usePurpose" value="書き方を学ぶ"> 書き方を学ぶ</label>
+      </fieldset>
     </section>
 
     <section class="card rn-block">
@@ -165,8 +203,35 @@
       </div>
       <button type="button" class="secondary" id="translateAbstract">読むサポート（デモ）</button>
 
+      <div class="guided-note-panel">
+        <div class="guided-note-head">
+          <div>
+            <span class="eyebrow">MEMO SUPPORT</span>
+            <h3>要旨を5つの視点で整理してみよう</h3>
+          </div>
+          <p>全部埋めなくても大丈夫。読み取れたところだけ、自分の言葉で短く書きます。</p>
+        </div>
+        <div class="guided-note-grid">
+          <label><strong>背景</strong><small>この研究分野では、何が分かっている？</small>
+            <textarea id="abstractBackground" rows="2"></textarea>
+          </label>
+          <label><strong>課題</strong><small>まだ何が分かっていない？</small>
+            <textarea id="abstractGap" rows="2"></textarea>
+          </label>
+          <label><strong>目的</strong><small>この研究では、何を明らかにしたい？</small>
+            <textarea id="abstractObjective" rows="2"></textarea>
+          </label>
+          <label><strong>結果</strong><small>一番大事な結果は？</small>
+            <textarea id="abstractResult" rows="2"></textarea>
+          </label>
+          <label><strong>考察・意味</strong><small>その結果から、何が言えそう？</small>
+            <textarea id="abstractInterpretation" rows="2"></textarea>
+          </label>
+        </div>
+      </div>
+
       <div class="summary-panel">
-        <h3>自分の言葉で1〜3点にまとめよう</h3>
+        <h3>最後に、自分の言葉で1〜3点にまとめよう</h3>
         <div id="abstractSummaryList"></div>
         <button type="button" class="secondary small" id="addAbstractSummary">＋ 要約を追加</button>
       </div>
@@ -178,6 +243,32 @@
         <label>この研究は何を知ろうとしている？
           <textarea id="quickPurpose" rows="3"></textarea>
         </label>
+      </div>
+
+      <div class="learning-note-grid">
+        <section class="note-support-box">
+          <h3>気になった言葉・新しく知った言葉</h3>
+          <p>日本語と英語を並べておくと、次の文献検索にも使えます。</p>
+          <div id="vocabularyList"></div>
+          <button type="button" class="secondary small" id="addVocabulary">＋ 言葉を追加</button>
+        </section>
+
+        <section class="note-support-box curiosity-box">
+          <h3>今日見つけた「あれ？」</h3>
+          <p>立派な研究課題でなくて大丈夫。小さな引っかかりを一つ残してみよう。</p>
+          <label>一番気になったことは？
+            <textarea id="quickQuestion" rows="3" placeholder="例：なぜこの種だけ値が大きかったのだろう？"></textarea>
+          </label>
+          <details class="prompt-hints">
+            <summary>書き出せないときのヒント</summary>
+            <ul>
+              <li>結果で意外だったことは？</li>
+              <li>著者に一つ質問するとしたら？</li>
+              <li>別の動物・条件でも同じだろうか？</li>
+              <li>自分なら次に何を調べたい？</li>
+            </ul>
+          </details>
+        </section>
       </div>
     </section>
 
@@ -194,6 +285,36 @@
       <span class="eyebrow">QUICK READING COMPLETE</span>
       <h2>さくっと読了！</h2>
       <p>この論文の概要がつかめました。Abstractしか読めない論文は、ここで完了にして大丈夫です。</p>
+
+      <div class="today-harvest">
+        <h3>今日の収穫</h3>
+        <p>できたことを一つでも選んでみよう。</p>
+        <div class="choice-row">
+          <label><input type="checkbox" name="harvest" value="新しい言葉を知った"> 新しい言葉を知った</label>
+          <label><input type="checkbox" name="harvest" value="論文の概要をつかめた"> 論文の概要をつかめた</label>
+          <label><input type="checkbox" name="harvest" value="図表を見てみたくなった"> 図表を見てみたくなった</label>
+          <label><input type="checkbox" name="harvest" value="新しい疑問が生まれた"> 新しい疑問が生まれた</label>
+          <label><input type="checkbox" name="harvest" value="自分の研究に使えそう"> 自分の研究に使えそう</label>
+        </div>
+      </div>
+
+      <div class="recommend-lite">
+        <h3>この論文を研究室のみんなにおすすめする？</h3>
+        <div class="choice-row">
+          <label><input type="radio" name="recommendLab" value="おすすめ"> おすすめする</label>
+          <label><input type="radio" name="recommendLab" value="一部おすすめ"> 一部だけおすすめ</label>
+          <label><input type="radio" name="recommendLab" value="まだ決めない"> まだ決めない</label>
+        </div>
+        <label>おすすめポイント
+          <textarea id="recommendReason" rows="2" placeholder="例：Figure 2が分かりやすい／GLMMのまとめ方が参考になる"></textarea>
+        </label>
+      </div>
+
+      <blockquote class="papertrail-message">
+        <strong>小さな「気になる」が、研究のはじまり。</strong>
+        <span>Small steps, big discoveries.</span>
+      </blockquote>
+
       <div class="completion-actions">
         <button type="button" class="secondary" data-go="page-quick-abstract">内容を見直す</button>
         <button type="button" class="primary" id="startCareful">この論文をじっくり読む →</button>

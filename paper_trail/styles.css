@@ -1374,3 +1374,100 @@ input,textarea,select{background:#fff !important}
 .display-mode-fieldset input{width:auto}
 .notebook-signature{max-width:1040px;margin:24px auto 0;padding:18px 24px;display:flex;justify-content:flex-end;gap:8px;box-shadow:none}
 .notebook-signature span{color:var(--muted)}
+
+
+/* =========================================================
+   v2.8.3 — Guided note-taking support
+   ========================================================= */
+.note-support-box{
+  margin-top:18px;
+  padding:18px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fcfcfb;
+}
+.note-support-box h3,.note-support-box h4{margin:0 0 6px}
+.note-support-box>p{margin:0 0 14px;color:var(--muted);line-height:1.65}
+.form-grid .wide{grid-column:1/-1}
+.compact-fieldset{margin-top:14px}
+.guided-note-panel{
+  margin-top:20px;
+  padding:20px;
+  border:1px solid #dedbd4;
+  border-radius:18px;
+  background:#faf9f6;
+}
+.guided-note-head{
+  display:flex;
+  justify-content:space-between;
+  gap:24px;
+  align-items:flex-start;
+  margin-bottom:16px;
+}
+.guided-note-head h3{margin:3px 0}
+.guided-note-head p{max-width:410px;margin:0;color:var(--muted);line-height:1.65}
+.guided-note-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.guided-note-grid label{
+  padding:14px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+}
+.guided-note-grid label:last-child{grid-column:1/-1}
+.guided-note-grid strong{display:block;margin-bottom:3px}
+.guided-note-grid small{display:block;color:var(--muted);line-height:1.5;min-height:3em}
+.learning-note-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:18px;
+}
+.vocabulary-row{
+  display:grid;
+  grid-template-columns:1fr 1fr 1.35fr auto;
+  gap:8px;
+  margin-bottom:8px;
+  align-items:center;
+}
+.prompt-hints{
+  margin-top:10px;
+  border-top:1px solid var(--line);
+  padding-top:10px;
+}
+.prompt-hints summary{cursor:pointer;font-weight:800;color:var(--muted)}
+.prompt-hints ul{margin-bottom:0;line-height:1.8;color:var(--muted)}
+.today-harvest,.recommend-lite{
+  margin:18px auto 0;
+  max-width:760px;
+  padding:18px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fff;
+  text-align:left;
+}
+.today-harvest h3,.recommend-lite h3{margin:0 0 6px}
+.today-harvest>p{margin:0 0 12px;color:var(--muted)}
+.papertrail-message{
+  display:grid;
+  gap:5px;
+  max-width:760px;
+  margin:18px auto;
+  padding:18px 22px;
+  border-left:4px solid var(--orange);
+  background:#fffaf2;
+  text-align:left;
+}
+.papertrail-message strong{font-size:1.08rem}
+.papertrail-message span{color:var(--muted);font-style:italic}
+@media(max-width:760px){
+  .guided-note-head{display:block}
+  .guided-note-head p{margin-top:8px}
+  .guided-note-grid,.learning-note-grid{grid-template-columns:1fr}
+  .guided-note-grid label:last-child{grid-column:auto}
+  .vocabulary-row{grid-template-columns:1fr 1fr auto}
+  .vocabulary-row .vocab-note{grid-column:1/3}
+}

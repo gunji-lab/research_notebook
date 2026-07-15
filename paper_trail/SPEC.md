@@ -358,3 +358,161 @@ GitHubからGASへの通信は、GAS HTML Serviceで配信するBridge iframeを
 Physics Trainerと同じリダイレクト型認証を使用する。GASはSession.getActiveUser()で大学アカウントを確認し、学籍番号・期限・nonceを含むトークンへHMAC-SHA256署名を付ける。
 
 GitHub Pagesは`#auth=`からトークンを受け取りlocalStorageに保存する。以後のAPI呼び出しにトークンを添付し、GASは署名・期限・ドメインを毎回検証する。
+
+
+## Core message (v2.8.2)
+
+> 「論文を読む」から、「研究がおもしろい」へ。
+
+PaperTrailは論文管理ソフトではなく、研究者の思考を育てるノート。
+
+### 教育方針
+- 小さな「気になる」が、研究のはじまり。
+- 正しい感想ではなく、自分の「あれ？」を残す。
+- 論文を読む目的は、次の問いを見つけること。
+
+### 背景・考察の最後
+「今日見つけた『あれ？』を一つ残してみよう。」
+
+補助質問
+- 一番気になったことは？
+- 著者に質問するとしたら？
+- 次に読んでみたい引用文献は？
+- 自分なら次に何を調べる？
+
+### 引用文献
+自由記述ではなく、
+1. 本文中で気になった引用を書く
+2. 引用文献リストから情報を書く
+3. なぜ読んでみたいかを書く
+
+### 将来機能
+- 後輩におすすめ
+- 学年別おすすめ
+- 研究室おすすめ論文
+
+
+# v2.8.3 — Guided Note-taking & First Launch
+
+## 1. First launch scope
+
+The first public launch prioritizes four experiences:
+
+1. **論文を読んでみる**
+2. **My Notebook**
+3. **Lab Notebook**
+4. **Dashboard**
+
+Research Starter is important, but it is not required for the first launch. Its role is to help students generate and refine research questions. The first launch instead focuses on helping students begin reading papers, leave useful notes, revisit their own learning, and learn from the laboratory community.
+
+## 2. Why note-taking support is necessary
+
+Some students already create thoughtful Notion records containing background, problem, purpose, results, discussion, keywords, and questions. Other students do not yet know:
+
+- what to record,
+- how short a note may be,
+- how to separate a paper's claim from their own thought,
+- how to turn unfamiliar words into future search terms,
+- how to leave a small question without producing a polished research proposal.
+
+PaperTrail must support both groups. It should not make capable students write less, and it should not leave beginning students in front of a blank textarea.
+
+## 3. Two layers of a Notebook
+
+Each Notebook keeps two complementary layers.
+
+### Layer A: What the paper says
+
+- bibliographic information,
+- discovery source,
+- search keywords,
+- background,
+- unresolved issue,
+- objective,
+- results,
+- interpretation,
+- paragraph and figure notes.
+
+### Layer B: What changed in the reader
+
+- unfamiliar or interesting words,
+- what felt surprising,
+- a small question,
+- why the paper may be useful,
+- today's harvest,
+- whether and why it should be recommended.
+
+PaperTrail becomes distinctive when these two layers sit side by side.
+
+## 4. Abstract note scaffold
+
+The Abstract page offers five compact prompts:
+
+1. 背景 — What was already known?
+2. 課題 — What remained unknown?
+3. 目的 — What did the study aim to clarify?
+4. 結果 — What was the main result?
+5. 考察・意味 — What does the result suggest?
+
+Students may leave fields blank. The scaffold is assistance, not a completeness test. After using it, students write a final one-to-three-point summary in their own words.
+
+## 5. Discovery trail
+
+Record:
+
+- search engine or discovery route,
+- person who introduced the paper,
+- search keywords used.
+
+This is not administrative metadata. It helps students learn where useful papers come from and allows a future Dashboard to show productive search routes.
+
+## 6. Bilingual keyword notebook
+
+Japanese and English keywords are stored separately.
+
+- Japanese supports comprehension and recollection.
+- English supports the next literature search.
+- Newly learned vocabulary may include a short personal explanation.
+
+The system should eventually allow a keyword to become a new OpenAlex search without retyping.
+
+## 7. Curiosity prompt
+
+The core prompt is:
+
+> **今日見つけた「あれ？」を一つ残してみよう。**
+
+Supporting prompts:
+
+- What was most surprising?
+- What would you ask the authors?
+- Would the result be the same in another species or condition?
+- What would you investigate next?
+
+A small question is enough. PaperTrail does not require a polished research question at this stage.
+
+## 8. Today's harvest
+
+The completion experience does not score students. It asks them to notice one step forward:
+
+- learned a new word,
+- understood the outline,
+- became interested in a figure,
+- generated a question,
+- found a connection to their own research.
+
+The completion message is:
+
+> **小さな「気になる」が、研究のはじまり。**  
+> *Small steps, big discoveries.*
+
+## 9. Lightweight recommendation
+
+The first-launch version records:
+
+- recommend,
+- recommend only a part,
+- not decided yet,
+- a short reason.
+
+Later versions may support recommendations to the whole laboratory or a specific person. The system should emphasize useful context such as “Figure 2 is clear” or “good example of GLMM presentation,” rather than popularity rankings.
