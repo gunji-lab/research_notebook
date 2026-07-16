@@ -5,6 +5,7 @@ const $ = (sel, root=document) => root.querySelector(sel);
 const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
 
 let editingId = null;
+let backendMyCards = null;
 
 function uid(){
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -15,6 +16,9 @@ function getCards(){
 }
 function setCards(cards){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+}
+function activeMyCards(){
+  return Array.isArray(backendMyCards) ? backendMyCards : getCards();
 }
 function getLabCards(){
   try {
@@ -178,10 +182,10 @@ function cardStage(card){
   return card.readingMode || card.readingLevel || "さくっと";
 }
 function cardHeh(card){
-  return card.interpretation || card.results || card.purpose || "";
+  return card.backendHeh || card.interpretation || card.results || card.purpose || "";
 }
 function cardWhy(card){
-  return card.question || card.gap || "";
+  return card.backendWhy || card.question || card.gap || "";
 }
 function cardHtml(card, {lab=false}={}){
   const tags = (card.tags||[]).map(t=>`<span class="tag">#${escapeHtml(t)}</span>`).join("");
@@ -210,7 +214,7 @@ function cardHtml(card, {lab=false}={}){
         <button class="reaction" data-reaction="useful">💡 参考になった ${reactions.useful||0}</button>
       ` : `
         <button class="primary small edit-card">続きを読む</button>
-        <button class="secondary small delete-card">削除</button>
+        ${card.backend ? "" : '<button class="secondary small delete-card">削除</button>'}
       `}
     </div>
   </article>`;
@@ -280,7 +284,7 @@ function renderMyNotebookHome(cards){
 function renderMyCards(){
   const q=$("#my-search").value.trim();
   const role=$("#my-role-filter").value;
-  const allCards=getCards();
+  const allCards=activeMyCards();
   renderMyNotebookHome(allCards);
   const recentBox=$("#my-list");
   if(recentBox){
@@ -328,6 +332,11 @@ function bindCardActions(root,lab){
   });
 }
 function editCard(id){
+  const backendCard=Array.isArray(backendMyCards) ? backendMyCards.find(c=>c.id===id) : null;
+  if(backendCard){
+    location.href=`notebook.html?notebook=${encodeURIComponent(backendCard.notebookId||backendCard.id)}`;
+    return;
+  }
   const card=getCards().find(c=>c.id===id);
   if(!card) return;
   resetForm();
@@ -498,7 +507,7 @@ function setHomeGreeting(){
 function renderHomeLobby(){
   setHomeGreeting();
 
-  const cards = getCards();
+  const cards = activeMyCards();
   const continueBox = document.querySelector("#continue-card");
   if(continueBox){
     if(cards.length){
@@ -564,6 +573,54 @@ function readingLevelLabel(level){
   return "🌱 さくっと";
 }
 
+function notebookItemToCard(item){
+  const json=item.notebookJson||{};
+  const paper=json.paper||{};
+  const quick=json.quick||{};
+  const abstractMap=quick.abstractMap||{};
+  const reflections=json.reflections||{};
+  const careful=reflections.careful||{};
+  const deepReflection=reflections.deep||{};
+  const deep=json.deep||{};
+  const heh=quick.summaries?.[0]
+    ||abstractMap.result
+    ||abstractMap.interpretation
+    ||deep.thinking
+    ||"";
+  const why=abstractMap.gap
+    ||careful.question
+    ||deepReflection.question
+    ||deep.questions
+    ||"";
+
+  return {
+    id:item.notebookId,
+    notebookId:item.notebookId,
+    backend:true,
+    createdAt:item.createdAt,
+    updatedAt:item.updatedAt,
+    owner:"自分",
+    doi:item.doi||paper.doi||"",
+    title:item.title||paper.title||"Untitled",
+    authors:paper.authors||"",
+    journal:paper.journal||"",
+    year:paper.year||"",
+    tags:[paper.keywordsJa,paper.keywordsEn].filter(Boolean),
+    readingMode:readingLevelLabel(item.readingLevel),
+    readingLevel:item.readingLevel,
+    wantToKnow:paper.reason||"",
+    purpose:abstractMap.objective||"",
+    results:abstractMap.result||"",
+    interpretation:abstractMap.interpretation||"",
+    gap:abstractMap.gap||"",
+    relation:deep.connection||"",
+    question:why,
+    backendHeh:heh,
+    backendWhy:why,
+    reactions:{like:0,curious:0,useful:0}
+  };
+}
+
 async function renderBackendMyNotebooks(){
   const target=document.querySelector("#my-list");
   if(!target)return;
@@ -571,6 +628,9 @@ async function renderBackendMyNotebooks(){
   target.innerHTML='<div class="empty">PaperTrailから読み込み中…</div>';
   try{
     const items=await window.PaperTrailAPI.listMyNotebooks();
+    backendMyCards=items.map(notebookItemToCard);
+    renderMyCards();
+    renderHomeLobby();
     const latest=items[0];
     const lastNote=$("#my-last-note");
     const continueButton=$("#continue-latest");

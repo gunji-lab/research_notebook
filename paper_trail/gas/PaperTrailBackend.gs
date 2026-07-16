@@ -238,7 +238,7 @@ function listMyNotebooks_(user) {
   return sheetData_(sheet_(PT_SHEETS.NOTEBOOKS))
     .filter(row => row.student_id === user.studentId)
     .sort(byUpdatedDesc_)
-    .map(row => publicNotebook_(row, false));
+    .map(row => publicNotebook_(row, true));
 }
 
 function listLabNotebooks_(user) {
