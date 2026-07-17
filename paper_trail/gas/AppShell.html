@@ -2,8 +2,12 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
   <title>PaperTrail</title>
+
   <style>
     html,
     body {
@@ -21,18 +25,39 @@
     }
   </style>
 </head>
+
 <body>
-  <iframe id="papertrailApp" title="PaperTrail"></iframe>
+  <iframe
+    id="papertrailApp"
+    title="PaperTrail"
+  ></iframe>
+
   <script>
   (() => {
-    const FRONTEND_URL = <?!= JSON.stringify(frontendUrl) ?>;
-    const FRONTEND_ORIGIN = <?!= JSON.stringify(frontendOrigin) ?>;
-    const AUTH_TOKEN = <?!= JSON.stringify(authToken) ?>;
-    const ROUTE = <?!= JSON.stringify(route || "") ?>;
-    const frame = document.getElementById("papertrailApp");
+    const FRONTEND_URL =
+      <?!= JSON.stringify(frontendUrl) ?>;
+
+    const FRONTEND_ORIGIN =
+      new URL(FRONTEND_URL).origin;
+
+    const AUTH_TOKEN =
+      <?!= JSON.stringify(authToken) ?>;
+
+    const ROUTE =
+      <?!= JSON.stringify(route || "") ?>;
+
+    const frame =
+      document.getElementById("papertrailApp");
+
+    console.log("[PaperTrail AppShell] initialized", {
+      frontendUrl: FRONTEND_URL,
+      frontendOrigin: FRONTEND_ORIGIN,
+      route: ROUTE
+    });
 
     function routedFrontendUrl() {
       const url = new URL(FRONTEND_URL);
+
       const pageRoutes = {
         home: "index.html",
         mine: "my_notebook.html",
@@ -40,83 +65,179 @@
         dashboard: "dashboard.html",
         new: "notebook.html"
       };
+
       const page = pageRoutes[ROUTE] || "";
-      if (!page) return { url, consumeRouteInHash: Boolean(ROUTE) };
+
+      if (!page) {
+        return {
+          url,
+          consumeRouteInHash: Boolean(ROUTE)
+        };
+      }
+
       url.hash = "";
       url.search = "";
-      const basePath = url.pathname.endsWith("/")
-        ? url.pathname
-        : /\.[^/]+$/.test(url.pathname)
-          ? url.pathname.replace(/\/[^/]*$/, "/")
-          : url.pathname + "/";
+
+      const basePath =
+        url.pathname.endsWith("/")
+          ? url.pathname
+          : /\.[^/]+$/.test(url.pathname)
+            ? url.pathname.replace(/\/[^/]*$/, "/")
+            : url.pathname + "/";
+
       url.pathname = basePath + page;
-      return { url, consumeRouteInHash: false };
+
+      return {
+        url,
+        consumeRouteInHash: false
+      };
     }
 
     function appUrlWithToken() {
       const routed = routedFrontendUrl();
       const url = routed.url;
-      if (!url.pathname.endsWith("/") && !/\.[^/]+$/.test(url.pathname)) {
+
+      if (
+        !url.pathname.endsWith("/") &&
+        !/\.[^/]+$/.test(url.pathname)
+      ) {
         url.pathname += "/";
       }
-      url.hash = "auth=" + encodeURIComponent(AUTH_TOKEN)
-        + (routed.consumeRouteInHash ? "&route=" + encodeURIComponent(ROUTE) : "");
+
+      url.hash =
+        "auth=" +
+        encodeURIComponent(AUTH_TOKEN) +
+        (
+          routed.consumeRouteInHash
+            ? "&route=" + encodeURIComponent(ROUTE)
+            : ""
+        );
+
       return url.toString();
     }
 
     function postToApp(payload) {
       if (!frame.contentWindow) return;
-      frame.contentWindow.postMessage(payload, "*");
+
+      frame.contentWindow.postMessage(
+        payload,
+        FRONTEND_ORIGIN
+      );
     }
 
     function announceReady(bridgeId) {
+      console.log(
+        "[PaperTrail AppShell] announcing ready",
+        bridgeId
+      );
+
       postToApp({
         type: "papertrail:bridge-ready",
-        bridgeId: bridgeId || "papertrail-gas-shell"
+        bridgeId:
+          bridgeId || "papertrail-gas-shell"
       });
     }
 
-    window.addEventListener("message", event => {
-      if (event.source !== frame.contentWindow) return;
-      if (event.origin !== FRONTEND_ORIGIN) return;
-      const request = event.data || {};
+    window.addEventListener(
+      "message",
+      event => {
+        const request = event.data || {};
 
-      if (request.type === "papertrail:hello") {
-        announceReady(request.bridgeId);
-        return;
+        console.log(
+          "[PaperTrail AppShell] message received",
+          {
+            type: request.type,
+            eventOrigin: event.origin,
+            expectedOrigin: FRONTEND_ORIGIN,
+            sourceMatches:
+              event.source === frame.contentWindow,
+            bridgeId: request.bridgeId
+          }
+        );
+
+        if (
+          event.source !== frame.contentWindow
+        ) {
+          console.warn(
+            "[PaperTrail AppShell] source mismatch"
+          );
+          return;
+        }
+
+        if (
+          event.origin !== FRONTEND_ORIGIN
+        ) {
+          console.warn(
+            "[PaperTrail AppShell] origin mismatch",
+            {
+              actual: event.origin,
+              expected: FRONTEND_ORIGIN
+            }
+          );
+          return;
+        }
+
+        if (
+          request.type === "papertrail:hello"
+        ) {
+          announceReady(request.bridgeId);
+          return;
+        }
+
+        if (
+          request.type !==
+            "papertrail:request" ||
+          !request.id
+        ) {
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(result => {
+            postToApp({
+              type: "papertrail:response",
+              bridgeId: request.bridgeId,
+              id: request.id,
+              ok: Boolean(
+                result && result.ok
+              ),
+              data:
+                result && result.data,
+              error:
+                result && result.error
+            });
+          })
+          .withFailureHandler(error => {
+            postToApp({
+              type: "papertrail:response",
+              bridgeId: request.bridgeId,
+              id: request.id,
+              ok: false,
+              error:
+                error && error.message
+                  ? error.message
+                  : String(error)
+            });
+          })
+          .bridgeRequest({
+            method: request.method,
+            args: request.args || {},
+            authToken:
+              request.authToken ||
+              AUTH_TOKEN
+          });
       }
-
-      if (request.type !== "papertrail:request" || !request.id) return;
-
-      google.script.run
-        .withSuccessHandler(result => {
-          postToApp({
-            type: "papertrail:response",
-            bridgeId: request.bridgeId,
-            id: request.id,
-            ok: Boolean(result && result.ok),
-            data: result && result.data,
-            error: result && result.error
-          });
-        })
-        .withFailureHandler(error => {
-          postToApp({
-            type: "papertrail:response",
-            bridgeId: request.bridgeId,
-            id: request.id,
-            ok: false,
-            error: error && error.message ? error.message : String(error)
-          });
-        })
-        .bridgeRequest({
-          method: request.method,
-          args: request.args || {},
-          authToken: request.authToken || AUTH_TOKEN
-        });
-    });
+    );
 
     frame.addEventListener("load", () => {
-      announceReady("papertrail-gas-shell");
+      console.log(
+        "[PaperTrail AppShell] iframe loaded",
+        frame.src
+      );
+
+      announceReady(
+        "papertrail-gas-shell"
+      );
     });
 
     frame.src = appUrlWithToken();
