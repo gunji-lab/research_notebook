@@ -6,6 +6,7 @@
  */
 (() => {
   const TIMEOUT_MS = 30000;
+  const PARENT_BRIDGE_TIMEOUT_MS = 5000;
   const debugEvents = [];
   const pending = new Map();
   let frame = null;
@@ -38,15 +39,16 @@
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
 
-  function ensureParentBridge() {
+  function ensureParentBridge(timeoutMs=PARENT_BRIDGE_TIMEOUT_MS) {
     bridgeId = createBridgeId();
     debug("parent-bridge:start", { bridgeId });
 
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
+        window.removeEventListener("message", onReady);
         debug("parent-bridge:timeout", { bridgeId });
         reject(new Error("PaperTrail APIへ接続できませんでした。"));
-      }, TIMEOUT_MS);
+      }, timeoutMs);
 
       function onReady(event) {
         if (event.source !== window.parent) return;
@@ -71,11 +73,15 @@
       sayHello();
       setTimeout(sayHello, 500);
       setTimeout(sayHello, 1500);
+      setTimeout(sayHello, 3000);
     });
   }
 
   function ensureIframeBridge(config) {
     return new Promise((resolve, reject) => {
+      frame?.remove?.();
+      frame = null;
+      bridgeWindow = null;
       debug("iframe-bridge:start");
       frame = document.createElement("iframe");
       frame.id = "papertrail-api-bridge";
@@ -91,6 +97,7 @@
       debug("iframe-bridge:src", { bridgeId, src: url.toString() });
 
       const timer = setTimeout(() => {
+        window.removeEventListener("message", onReady);
         debug("iframe-bridge:timeout", { bridgeId });
         reject(new Error("PaperTrail APIへ接続できませんでした。"));
       }, TIMEOUT_MS);
@@ -124,9 +131,18 @@
         href: location.href,
         referrer: document.referrer || ""
       });
-      readyPromise = window.parent && window.parent !== window
-        ? ensureParentBridge()
+      const bridgeAttempt = window.parent && window.parent !== window
+        ? ensureParentBridge().catch(error => {
+            debug("parent-bridge:fallback-to-iframe", {
+              error: error.message || String(error)
+            });
+            return ensureIframeBridge(config);
+          })
         : ensureIframeBridge(config);
+      readyPromise = bridgeAttempt.catch(error => {
+        readyPromise = null;
+        throw error;
+      });
     } catch (error) {
       debug("ensure-bridge:error", { error: error.message || String(error) });
       readyPromise = Promise.reject(error);
