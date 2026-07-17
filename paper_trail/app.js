@@ -601,12 +601,14 @@ function notebookItemToCard(item){
   const careful=reflections.careful||{};
   const deepReflection=reflections.deep||{};
   const deep=json.deep||{};
-  const heh=quick.summaries?.[0]
+  const heh=item.shortSummary
+    ||quick.summaries?.[0]
     ||abstractMap.result
     ||abstractMap.interpretation
     ||deep.thinking
     ||"";
-  const why=abstractMap.gap
+  const why=item.question
+    ||abstractMap.gap
     ||careful.question
     ||deepReflection.question
     ||deep.questions
@@ -621,17 +623,17 @@ function notebookItemToCard(item){
     owner:"自分",
     doi:item.doi||paper.doi||"",
     title:item.title||paper.title||"Untitled",
-    authors:paper.authors||"",
-    journal:paper.journal||"",
-    year:paper.year||"",
-    tags:[paper.keywordsJa,paper.keywordsEn].filter(Boolean),
+    authors:item.authors||paper.authors||"",
+    journal:item.journal||paper.journal||"",
+    year:item.year||paper.year||"",
+    tags:[item.keywordsJa||paper.keywordsJa,item.keywordsEn||paper.keywordsEn].filter(Boolean),
     readingMode:readingLevelLabel(item.readingLevel),
     readingLevel:item.readingLevel,
     wantToKnow:paper.reason||"",
-    purpose:abstractMap.objective||"",
+    purpose:item.objective||abstractMap.objective||"",
     results:abstractMap.result||"",
     interpretation:abstractMap.interpretation||"",
-    gap:abstractMap.gap||"",
+    gap:item.gap||abstractMap.gap||"",
     relation:deep.connection||"",
     question:why,
     backendHeh:heh,

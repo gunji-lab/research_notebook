@@ -241,7 +241,7 @@ function listMyNotebooks_(user) {
   return sheetData_(sheet_(PT_SHEETS.NOTEBOOKS))
     .filter(row => normalizeStudentId_(row.student_id) === normalizeStudentId_(user.studentId))
     .sort(byUpdatedDesc_)
-    .map(row => publicNotebook_(row, true));
+    .map(row => publicNotebookSummary_(row));
 }
 
 function getMyNotebookDebug_(user) {
@@ -262,7 +262,7 @@ function getMyNotebookDebug_(user) {
     totalNotebooks:rows.length,
     matchedNotebooks:matches.length,
     recent,
-    notebooks:sortedMatches.map(row => publicNotebook_(row, true))
+    notebooks:sortedMatches.map(row => publicNotebookSummary_(row))
   };
 }
 
@@ -393,6 +393,42 @@ function publicNotebook_(row, includeJson) {
     try { result.notebookJson = JSON.parse(row.notebook_json || '{}'); }
     catch (_) { result.notebookJson = {}; }
   }
+  return result;
+}
+
+function publicNotebookSummary_(row) {
+  const result = publicNotebook_(row, false);
+  let json = {};
+  try { json = JSON.parse(row.notebook_json || '{}'); } catch (_) { json = {}; }
+  const paper = json.paper || {};
+  const quick = json.quick || {};
+  const abstractMap = quick.abstractMap || {};
+  const reflections = json.reflections || {};
+  const careful = reflections.careful || {};
+  const deepReflection = reflections.deep || {};
+  const deep = json.deep || {};
+
+  result.authors = String(paper.authors || '');
+  result.journal = String(paper.journal || '');
+  result.year = String(paper.year || '');
+  result.keywordsJa = String(paper.keywordsJa || '');
+  result.keywordsEn = String(paper.keywordsEn || '');
+  result.shortSummary = String(
+    (quick.summaries && quick.summaries[0])
+    || abstractMap.result
+    || abstractMap.interpretation
+    || deep.thinking
+    || ''
+  );
+  result.question = String(
+    abstractMap.gap
+    || careful.question
+    || deepReflection.question
+    || deep.questions
+    || ''
+  );
+  result.objective = String(abstractMap.objective || '');
+  result.gap = String(abstractMap.gap || '');
   return result;
 }
 
