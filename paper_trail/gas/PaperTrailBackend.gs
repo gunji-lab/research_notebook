@@ -1,5 +1,5 @@
 /**
- * PaperTrail Physics-Style Auth API v2.8.1
+ * PaperTrail Physics-Style Auth API v2.9.1
  *
  * Script Properties:
  *   SPREADSHEET_ID   required
@@ -36,7 +36,7 @@ function doGet(e) {
   if(action==="health"){
     return json_({
       ok:true,
-      data:{status:"ok",service:"PaperTrail Physics-Style Auth API",version:"2.8.1"}
+      data:{status:"ok",service:"PaperTrail Physics-Style Auth API",version:"2.9.1"}
     });
   }
 
@@ -206,7 +206,7 @@ function saveNotebook_(user, payload) {
     const now = new Date().toISOString();
     const existing = rows.find(row => row.notebook_id === notebookId);
 
-    if (existing && existing.student_id !== user.studentId && !user.isAdmin) {
+    if (existing && normalizeStudentId_(existing.student_id) !== normalizeStudentId_(user.studentId) && !user.isAdmin) {
       throw new Error('このNotebookを更新する権限がありません。');
     }
 
@@ -236,7 +236,7 @@ function saveNotebook_(user, payload) {
 
 function listMyNotebooks_(user) {
   return sheetData_(sheet_(PT_SHEETS.NOTEBOOKS))
-    .filter(row => row.student_id === user.studentId)
+    .filter(row => normalizeStudentId_(row.student_id) === normalizeStudentId_(user.studentId))
     .sort(byUpdatedDesc_)
     .map(row => publicNotebook_(row, true));
 }
@@ -253,7 +253,7 @@ function getNotebook_(user, notebookId) {
   const row = sheetData_(sheet_(PT_SHEETS.NOTEBOOKS))
     .find(item => item.notebook_id === String(notebookId || ''));
   if (!row) throw new Error('Notebookが見つかりません。');
-  if (row.student_id !== user.studentId && !truthy_(row.shared) && !user.isAdmin) {
+  if (normalizeStudentId_(row.student_id) !== normalizeStudentId_(user.studentId) && !truthy_(row.shared) && !user.isAdmin) {
     throw new Error('このNotebookを閲覧する権限がありません。');
   }
   return publicNotebook_(row, true);
@@ -299,8 +299,9 @@ function getDashboard_(user) {
       displayName:nb.display_name || nb.student_id,
       quickCount:0,carefulCount:0,deepCount:0,lastUpdatedAt:''
     });
-    if (nb.reading_level === 'deep') item.deepCount++;
-    else if (nb.reading_level === 'careful') item.carefulCount++;
+    const level=String(nb.reading_level||'quick').toLowerCase();
+    if (level.indexOf('deep') === 0) item.deepCount++;
+    else if (level.indexOf('careful') === 0) item.carefulCount++;
     else item.quickCount++;
     if (String(nb.updated_at) > String(item.lastUpdatedAt)) item.lastUpdatedAt = nb.updated_at;
   });
@@ -335,9 +336,13 @@ function upsertStudent_(user,profile){
   return record;
 }
 
+function normalizeStudentId_(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
 function findStudent_(studentId) {
   return sheetData_(sheet_(PT_SHEETS.STUDENTS))
-    .find(row => row.student_id === String(studentId || ''));
+    .find(row => normalizeStudentId_(row.student_id) === normalizeStudentId_(studentId));
 }
 
 function sanitizeText_(value,maxLength,required,label){

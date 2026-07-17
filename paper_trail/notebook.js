@@ -1,7 +1,11 @@
-const KEY="papertrail_notebook_v284";
+const KEY="papertrail_notebook_v291";
 const NOTEBOOK_ID_KEY="papertrail_current_notebook_id";
 let serverSaveTimer=null;
-let currentNotebookId=localStorage.getItem(NOTEBOOK_ID_KEY)||"";
+let serverSavePromise=Promise.resolve();
+const requestedNotebookId=new URLSearchParams(location.search).get("notebook")||"";
+let currentNotebookId=requestedNotebookId;
+if(requestedNotebookId) localStorage.setItem(NOTEBOOK_ID_KEY,requestedNotebookId);
+else localStorage.removeItem(NOTEBOOK_ID_KEY);
 let deepReturnPage="page-quick-complete";
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -87,7 +91,10 @@ async function saveAndFinish(level){
   save();
   clearTimeout(serverSaveTimer);
   const saved=await saveToPaperTrail({silent:false});
-  if(saved)location.href="index.html?view=mine";
+  if(saved){
+    localStorage.removeItem(NOTEBOOK_ID_KEY);
+    location.href="index.html?view=mine";
+  }
 }
 
 $("#finishQuickNotebook")?.addEventListener("click",async()=>{
@@ -421,7 +428,7 @@ $("#finishDeepNotebook")?.addEventListener("click",async()=>{
 function collect(){
   const v=id=>$("#"+id)?.value||"";
   return {
-    schema_version:"2.8.4",
+    schema_version:"2.9.1",
     saved_at:new Date().toISOString(),
     state,
     paper:{
@@ -498,19 +505,24 @@ function notebookPayload(){
 }
 
 async function saveToPaperTrail({silent=true}={}){
-  try{
-    const saved=await window.PaperTrailAPI.saveNotebook(notebookPayload());
-    if(saved?.notebookId&&!currentNotebookId){
-      currentNotebookId=saved.notebookId;
-      localStorage.setItem(NOTEBOOK_ID_KEY,currentNotebookId);
+  const run=async()=>{
+    try{
+      const saved=await window.PaperTrailAPI.saveNotebook(notebookPayload());
+      if(saved?.notebookId){
+        currentNotebookId=saved.notebookId;
+        localStorage.setItem(NOTEBOOK_ID_KEY,currentNotebookId);
+      }
+      if(!silent)alert("PaperTrailに保存しました。");
+      return saved;
+    }catch(error){
+      if(!silent)alert(`保存できませんでした：${error.message}`);
+      console.warn("PaperTrail server save failed:",error);
+      return null;
     }
-    if(!silent)alert("PaperTrailに保存しました。");
-    return saved;
-  }catch(error){
-    if(!silent)alert(`保存できませんでした：${error.message}`);
-    console.warn("PaperTrail server save failed:",error);
-    return null;
-  }
+  };
+  // Serialize saves so two autosaves cannot create duplicate Notebook rows.
+  serverSavePromise=serverSavePromise.catch(()=>null).then(run);
+  return serverSavePromise;
 }
 
 function save(){
@@ -799,9 +811,121 @@ function bindOpenAlexCitationButtons(root){
 
 
 
+function setValue(id,value){
+  const el=$("#"+id);
+  if(el)el.value=value??"";
+}
+function setChecked(name,values){
+  const selected=new Set(Array.isArray(values)?values:[values]);
+  $$(`input[name="${name}"]`).forEach(input=>{input.checked=selected.has(input.value)});
+}
+function replaceVocabulary(stage,items=[]){
+  const list=$("#"+stage+"VocabularyList");
+  if(!list)return;
+  list.innerHTML="";
+  const rows=items.length?items:[{}];
+  rows.forEach(item=>addStageVocabularyRow(stage,item.japanese||"",item.english||"",item.note||""));
+}
+function mergeState(saved={}){
+  state.level=saved.level||"quick";
+  state.completed={...state.completed,...(saved.completed||{})};
+  state.figures=Array.isArray(saved.figures)?saved.figures:[];
+  state.figureIndex=Number(saved.figureIndex||0);
+  state.paragraphs={
+    background:Array.isArray(saved.paragraphs?.background)?saved.paragraphs.background:[],
+    discussion:Array.isArray(saved.paragraphs?.discussion)?saved.paragraphs.discussion:[]
+  };
+  state.paragraphSection=saved.paragraphSection||"background";
+  state.paragraphIndex=Number(saved.paragraphIndex||0);
+  state.sectionSummaries={...state.sectionSummaries,...(saved.sectionSummaries||{})};
+  state.backgroundCitations=Array.isArray(saved.backgroundCitations)?saved.backgroundCitations:[];
+  state.discussionReflection={...state.discussionReflection,...(saved.discussionReflection||{})};
+  state.shared=Boolean(saved.shared);
+}
+function restoreNotebook(data={}){
+  const paper=data.paper||{};
+  const quick=data.quick||{};
+  const abstractMap=quick.abstractMap||{};
+  const methods=data.methods||{};
+  const deep=data.deep||{};
+  const reflections=data.reflections||{};
+
+  mergeState(data.state||{});
+  [["doi",paper.doi],["title",paper.title],["authors",paper.authors],["journal",paper.journal],
+   ["year",paper.year],["keywordsJa",paper.keywordsJa],["keywordsEn",paper.keywordsEn],
+   ["discoverySource",paper.discoverySource],["introducedBy",paper.introducedBy],
+   ["searchKeywords",paper.searchKeywords],["reason",paper.reason],
+   ["abstractBackground",abstractMap.background],["abstractGap",abstractMap.gap],
+   ["abstractObjective",abstractMap.objective],["abstractResult",abstractMap.result],
+   ["abstractInterpretation",abstractMap.interpretation],
+   ["methodSubject",methods.subject],["sampleSize",methods.sampleSize],["studyDesign",methods.design],
+   ["measurements",methods.measurements],["analyses",methods.analyses],["methodReference",methods.reference],
+   ["methodQuestion",methods.question],["deepFocus",deep.focus],["deepThinking",deep.thinking],
+   ["deepQuestions",deep.questions],["deepNextStep",deep.nextStep],["deepConnection",deep.connection],
+   ["deepAnalysis",deep.analysis],["deepCitations",deep.citations],["limitations",deep.limitations],
+   ["nextStudy",deep.nextStudy],["relation",deep.relation],
+   ["carefulQuestion",reflections.careful?.question],["carefulRecommendReason",reflections.careful?.recommendation?.reason],
+   ["deepQuestion",reflections.deep?.question],["deepRecommendReason",reflections.deep?.recommendation?.reason]
+  ].forEach(([id,value])=>setValue(id,value));
+
+  setChecked("pdfStatus",paper.pdfStatus||"");
+  setChecked("reasonType",paper.reasons||[]);
+  setChecked("usePurpose",paper.usePurposes||[]);
+  setChecked("carefulHarvest",reflections.careful?.harvest||[]);
+  setChecked("deepHarvest",reflections.deep?.harvest||[]);
+  setChecked("carefulRecommendLab",reflections.careful?.recommendation?.level||"");
+  setChecked("deepRecommendLab",reflections.deep?.recommendation?.level||"");
+
+  const summaryList=$("#abstractSummaryList");
+  if(summaryList){
+    summaryList.innerHTML="";
+    const summaries=Array.isArray(quick.summaries)&&quick.summaries.length?quick.summaries:["","",""];
+    summaries.forEach(addSummary);
+  }
+  replaceVocabulary("careful",reflections.careful?.vocabulary||[]);
+  replaceVocabulary("deep",reflections.deep?.vocabulary||[]);
+
+  Object.entries(state.completed).forEach(([section,done])=>{
+    const el=$(`[data-status="${section}"]`);
+    if(el&&done){el.textContent="完了";el.classList.add("done")}
+  });
+  if(state.level!=="quick"){
+    $("#map-careful")?.classList.remove("locked");
+    $("#map-deep")?.classList.remove("locked");
+  }
+  if(state.figures.length&&$("#figureCount")) $("#figureCount").value=state.figures.length;
+  buildFigureMap();
+  localStorage.setItem(KEY,JSON.stringify(data));
+}
+function pageForLevel(level){
+  const normalized=String(level||"quick");
+  if(normalized==="quick-complete")return "page-quick-complete";
+  if(normalized==="careful-complete")return "page-careful-complete";
+  if(normalized==="deep"||normalized==="deep-complete")return normalized==="deep-complete"?"page-deep-complete":"deep-page";
+  if(normalized==="careful")return "page-careful-overview";
+  return "page-quick-basic";
+}
+let requestedNotebookLoaded=false;
+async function loadRequestedNotebook(){
+  if(!requestedNotebookId||requestedNotebookLoaded)return;
+  requestedNotebookLoaded=true;
+  try{
+    const record=await window.PaperTrailAPI.getNotebook(requestedNotebookId);
+    currentNotebookId=record.notebookId||requestedNotebookId;
+    restoreNotebook(record.notebookJson||{});
+    show(pageForLevel(record.readingLevel||record.notebookJson?.state?.level));
+  }catch(error){
+    requestedNotebookLoaded=false;
+    alert(`Notebookを読み込めませんでした：${error.message}`);
+    console.warn("PaperTrail notebook load failed:",error);
+  }
+}
+
 show("page-quick-basic");
 window.addEventListener("papertrail:user-ready",event=>{
   const user=event.detail||{};
   const el=document.querySelector("#notebookAuthor");
   if(el)el.textContent=user.displayName||user.realName||user.nickname||user.studentId||"—";
+  loadRequestedNotebook();
 });
+if(requestedNotebookId&&window.PaperTrailAuth?.getToken?.()) loadRequestedNotebook();

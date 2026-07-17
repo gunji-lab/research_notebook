@@ -326,3 +326,17 @@ Future UI:
 - each card becomes an independent page
 - progress indicator (●○○ → ●●○ → ●●●)
 - transition screen: 「🌱 準備完了！まずはAbstractを読んでみましょう。」
+
+---
+
+# v2.9.1 — Flexible Reading Flow and My Notebook Restore
+
+## Interaction model
+
+The three reading modes are not a required sequence or a hierarchy. After quick reading is saved, the reader chooses whether to stop, read the whole paper carefully, or investigate only a selected part. After careful reading, the reader may stop or continue to a deep dive.
+
+The completion screens must explicitly affirm that stopping is valid. The primary experience is choice, not progression pressure.
+
+## My Notebook behavior
+
+My Notebook is populated from the GAS backend after authentication is ready. Each card opens the saved Notebook ID and restores the student's inputs, completion state, and appropriate reading screen.

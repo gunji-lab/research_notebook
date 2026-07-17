@@ -573,8 +573,9 @@ if(["home","mine","lab","dashboard","journal"].includes(initialView)){
    v2.5.0 — GAS-backed My Notebook / Lab / Dashboard
    ========================================================= */
 function readingLevelLabel(level){
-  if(level==="deep") return "🌳 深掘り";
-  if(level==="careful") return "🌿 じっくり";
+  const normalized=String(level||"quick").toLowerCase();
+  if(normalized.startsWith("deep")) return "🌳 深掘り";
+  if(normalized.startsWith("careful")) return "🌿 じっくり";
   return "🌱 さくっと";
 }
 
@@ -632,10 +633,12 @@ async function renderBackendMyNotebooks(){
   if(!window.PAPERTRAIL_CONFIG?.GAS_WEB_APP_URL || window.PAPERTRAIL_CONFIG.GAS_WEB_APP_URL.includes("PASTE_"))return;
   target.innerHTML='<div class="empty">PaperTrailから読み込み中…</div>';
   try{
-    const items=await window.PaperTrailAPI.listMyNotebooks();
+    const response=await window.PaperTrailAPI.listMyNotebooks();
+    const items=Array.isArray(response) ? response : [];
     backendMyCards=items.map(notebookItemToCard);
     renderMyCards();
     renderHomeLobby();
+
     const latest=items[0];
     const lastNote=$("#my-last-note");
     const continueButton=$("#continue-latest");
@@ -646,24 +649,12 @@ async function renderBackendMyNotebooks(){
         continueButton.onclick=()=>{location.href=`notebook.html?notebook=${encodeURIComponent(latest.notebookId)}`};
       }
     }
-    target.innerHTML=items.length?items.map(item=>`
-      <article class="paper-card card">
-        <div class="paper-card-top">
-          <span class="level-badge">${readingLevelLabel(item.readingLevel)}</span>
-          <small>${escapeHtml((item.updatedAt||"").slice(0,10))}</small>
-        </div>
-        <h3>${escapeHtml(item.title||"Untitled")}</h3>
-        <p class="meta">${escapeHtml([item.journal,item.year].filter(Boolean).join(" · ") || item.doi || "DOI未登録")}</p>
-        <div class="notebook-markers">
-          <span>🌱 へぇ！ ${escapeHtml(item.shortSummary||item.usefulPoint||"未記入")}</span>
-          <span>🤔 なんで？ ${escapeHtml(item.question||"未記入")}</span>
-        </div>
-        <div class="paper-card-actions">
-          <a class="secondary button-link" href="notebook.html?notebook=${encodeURIComponent(item.notebookId)}">続きを読む</a>
-        </div>
-      </article>`).join(""):'<div class="empty">まだ保存されたNotebookはありません。</div>';
   }catch(error){
-    if(!getCards().length)target.innerHTML=`<div class="empty">${escapeHtml(error.message)}</div>`;
+    backendMyCards=[];
+    renderMyCards();
+    target.innerHTML=`<div class="empty-state"><p>Notebookを読み込めませんでした。</p><small>${escapeHtml(error.message||String(error))}</small><button type="button" class="secondary" id="retry-my-notebooks">もう一度読み込む</button></div>`;
+    document.querySelector("#retry-my-notebooks")?.addEventListener("click",renderBackendMyNotebooks);
+    console.warn("PaperTrail notebook list failed:",error);
   }
 }
 
@@ -721,3 +712,12 @@ switchView=function(name){
   if(name==="lab")renderBackendLabNotebooks();
   if(name==="dashboard")renderBackendDashboard();
 };
+
+
+// Authentication may finish after the initial My Notebook render.
+// Reload the server-backed list as soon as the signed user is ready.
+window.addEventListener("papertrail:user-ready",()=>{
+  const mine=document.querySelector("#view-mine");
+  if(mine?.classList.contains("active")) renderBackendMyNotebooks();
+  renderHomeLobby();
+});

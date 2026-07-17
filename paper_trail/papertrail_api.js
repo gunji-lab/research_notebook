@@ -1,5 +1,5 @@
 /**
- * PaperTrail API v2.8.1
+ * PaperTrail API v2.9.1
  *
  * GitHub Pages communicates with a GAS-hosted iframe through postMessage.
  * The iframe calls google.script.run, so no cross-origin fetch is needed.

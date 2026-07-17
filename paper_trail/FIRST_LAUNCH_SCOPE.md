@@ -177,3 +177,28 @@ Future UI:
 - each card becomes an independent page
 - progress indicator (●○○ → ●●○ → ●●●)
 - transition screen: 「🌱 準備完了！まずはAbstractを読んでみましょう。」
+
+---
+
+# Reading Flow Update v1.1
+
+## New principle
+
+The reading modes are choices, not a compulsory ladder.
+
+```text
+さくっと読む
+    ↓ 保存
+    ├─ 今日はここまで
+    ├─ じっくり読む
+    └─ 気になるところを深掘りする
+
+じっくり読む
+    ↓ 保存
+    ├─ 今日はここまで
+    └─ 気になるところを深掘りする
+```
+
+Deep reading means exploring a selected part such as a figure, Discussion, Methods, cited paper, or Supplement. It does not require reading the entire paper.
+
+Every stage is saved and can be resumed from My Notebook.

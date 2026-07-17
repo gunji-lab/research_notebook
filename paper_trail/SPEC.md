@@ -1,4 +1,20 @@
-# Research Notebook v1.4.0 仕様書
+# PaperTrail v2.9.1 仕様書
+
+> この文書は旧Research Notebook仕様を引き継ぎつつ、PaperTrailの現行実装を定義する。
+
+## 現行読書フロー
+
+- さくっと読了時点でNotebookへ保存する。
+- 保存後は「今日はここまで」「じっくり読む」「気になるところを深掘りする」から選ぶ。
+- じっくり読了時点でも保存し、「今日はここまで」または「深掘り」を選ぶ。
+- 深掘りは論文全体ではなく、Figure、Discussion、Methods、引用文献など一部だけでもよい。
+- My Notebookから保存済みの各段階を再開できる。
+
+## 保存状態
+
+`quick`, `quick-complete`, `careful`, `careful-complete`, `deep`, `deep-complete` を正式な状態として扱う。
+
+---
 
 ## 1. コンセプト
 

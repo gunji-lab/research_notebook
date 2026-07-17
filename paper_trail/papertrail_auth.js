@@ -1,5 +1,5 @@
 /**
- * PaperTrail authentication v2.8.1
+ * PaperTrail authentication v2.9.1
  *
  * Same policy as Physics Trainer:
  * 1. Redirect to GAS ?view=auth

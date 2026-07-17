@@ -1,3 +1,18 @@
+# PaperTrail v2.9.1 — My Notebook Restore & Flexible Reading Flow
+
+## 今回の更新
+
+- My Notebook一覧を認証完了後に再取得するよう修正
+- 保存済みNotebookを `getNotebook` で読み込み、入力内容と読書段階を復元
+- `quick-complete` 等の完了状態を正式対応
+- 並列自動保存によるNotebook重複作成を防止
+- 「さくっと→保存→今日はここまで／じっくり／深掘り」の選択型フローを反映
+- 「じっくり→保存→今日はここまで／深掘り」を反映
+
+> 全部読まなくてもいい。さくっと、拾い読み、一部だけの深掘りも価値のある読み方です。
+
+---
+
 # Research Notebook v1.4.0 — Home Design Sprint
 
 英語論文を「最初から最後まで読む」のではなく、**論文全体の地図をつくり、気になる場所から深掘りする**ための学習支援プロトタイプです。
