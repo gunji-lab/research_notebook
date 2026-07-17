@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lab Notebook | PaperTrail</title>
+  <link rel="stylesheet" href="css/style.css?v=20260717-v3-refactor" />
+  <link rel="stylesheet" href="css/components.css?v=20260717-v3-refactor" />
+</head>
+<body>
+  <header class="topbar home-topbar">
+    <div class="papertrail-header">
+      <div class="papertrail-lockup">
+        <img class="papertrail-logo" src="assets/logo.svg" alt="PaperTrail">
+        <div class="papertrail-brand">
+          <h1>PaperTrail</h1>
+          <p class="rtc">Read. Think. Connect.</p>
+        </div>
+      </div>
+      <div class="papertrail-copy editorial">
+        <div class="copy-inner"><p>誰かの「気になった」が、次の誰かの入口になる。</p></div>
+      </div>
+      <div class="prototype-label">Prototype · v3.0</div>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="メインメニュー">
+    <a class="tab tab-link" href="index.html">ホーム</a>
+    <a class="tab tab-link" href="starter.html">Research Starter</a>
+    <a class="tab tab-link" href="notebook.html">Research Notebook</a>
+    <a class="tab tab-link" href="my_notebook.html">My Notebook</a>
+    <a class="tab tab-link active" href="lab_notebook.html">Lab Notebook</a>
+    <a class="tab tab-link" href="dashboard.html">ダッシュボード</a>
+  </nav>
+
+  <main>
+    <section class="section-head">
+      <div>
+        <span class="eyebrow">LAB NOTEBOOK</span>
+        <h2>ラボのみんなのNotebook</h2>
+        <p>共有された読みの記録から、次に読む論文や議論の種を見つけます。</p>
+      </div>
+    </section>
+
+    <section class="filters card">
+      <input id="lab-search" placeholder="ラボNotebookを検索" />
+      <select id="lab-role-filter">
+        <option value="">すべての記録</option>
+        <option value="未解明点">未解明点だけ</option>
+        <option value="研究目的">研究目的だけ</option>
+        <option value="限界">限界だけ</option>
+      </select>
+    </section>
+
+    <section id="lab-list" class="cards-grid"></section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="papertrail_config.js"></script>
+  <script src="papertrail_api.js?v=20260717-v3-refactor"></script>
+  <script src="papertrail_auth.js?v=20260717-v3-refactor"></script>
+  <script src="js/common.js?v=20260717-v3-refactor"></script>
+  <script src="js/lab_notebook.js?v=20260717-v3-refactor"></script>
+
+  <footer class="site-footer">
+    <p>© Megu GUNJI <span class="footer-sep">[</span> Toyo University <span class="footer-sep">]</span></p>
+  </footer>
+</body>
+</html>

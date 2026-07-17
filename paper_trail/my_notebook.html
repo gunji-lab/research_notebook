@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Notebook | PaperTrail</title>
+  <link rel="stylesheet" href="css/style.css?v=20260717-v3-refactor" />
+  <link rel="stylesheet" href="css/components.css?v=20260717-v3-refactor" />
+</head>
+<body>
+  <header class="topbar home-topbar">
+    <div class="papertrail-header">
+      <div class="papertrail-lockup">
+        <img class="papertrail-logo" src="assets/logo.svg" alt="PaperTrail">
+        <div class="papertrail-brand">
+          <h1>PaperTrail</h1>
+          <p class="rtc">Read. Think. Connect.</p>
+        </div>
+      </div>
+      <div class="papertrail-copy editorial">
+        <div class="copy-inner"><p>自分が考えて書いたことだけを、本棚に残す。</p></div>
+      </div>
+      <div class="prototype-label">Prototype · v3.0</div>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="メインメニュー">
+    <a class="tab tab-link" href="index.html">ホーム</a>
+    <a class="tab tab-link" href="starter.html">Research Starter</a>
+    <a class="tab tab-link" href="notebook.html">Research Notebook</a>
+    <a class="tab tab-link active" href="my_notebook.html">My Notebook</a>
+    <a class="tab tab-link" href="lab_notebook.html">Lab Notebook</a>
+    <a class="tab tab-link" href="dashboard.html">ダッシュボード</a>
+  </nav>
+
+  <main>
+    <section class="my-notebook-home card">
+      <div>
+        <span class="eyebrow">MY NOTEBOOK</span>
+        <h2>今日は、どの論文を開いてみますか？</h2>
+        <p id="my-last-note">前回の続きからでも、新しい一本からでも大丈夫です。</p>
+      </div>
+      <div class="my-notebook-actions">
+        <a class="primary button-link" id="continue-latest" href="notebook.html">続きを読む</a>
+        <a class="secondary button-link" href="notebook.html">新しい論文を読む</a>
+      </div>
+    </section>
+
+    <section class="my-notebook-section">
+      <div class="section-head compact">
+        <div>
+          <span class="eyebrow">RECENT</span>
+          <h2>最近読んだ論文</h2>
+          <p>前回の続きに戻るための入口です。</p>
+        </div>
+      </div>
+      <div id="my-list" class="my-notebook-board"></div>
+    </section>
+
+    <section class="my-notebook-section">
+      <div class="section-head compact">
+        <div>
+          <span class="eyebrow">BOOKSHELF</span>
+          <h2>あなたの本棚</h2>
+          <p>タイトル、DOI、著者、キーワード、「へぇ！」や「なんで？」から探せます。</p>
+        </div>
+      </div>
+      <div class="filters card">
+        <input id="my-search" placeholder="タイトル・DOI・著者・キーワード・へぇ！・なんで？" />
+        <select id="my-role-filter">
+          <option value="">すべての記録</option>
+          <option value="未解明点">「なんで？」につながる記録</option>
+          <option value="研究目的">研究目的</option>
+          <option value="限界">限界</option>
+          <option value="先行研究">先行研究</option>
+        </select>
+      </div>
+      <div id="my-cards" class="my-notebook-board"></div>
+    </section>
+
+    <section class="my-notebook-reflections">
+      <article class="card">
+        <span class="eyebrow">HEH</span>
+        <h3>最近見つけた「へぇ！」</h3>
+        <div id="my-heh-list" class="mini-note-list"></div>
+      </article>
+      <article class="card">
+        <span class="eyebrow">WHY</span>
+        <h3>最近見つけた「なんで？」</h3>
+        <div id="my-why-list" class="mini-note-list"></div>
+      </article>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="papertrail_config.js"></script>
+  <script src="papertrail_api.js?v=20260717-v3-refactor"></script>
+  <script src="papertrail_auth.js?v=20260717-v3-refactor"></script>
+  <script src="js/common.js?v=20260717-v3-refactor"></script>
+  <script src="js/my_notebook.js?v=20260717-v3-refactor"></script>
+
+  <footer class="site-footer">
+    <p>© Megu GUNJI <span class="footer-sep">[</span> Toyo University <span class="footer-sep">]</span></p>
+  </footer>
+</body>
+</html>

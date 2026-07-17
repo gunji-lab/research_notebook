@@ -59,6 +59,7 @@ function doGet(e) {
     template.frontendUrl=paperTrailFrontendUrl_();
     template.frontendOrigin=paperTrailFrontendOrigin_();
     template.authToken=createPaperTrailAuthToken_(user);
+    template.route=validateRoute_(String(params.route||""));
     return template.evaluate()
       .setTitle("PaperTrail")
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
@@ -602,6 +603,7 @@ function json_(body) {
 
 function serveAuth_(params) {
   const returnUrl=validateReturnUrl_(String(params.return||""));
+  const route=validateRoute_(String(params.route||""));
   const email=String(Session.getActiveUser().getEmail()||"").trim().toLowerCase();
   const allowedDomain=String(
     PropertiesService.getScriptProperties().getProperty("ALLOWED_DOMAIN")||"toyo.jp"
@@ -609,7 +611,8 @@ function serveAuth_(params) {
 
   if(!email||email.split("@")[1]!==allowedDomain){
     const selfUrl=ScriptApp.getService().getUrl();
-    const authUrl=selfUrl+"?view=auth&return="+encodeURIComponent(returnUrl);
+    let authUrl=selfUrl+"?view=auth&return="+encodeURIComponent(returnUrl);
+    if(route)authUrl+="&route="+encodeURIComponent(route);
     const addSession="https://accounts.google.com/AddSession?hl=ja&continue="
       +encodeURIComponent(authUrl);
     const chooser="https://accounts.google.com/AccountChooser?hd="
@@ -643,7 +646,8 @@ function serveAuth_(params) {
 
   const user=currentUser_();
   const token=createPaperTrailAuthToken_(user);
-  const destination=returnUrl+"#auth="+encodeURIComponent(token);
+  const destination=returnUrl+"#auth="+encodeURIComponent(token)
+    +(route?"&route="+encodeURIComponent(route):"");
 
   return HtmlService.createHtmlOutput(
     '<!doctype html><html lang="ja"><meta charset="utf-8">'
@@ -754,10 +758,20 @@ function constantTimeEquals_(a,b) {
 }
 
 function validateReturnUrl_(url) {
+  url=String(url||"").replace(/#.*$/,"");
   const origin=paperTrailFrontendOrigin_();
   if(!url)return origin+"/";
   if(url===origin||url.indexOf(origin+"/")===0)return url;
   throw new Error("戻り先URLが許可されていません。");
+}
+
+function validateRoute_(route) {
+  route=String(route||"").trim().replace(/^#/,"");
+  if(!route||route.indexOf("auth=")===0)return "";
+  if(!/^[A-Za-z0-9_-]+$/.test(route)){
+    throw new Error("ページ指定が正しくありません。");
+  }
+  return route;
 }
 
 function paperTrailFrontendOrigin_() {

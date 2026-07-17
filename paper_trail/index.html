@@ -3,565 +3,133 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PaperTrail v2.8.1</title>
+  <title>PaperTrail</title>
   <meta name="description" content="英語論文を迷わず読み、考えたことをラボで共有するためのResearch Notebookプロトタイプ" />
-  <link rel="stylesheet" href="styles.css?v=20260717-mynotebook-diagnostics" />
+  <link rel="stylesheet" href="css/style.css?v=20260717-v3-refactor" />
+  <link rel="stylesheet" href="css/components.css?v=20260717-v3-refactor" />
 </head>
 <body>
-  
-<header class="topbar home-topbar">
-<div class="papertrail-header">
-  <div class="papertrail-lockup">
-    <img class="papertrail-logo" src="assets/logo.svg" alt="PaperTrail">
-    <div class="papertrail-brand">
-      <h1>PaperTrail</h1>
-      <p class="rtc">Read. Think. Connect.</p>
-    </div>
-  </div>
-
-  <div class="papertrail-copy editorial">
-      <div class="copy-inner">
-        <p>論文を読む最初の一歩を、もっとやさしく。</p>
+  <header class="topbar home-topbar">
+    <div class="papertrail-header">
+      <div class="papertrail-lockup">
+        <img class="papertrail-logo" src="assets/logo.svg" alt="PaperTrail">
+        <div class="papertrail-brand">
+          <h1>PaperTrail</h1>
+          <p class="rtc">Read. Think. Connect.</p>
+        </div>
       </div>
-  </div>
-
-  <div class="prototype-label">Prototype · v2.8.1</div>
-</div>
-</header>
-
+      <div class="papertrail-copy editorial">
+        <div class="copy-inner">
+          <p>論文を読む最初の一歩を、もっとやさしく。</p>
+        </div>
+      </div>
+      <div class="prototype-label">Prototype · v3.0</div>
+    </div>
+  </header>
 
   <nav class="tabs" aria-label="メインメニュー">
-    <button class="tab active" data-view="home">ホーム</button>
+    <a class="tab tab-link active" href="index.html">ホーム</a>
     <a class="tab tab-link" href="starter.html">Research Starter</a>
     <a class="tab tab-link" href="notebook.html">Research Notebook</a>
-    <button class="tab" data-view="mine">My Notebook</button>
-    <button class="tab" data-view="lab">Lab Notebook</button>
-    <button class="tab" data-view="dashboard">ダッシュボード</button>
-    <button class="tab" data-view="journal">Journal Club</button>
+    <a class="tab tab-link" href="my_notebook.html">My Notebook</a>
+    <a class="tab tab-link" href="lab_notebook.html">Lab Notebook</a>
+    <a class="tab tab-link" href="dashboard.html">ダッシュボード</a>
   </nav>
 
   <main>
-    <section id="view-home" class="view active">
-      <div class="home-lobby">
-        
-<section class="home-intro">
-  <p class="home-greeting" id="home-greeting">こんにちは。</p>
-  <h2>今日は、どんな論文を読んでみる？</h2>
-  <p class="home-lead">
-    英語論文は、最初から全部読まなくても大丈夫。<br>
-    まずは全体を眺めて、気になるところから少しずつ。<br>
-    論文を読むことは、知識の道を歩くこと。<br>
-    一歩一歩の発見が、やがてあなただけの研究の道になります。
-  </p>
-  <p class="home-philosophy"><em>We do not store papers. We store curiosity.</em></p>
-</section>
+    <section class="home-lobby">
+      <section class="home-intro">
+        <p class="home-greeting" id="home-greeting">こんにちは。</p>
+        <h2>今日は、どんな論文を読んでみる？</h2>
+        <p class="home-lead">
+          英語論文は、最初から全部読まなくても大丈夫。<br>
+          まずは全体を眺めて、気になるところから少しずつ。<br>
+          論文を読むことは、知識の道を歩くこと。<br>
+          一歩一歩の発見が、やがてあなただけの研究の道になります。
+        </p>
+        <p class="home-philosophy"><em>We do not store papers. We store curiosity.</em></p>
+      </section>
 
-
-        <section class="doi-entry card">
-          <div class="doi-copy">
-            <span class="eyebrow">START WITH A DOI</span>
-            <h3>DOIから始める</h3>
-            <p>DOIを貼るだけで、論文情報を読み込めるようになる予定です。</p>
-          </div>
-          <div class="doi-form-row">
-            <input id="home-doi" placeholder="10.xxxx/xxxxx" aria-label="DOI">
-            <button class="primary" id="home-doi-button">論文を開く</button>
-          </div>
-          <small class="quiet-note">OpenAlex連携は次の開発フェーズで実装予定です。</small>
-        </section>
-
-        <div class="home-actions-grid">
-          <a class="home-action-card card" href="starter.html">
-            <div class="home-action-icon">01</div>
-            <div>
-              <span class="eyebrow">RESEARCH STARTER</span>
-              <h3>問いづくりから始める</h3>
-              <p>最近気になったことから、自分だけの研究の問いを育てます。</p>
-              <span class="text-link">Starterを開く →</span>
-            </div>
-          </a>
-
-          <a class="home-action-card card" href="notebook.html">
-            <div class="home-action-icon">02</div>
-            <div>
-              <span class="eyebrow">NEW NOTEBOOK</span>
-              <h3>新しい論文を読んでみる</h3>
-              <p>論文の地図をつくり、自分の言葉で理解を残します。</p>
-              <span class="text-link">Notebookを始める →</span>
-            </div>
-          </a>
+      <section class="doi-entry card">
+        <div class="doi-copy">
+          <span class="eyebrow">START WITH A DOI</span>
+          <h3>DOIから始める</h3>
+          <p>DOIを貼るだけで、論文情報を読み込めるようになる予定です。</p>
         </div>
-
-        <section class="continue-section">
-          <div class="section-head quiet-head">
-            <div>
-              <span class="eyebrow">CONTINUE READING</span>
-              <h2>続きから読む</h2>
-            </div>
-          </div>
-          <div id="continue-card" class="continue-card card">
-            <div class="continue-empty">
-              <p>まだ読みかけの論文はありません。</p>
-              <button class="secondary" data-action="start-new">最初の1本を開く</button>
-            </div>
-          </div>
-        </section>
-
-        <section class="home-lab-section">
-          <div class="section-head quiet-head">
-            <div>
-              <span class="eyebrow">LAB ACTIVITY</span>
-              <h2>ラボの最近の動き</h2>
-            </div>
-            <button class="text-button" data-view-lab-home>Lab Notebookを見る →</button>
-          </div>
-          <div id="home-lab-activity" class="lab-activity-grid"></div>
-        </section>
-
-        <section class="today-question card">
-          <span class="eyebrow">TODAY'S QUESTION</span>
-          <blockquote>この論文は、何を「まだ分かっていない」と言っている？</blockquote>
-          <p>未解明点を見つけることは、研究の入口を見つけることです。</p>
-          <button class="secondary" data-action="start-new">Notebookを開く</button>
-        </section>
-      </div>
-    </section>
-
-    <section id="view-new" class="view">
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">NEW PAPER</span>
-          <h2>論文を読んでみる</h2>
-          <p>全部わからなくても大丈夫。わかるところから少しずつ。</p>
+        <div class="doi-form-row">
+          <input id="home-doi" placeholder="10.xxxx/xxxxx" aria-label="DOI">
+          <a class="primary button-link" id="home-doi-button" href="notebook.html">論文を開く</a>
         </div>
-        <button class="ghost" id="clear-form">入力をクリア</button>
-      </div>
+        <small class="quiet-note">OpenAlex連携は次の開発フェーズで実装予定です。</small>
+      </section>
 
-      <div class="notice card storage-policy">
-        <strong>We do not store papers. We store curiosity.</strong>
-        <p>保存するのは、段落タイトル・一文要約・問いなど、あなた自身が考えて書いた内容です。原文やDeepL等の翻訳文は作業中だけ使い、保存時には送信しません。</p>
-      </div>
-
-      <form id="paper-form">
-        <div class="step-card card">
-          <div class="step-badge">1</div>
-          <div class="step-content">
-            <h3>まず、論文の基本情報</h3>
-            <p class="hint">DOIがわからない場合は空欄でもOKです。</p>
-            <div class="form-grid">
-              <label>DOI
-                <input id="doi" name="doi" placeholder="10.xxxx/xxxxx" />
-              </label>
-              <label>タイトル
-                <input id="title" name="title" required placeholder="論文タイトル" />
-              </label>
-              <label>著者
-                <input id="authors" name="authors" placeholder="Smith et al." />
-              </label>
-              <label>雑誌
-                <input id="journal" name="journal" placeholder="Journal name" />
-              </label>
-              <label>年
-                <input id="year" name="year" inputmode="numeric" placeholder="2026" />
-              </label>
-              <label>タグ
-                <input id="tags" name="tags" placeholder="尾羽, バイオメカニクス" />
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div class="step-card card">
-          <div class="step-badge">2</div>
-          <div class="step-content">
-            <h3>なぜ、この論文を読む？</h3>
-            <p class="hint">読む前の気持ちを残しておくと、あとで自分の変化が見えます。</p>
-            <div class="choice-row" id="reason-options">
-              <label><input type="radio" name="reasonType" value="先生・先輩に勧められた">先生・先輩に勧められた</label>
-              <label><input type="radio" name="reasonType" value="別の論文で引用されていた">別の論文で引用されていた</label>
-              <label><input type="radio" name="reasonType" value="検索で見つけた">検索で見つけた</label>
-              <label><input type="radio" name="reasonType" value="自分で興味をもった">自分で興味をもった</label>
-            </div>
-            <label class="full">この論文から何を知りたい？
-              <textarea id="want-to-know" rows="3" placeholder="例：水鳥の尾羽にどのような力が加わるのか知りたい"></textarea>
-            </label>
-          </div>
-        </div>
-
-        <div class="step-card card">
-          <div class="step-badge">3</div>
-          <div class="step-content">
-            <h3>今日はどこまで読む？</h3>
-            <div class="reading-modes">
-              <label class="mode-card selected">
-                <input type="radio" name="readingMode" value="さくっと" checked />
-                <span class="mode-icon">🌱</span>
-                <strong>さくっと</strong>
-                <small>5〜10分</small>
-                <p>Abstract・図表・目的を中心に。</p>
-              </label>
-              <label class="mode-card">
-                <input type="radio" name="readingMode" value="じっくり" />
-                <span class="mode-icon">🌿</span>
-                <strong>じっくり</strong>
-                <small>20〜30分</small>
-                <p>各段落の役割まで見てみる。</p>
-              </label>
-              <label class="mode-card">
-                <input type="radio" name="readingMode" value="深掘り" />
-                <span class="mode-icon">🌳</span>
-                <strong>深掘り</strong>
-                <small>60分〜</small>
-                <p>手法・限界・引用論文まで追う。</p>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div class="step-card card">
-          <div class="step-badge">4</div>
-          <div class="step-content">
-            <div class="title-row">
-              <div>
-                <h3>論文の地図をつくる</h3>
-                <p class="hint">原文や翻訳文は一時メモ用。保存するのは自分の言葉で書いた要約です。</p>
-              </div>
-              <button type="button" class="secondary small" id="add-paragraph">＋ 段落を追加</button>
-            </div>
-            <div id="paragraph-list"></div>
-          </div>
-        </div>
-
-        <div class="step-card card">
-          <div class="step-badge">5</div>
-          <div class="step-content">
-            <div class="title-row">
-              <div>
-                <h3>図表から、研究の中心を探す</h3>
-                <p class="hint">図表タイトルを丸写しせず、「何を示しているか」を自分の言葉で。</p>
-              </div>
-              <button type="button" class="secondary small" id="add-figure">＋ 図表を追加</button>
-            </div>
-            <div id="figure-list"></div>
-          </div>
-        </div>
-
-        <div class="step-card card">
-          <div class="step-badge">6</div>
-          <div class="step-content">
-            <h3>最後に、自分の言葉でまとめる</h3>
-            <div class="form-grid single">
-              <label>この研究は、何を知りたかった？
-                <textarea id="purpose" rows="3"></textarea>
-              </label>
-              <label>どんな方法で調べた？
-                <textarea id="methods" rows="3"></textarea>
-              </label>
-              <label>一番大事な結果は？
-                <textarea id="results" rows="3"></textarea>
-              </label>
-              <label>著者は、結果をどう解釈している？
-                <textarea id="interpretation" rows="3"></textarea>
-              </label>
-              <label>まだ分かっていないこと・限界は？
-                <textarea id="gap" rows="3"></textarea>
-              </label>
-              <label>自分の研究や興味とどうつながる？
-                <textarea id="relation" rows="3"></textarea>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div class="step-card card">
-          <div class="step-badge">7</div>
-          <div class="step-content">
-            <div class="title-row">
-              <div>
-                <h3>次に読みたい論文をメモ</h3>
-                <p class="hint">この論文の引用文献や、気になった研究をつないでいきましょう。</p>
-              </div>
-              <button type="button" class="secondary small" id="add-next-paper">＋ 候補を追加</button>
-            </div>
-            <div id="next-paper-list"></div>
-            <label class="full">指導教員・先輩に聞きたいこと
-              <textarea id="question" rows="3" placeholder="例：この解析方法は自分の研究にも使えますか？"></textarea>
-            </label>
-          </div>
-        </div>
-
-        <div class="save-panel">
+      <div class="home-actions-grid">
+        <a class="home-action-card card" href="starter.html">
+          <div class="home-action-icon">01</div>
           <div>
-            <strong>カードを保存すると、My Notebookに追加されます。</strong>
-            <p>このローカル確認版ではブラウザ内に保存します。本番版では大学アカウント認証後、Googleスプレッドシートへ保存します。</p>
+            <span class="eyebrow">RESEARCH STARTER</span>
+            <h3>問いづくりから始める</h3>
+            <p>最近気になったことから、自分だけの研究の問いを育てます。</p>
+            <span class="text-link">Starterを開く →</span>
           </div>
-          <button class="primary large" type="submit">カードを保存する</button>
-        </div>
-      </form>
-    </section>
+        </a>
 
-    <section id="view-mine" class="view">
-      <section class="my-notebook-home card">
-        <div>
-          <span class="eyebrow">MY NOTEBOOK</span>
-          <h2>今日は、どの論文を開いてみますか？</h2>
-          <p id="my-last-note">前回の続きからでも、新しい一本からでも大丈夫です。</p>
+        <a class="home-action-card card" href="notebook.html">
+          <div class="home-action-icon">02</div>
+          <div>
+            <span class="eyebrow">NEW NOTEBOOK</span>
+            <h3>新しい論文を読んでみる</h3>
+            <p>論文の地図をつくり、自分の言葉で理解を残します。</p>
+            <span class="text-link">Notebookを始める →</span>
+          </div>
+        </a>
+      </div>
+
+      <section class="continue-section">
+        <div class="section-head quiet-head">
+          <div>
+            <span class="eyebrow">CONTINUE READING</span>
+            <h2>続きから読む</h2>
+          </div>
         </div>
-        <div class="my-notebook-actions">
-          <button type="button" class="primary" id="continue-latest">続きを読む</button>
-          <a class="secondary button-link" href="notebook.html">新しい論文を読む</a>
+        <div id="continue-card" class="continue-card card">
+          <div class="continue-empty">
+            <p>ログイン後、最近保存したNotebookがここに表示されます。</p>
+            <a class="secondary button-link" href="notebook.html">最初の1本を開く</a>
+          </div>
         </div>
       </section>
 
-      <section class="my-notebook-section">
-        <div class="section-head compact">
+      <section class="home-lab-section">
+        <div class="section-head quiet-head">
           <div>
-            <span class="eyebrow">RECENT</span>
-            <h2>最近読んだ論文</h2>
-            <p>前回の続きに戻るための入口です。</p>
+            <span class="eyebrow">LAB ACTIVITY</span>
+            <h2>ラボの最近の動き</h2>
           </div>
+          <a class="text-button" href="lab_notebook.html">Lab Notebookを見る →</a>
         </div>
-        <div id="my-list" class="my-notebook-board"></div>
+        <div id="home-lab-activity" class="lab-activity-grid"></div>
       </section>
 
-      <section class="my-notebook-section">
-        <div class="section-head compact">
-          <div>
-            <span class="eyebrow">BOOKSHELF</span>
-            <h2>あなたの本棚</h2>
-            <p>タイトル、DOI、著者、キーワード、「へぇ！」や「なんで？」から探せます。</p>
-          </div>
-          <div class="head-actions">
-            <button class="secondary" id="export-json">JSONを書き出す</button>
-            <label class="secondary file-label">JSONを読み込む
-              <input type="file" id="import-json" accept=".json,application/json" hidden />
-            </label>
-          </div>
-        </div>
-        <div class="filters card">
-          <input id="my-search" placeholder="タイトル・DOI・著者・キーワード・へぇ！・なんで？" />
-          <select id="my-role-filter">
-            <option value="">すべての記録</option>
-            <option value="未解明点">「なんで？」につながる記録</option>
-            <option value="研究目的">研究目的</option>
-            <option value="限界">限界</option>
-            <option value="先行研究">先行研究</option>
-          </select>
-        </div>
-        <div id="my-cards" class="my-notebook-board"></div>
-      </section>
-
-      <section class="my-notebook-reflections">
-        <article class="card">
-          <span class="eyebrow">HEH</span>
-          <h3>最近見つけた「へぇ！」</h3>
-          <div id="my-heh-list" class="mini-note-list"></div>
-        </article>
-        <article class="card">
-          <span class="eyebrow">WHY</span>
-          <h3>最近見つけた「なんで？」</h3>
-          <div id="my-why-list" class="mini-note-list"></div>
-        </article>
+      <section class="today-question card">
+        <span class="eyebrow">TODAY'S QUESTION</span>
+        <blockquote>この論文は、何を「まだ分かっていない」と言っている？</blockquote>
+        <p>未解明点を見つけることは、研究の入口を見つけることです。</p>
+        <a class="secondary button-link" href="notebook.html">Notebookを開く</a>
       </section>
     </section>
-
-    <section id="view-lab" class="view"><div id="lab-list" class="grid"></div>
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">LAB NOTEBOOK</span>
-          <h2>ラボのみんなのカード</h2>
-          <p>誰かの「気になった」が、次の誰かの入口になる。</p>
-        </div>
-      </div>
-      <div class="notice card">
-        <strong>プロトタイプの共有機能</strong>
-        <p>現在はデモ表示です。本番版では大学アカウント認証＋GAS／スプレッドシート共有を想定しています。</p>
-      </div>
-      <div class="filters card">
-        <input id="lab-search" placeholder="ラボカードを検索" />
-        <select id="lab-role-filter">
-          <option value="">すべての役割</option>
-          <option value="未解明点">未解明点だけ</option>
-          <option value="研究目的">研究目的だけ</option>
-          <option value="限界">限界だけ</option>
-        </select>
-      </div>
-      <div id="lab-cards" class="cards-grid"></div>
-    </section>
-
-    <section id="view-dashboard" class="view"><div id="dashboard-content"></div>
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">DASHBOARD</span>
-          <h2>研究の足跡</h2>
-          <p>本数だけでなく、どんな問いが生まれ、どこへ読み進んだかを見る。</p>
-        </div>
-      </div>
-      <div id="stats" class="stats-grid"></div>
-
-      <div class="dashboard-grid">
-        <article class="card">
-          <h3>よく使われているタグ</h3>
-          <div id="tag-cloud" class="tag-cloud"></div>
-        </article>
-        <article class="card">
-          <h3>段落の役割</h3>
-          <div id="role-summary" class="role-summary"></div>
-        </article>
-      </div>
-
-      <article class="card">
-        <div class="title-row">
-          <div>
-            <h3>未解明点だけを見る</h3>
-            <p class="hint">複数の論文から、研究の余白を集めます。</p>
-          </div>
-        </div>
-        <div id="gap-list" class="insight-list"></div>
-      </article>
-    </section>
-    <section id="view-journal" class="view">
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">JOURNAL CLUB</span>
-          <h2>理解を持ち寄って、議論する。</h2>
-          <p>Notebookで作ったカードから、発表とディスカッションへ。</p>
-        </div>
-      </div>
-      <div class="coming-soon card">
-        <img src="assets/logo.svg" alt="" aria-hidden="true">
-        <div>
-          <span class="eyebrow">COMING SOON</span>
-          <h3>Journal Club</h3>
-          <p>研究目的、重要Figure、限界、次の研究を整理し、発表前の問いを準備する機能を予定しています。</p>
-          <div class="coming-tags">
-            <span>発表の骨組み</span>
-            <span>質問づくり</span>
-            <span>チーム共有</span>
-            <span>ディスカッション</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
   </main>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <template id="paragraph-template">
-    <article class="entry-card paragraph-entry">
-      <div class="entry-top">
-        <div class="inline-fields">
-          <label>セクション
-            <select class="p-section">
-              <option>Abstract</option>
-              <option>Introduction</option>
-              <option>Methods</option>
-              <option>Results</option>
-              <option>Discussion</option>
-              <option>Conclusion</option>
-            </select>
-          </label>
-          <label>段落番号
-            <input class="p-number" inputmode="numeric" value="1" />
-          </label>
-          <label>役割
-            <select class="p-role">
-              <option>一般背景</option>
-              <option>先行研究</option>
-              <option>未解明点</option>
-              <option>研究目的</option>
-              <option>方法</option>
-              <option>結果</option>
-              <option>解釈</option>
-              <option>限界</option>
-              <option>今後の展望</option>
-              <option>その他</option>
-            </select>
-          </label>
-          <label>重要度
-            <select class="p-importance">
-              <option value="1">★</option>
-              <option value="2">★★</option>
-              <option value="3" selected>★★★</option>
-              <option value="4">★★★★</option>
-              <option value="5">★★★★★</option>
-            </select>
-          </label>
-        </div>
-        <button type="button" class="icon-button remove-entry" aria-label="削除">×</button>
-      </div>
-      <label>一時メモ：原文・翻訳文（保存されません）
-        <textarea class="p-temp" rows="3" placeholder="必要ならDeepL等の訳文を一時的に貼り付け"></textarea>
-      </label>
-      <div class="form-grid">
-        <label>段落にタイトルをつける
-          <input class="p-title" placeholder="例：水鳥の尾羽研究で残された課題" />
-        </label>
-        <label>自分の言葉で一文要約
-          <textarea class="p-summary" rows="2"></textarea>
-        </label>
-      </div>
-    </article>
-  </template>
-
-  <template id="figure-template">
-    <article class="entry-card figure-entry">
-      <div class="entry-top">
-        <div class="inline-fields">
-          <label>図表番号
-            <input class="f-number" placeholder="Figure 1" />
-          </label>
-          <label>重要度
-            <select class="f-importance">
-              <option value="1">★</option>
-              <option value="2">★★</option>
-              <option value="3" selected>★★★</option>
-              <option value="4">★★★★</option>
-              <option value="5">★★★★★</option>
-            </select>
-          </label>
-        </div>
-        <button type="button" class="icon-button remove-entry" aria-label="削除">×</button>
-      </div>
-      <label>この図表は何を示している？
-        <textarea class="f-summary" rows="2"></textarea>
-      </label>
-      <label>なぜ重要だと思った？
-        <textarea class="f-why" rows="2"></textarea>
-      </label>
-    </article>
-  </template>
-
-  <template id="next-paper-template">
-    <article class="entry-card next-paper-entry">
-      <div class="entry-top">
-        <strong>次に読みたい論文</strong>
-        <button type="button" class="icon-button remove-entry" aria-label="削除">×</button>
-      </div>
-      <div class="form-grid">
-        <label>著者・年 / タイトル
-          <input class="n-title" placeholder="Smith et al. 2022" />
-        </label>
-        <label>DOI / URL
-          <input class="n-doi" placeholder="10.xxxx/xxxxx" />
-        </label>
-      </div>
-      <label>なぜ読みたい？
-        <textarea class="n-reason" rows="2"></textarea>
-      </label>
-    </article>
-  </template>
   <script src="papertrail_config.js"></script>
-  <script src="papertrail_api.js?v=20260717-mynotebook-diagnostics"></script>
-  <script src="papertrail_auth.js?v=20260717-v291"></script>
+  <script src="papertrail_api.js?v=20260717-v3-refactor"></script>
+  <script src="papertrail_auth.js?v=20260717-v3-refactor"></script>
+  <script src="js/common.js?v=20260717-v3-refactor"></script>
+  <script src="js/home.js?v=20260717-v3-refactor"></script>
 
-
-
-  <script src="app.js?v=20260717-mynotebook-light-list"></script>
-
-<footer class="site-footer">
-  <p>© Megu GUNJI <span class="footer-sep">[</span> Toyo University <span class="footer-sep">]</span></p>
-</footer>
+  <footer class="site-footer">
+    <p>© Megu GUNJI <span class="footer-sep">[</span> Toyo University <span class="footer-sep">]</span></p>
+  </footer>
 </body>
 </html>

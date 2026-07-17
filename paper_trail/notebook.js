@@ -122,7 +122,7 @@ async function saveAndFinish(level){
   const saved=await saveToPaperTrail({silent:false});
   if(saved){
     localStorage.removeItem(NOTEBOOK_ID_KEY);
-    location.href="index.html?view=mine";
+    location.href="my_notebook.html";
   }
 }
 

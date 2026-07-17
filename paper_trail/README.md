@@ -87,16 +87,34 @@ Google Spreadsheet
 ## ファイル構成
 
 ```text
-research_notebook_v1.1.0/
+paper_trail/
 ├── index.html
-├── app.js
 ├── starter.html
+├── notebook.html
+├── my_notebook.html
+├── lab_notebook.html
+├── dashboard.html
+├── notebook.js
 ├── starter.js
+├── app.js                         # v2 URL互換shim
+├── js/
+│   ├── common.js
+│   ├── home.js
+│   ├── my_notebook.js
+│   ├── lab_notebook.js
+│   └── dashboard.js
+├── css/
+│   ├── style.css
+│   └── components.css
 ├── styles.css
 ├── README.md
 ├── SPEC.md
+├── MIGRATION_NOTES_v3.md
 └── gas/
-    ├── Code.gs
+    ├── PaperTrailBackend.gs
+    ├── AppShell.html
+    ├── Bridge.html
+    ├── Code.gs                    # 旧scaffold
     └── README_GAS.md
 ```
 
@@ -257,6 +275,12 @@ APIキーはNotebookデータには含めず、ブラウザのlocalStorageにの
 
 - Google Cloud Client IDを廃止
 - GASの`?view=auth`で大学アカウントを確認
+
+## v3.0 — Page-based refactor
+
+PaperTrail v3.0では、Home・Research Notebook・My Notebook・Lab Notebook・Dashboardをページ単位に分離しました。旧 `index.html#mine` 形式の画面切替は互換shimに移し、実際の責務は `my_notebook.html`、`lab_notebook.html`、`dashboard.html` と各ページ専用JSに分けています。
+
+詳しくは `MIGRATION_NOTES_v3.md` を参照してください。
 - 署名付き・有効期限付きトークンをGitHub Pagesへ返却
 - API呼び出しごとにGASでトークンを検証
 - GitHub側の更新はpushだけ

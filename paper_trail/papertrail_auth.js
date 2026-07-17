@@ -39,12 +39,31 @@
     return location.href.replace(/#.*$/, "");
   }
 
+  function currentRoute() {
+    const hash = location.hash.replace(/^#/, "");
+    if (!hash || hash.startsWith("auth=")) return "";
+    try { return decodeURIComponent(hash); }
+    catch (_) { return ""; }
+  }
+
+  function dispatchHashRouteChange() {
+    try {
+      window.dispatchEvent(new HashChangeEvent("hashchange"));
+    } catch (_) {
+      window.dispatchEvent(new Event("hashchange"));
+    }
+  }
+
   function readAuthFromHash() {
     const params = new URLSearchParams(location.hash.slice(1));
     const token = params.get("auth");
     if (!token) return false;
+    const route = params.get("route") || "";
     setToken(token);
-    history.replaceState(null, document.title, location.pathname + location.search);
+    const nextUrl = location.pathname + location.search
+      + (route ? `#${encodeURIComponent(route)}` : "");
+    history.replaceState(null, document.title, nextUrl);
+    if (route) dispatchHashRouteChange();
     return true;
   }
 
@@ -75,9 +94,13 @@
 
   function loginUrl() {
     const cfg = config();
-    return cfg.GAS_WEB_APP_URL
-      + "?view=auth&return="
-      + encodeURIComponent(cleanUrl());
+    const params = new URLSearchParams({
+      view: "auth",
+      return: cleanUrl()
+    });
+    const route = currentRoute();
+    if (route) params.set("route", route);
+    return cfg.GAS_WEB_APP_URL + "?" + params.toString();
   }
 
   function injectAccountUI() {

@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Research Starter | Research Notebook</title>
   <meta name="description" content="興味の種から具体的な研究の問いを育てるResearch Starter" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="css/style.css?v=20260717-v3-refactor" />
+  <link rel="stylesheet" href="css/components.css?v=20260717-v3-refactor" />
 </head>
 <body>
   <header class="topbar">
@@ -16,8 +17,16 @@
         <p class="brand-tagline">Read. Think. Connect.</p>
       </div>
     </div>
-    <a class="secondary button-link" href="index.html">Research Notebookへ</a>
+    <a class="secondary button-link" href="notebook.html">Research Notebookへ</a>
   </header>
+  <nav class="tabs" aria-label="メインメニュー">
+    <a class="tab tab-link" href="index.html">ホーム</a>
+    <a class="tab tab-link active" href="starter.html">Research Starter</a>
+    <a class="tab tab-link" href="notebook.html">Research Notebook</a>
+    <a class="tab tab-link" href="my_notebook.html">My Notebook</a>
+    <a class="tab tab-link" href="lab_notebook.html">Lab Notebook</a>
+    <a class="tab tab-link" href="dashboard.html">ダッシュボード</a>
+  </nav>
 
   <main class="starter-shell">
     <section class="hero card">
@@ -160,8 +169,9 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="papertrail_config.js"></script>
-  <script src="papertrail_api.js?v=20260716-appshell"></script>
-  <script src="papertrail_auth.js?v=20260716-appshell"></script>
+  <script src="papertrail_api.js?v=20260717-v3-refactor"></script>
+  <script src="papertrail_auth.js?v=20260717-v3-refactor"></script>
+  <script src="js/common.js?v=20260717-v3-refactor"></script>
 
 
   <script src="starter.js"></script>

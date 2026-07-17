@@ -28,14 +28,39 @@
     const FRONTEND_URL = <?!= JSON.stringify(frontendUrl) ?>;
     const FRONTEND_ORIGIN = <?!= JSON.stringify(frontendOrigin) ?>;
     const AUTH_TOKEN = <?!= JSON.stringify(authToken) ?>;
+    const ROUTE = <?!= JSON.stringify(route || "") ?>;
     const frame = document.getElementById("papertrailApp");
 
-    function appUrlWithToken() {
+    function routedFrontendUrl() {
       const url = new URL(FRONTEND_URL);
+      const pageRoutes = {
+        home: "index.html",
+        mine: "my_notebook.html",
+        lab: "lab_notebook.html",
+        dashboard: "dashboard.html",
+        new: "notebook.html"
+      };
+      const page = pageRoutes[ROUTE] || "";
+      if (!page) return { url, consumeRouteInHash: Boolean(ROUTE) };
+      url.hash = "";
+      url.search = "";
+      const basePath = url.pathname.endsWith("/")
+        ? url.pathname
+        : /\.[^/]+$/.test(url.pathname)
+          ? url.pathname.replace(/\/[^/]*$/, "/")
+          : url.pathname + "/";
+      url.pathname = basePath + page;
+      return { url, consumeRouteInHash: false };
+    }
+
+    function appUrlWithToken() {
+      const routed = routedFrontendUrl();
+      const url = routed.url;
       if (!url.pathname.endsWith("/") && !/\.[^/]+$/.test(url.pathname)) {
         url.pathname += "/";
       }
-      url.hash = "auth=" + encodeURIComponent(AUTH_TOKEN);
+      url.hash = "auth=" + encodeURIComponent(AUTH_TOKEN)
+        + (routed.consumeRouteInHash ? "&route=" + encodeURIComponent(ROUTE) : "");
       return url.toString();
     }
 
