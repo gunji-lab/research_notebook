@@ -6,6 +6,7 @@ const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
 
 let editingId = null;
 let backendMyCards = null;
+let backendMyLoadSeq = 0;
 
 function uid(){
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -564,9 +565,6 @@ switchView = function(name){
 renderHomeLobby();
 
 const initialView = new URLSearchParams(location.search).get("view");
-if(["home","mine","lab","dashboard","journal"].includes(initialView)){
-  switchView(initialView);
-}
 
 
 /* =========================================================
@@ -631,10 +629,19 @@ async function renderBackendMyNotebooks(){
   const target=document.querySelector("#my-list");
   if(!target)return;
   if(!window.PAPERTRAIL_CONFIG?.GAS_WEB_APP_URL || window.PAPERTRAIL_CONFIG.GAS_WEB_APP_URL.includes("PASTE_"))return;
+  if(!window.PaperTrailAuth?.getToken?.()){
+    target.innerHTML='<div class="empty-state"><p>大学アカウントでログインすると、保存したNotebookが表示されます。</p></div>';
+    return;
+  }
+  const loadSeq=++backendMyLoadSeq;
   target.innerHTML='<div class="empty">PaperTrailから読み込み中…</div>';
   try{
     const response=await window.PaperTrailAPI.listMyNotebooks();
-    const items=Array.isArray(response) ? response : [];
+    if(loadSeq!==backendMyLoadSeq)return;
+    if(!Array.isArray(response)){
+      throw new Error("Notebook一覧の形式を確認できませんでした。");
+    }
+    const items=response;
     backendMyCards=items.map(notebookItemToCard);
     renderMyCards();
     renderHomeLobby();
@@ -650,7 +657,7 @@ async function renderBackendMyNotebooks(){
       }
     }
   }catch(error){
-    backendMyCards=[];
+    if(loadSeq!==backendMyLoadSeq)return;
     renderMyCards();
     target.innerHTML=`<div class="empty-state"><p>Notebookを読み込めませんでした。</p><small>${escapeHtml(error.message||String(error))}</small><button type="button" class="secondary" id="retry-my-notebooks">もう一度読み込む</button></div>`;
     document.querySelector("#retry-my-notebooks")?.addEventListener("click",renderBackendMyNotebooks);
@@ -721,3 +728,7 @@ window.addEventListener("papertrail:user-ready",()=>{
   if(mine?.classList.contains("active")) renderBackendMyNotebooks();
   renderHomeLobby();
 });
+
+if(["home","mine","lab","dashboard","journal"].includes(initialView)){
+  switchView(initialView);
+}
