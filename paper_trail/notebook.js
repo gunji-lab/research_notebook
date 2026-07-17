@@ -23,8 +23,33 @@ const state={
   discussionReflection:{takeaway:"",question:""}
 };
 
-function show(id){
+function notebookPageIds(){
+  return new Set($$(".rn-page").map(page=>page.id));
+}
+function isAuthHash(){
+  return location.hash.replace(/^#/,"").startsWith("auth=");
+}
+function notebookHashPage(){
+  try{
+    const id=decodeURIComponent(location.hash.replace(/^#/,""));
+    return notebookPageIds().has(id) ? id : "";
+  }catch{
+    return "";
+  }
+}
+function setNotebookHash(id,replace=false){
+  if(!notebookPageIds().has(id))return;
+  const nextHash=`#${encodeURIComponent(id)}`;
+  if(location.hash===nextHash)return;
+  const method=replace ? "replaceState" : "pushState";
+  history[method](null,"",nextHash);
+}
+let currentPageId="";
+function show(id,{updateHash=true,replaceHash=false}={}){
+  if(!notebookPageIds().has(id))return;
   $$(".rn-page").forEach(p=>p.classList.toggle("active",p.id===id));
+  currentPageId=id;
+  if(updateHash)setNotebookHash(id,replaceHash);
   const policy=$(".rn-policy");
   const top=policy
     ? policy.getBoundingClientRect().bottom+window.scrollY+12
@@ -33,6 +58,10 @@ function show(id){
 }
 $$("[data-go]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.go)));
 $$("[data-open]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.open)));
+window.addEventListener("hashchange",()=>{
+  const page=notebookHashPage();
+  if(page&&page!==currentPageId)show(page,{updateHash:false});
+});
 
 function addSummary(value=""){
   const list=$("#abstractSummaryList");
@@ -913,7 +942,8 @@ async function loadRequestedNotebook(){
     const record=await window.PaperTrailAPI.getNotebook(requestedNotebookId);
     currentNotebookId=record.notebookId||requestedNotebookId;
     restoreNotebook(record.notebookJson||{});
-    show(pageForLevel(record.readingLevel||record.notebookJson?.state?.level));
+    const requestedPage=notebookHashPage();
+    show(requestedPage||pageForLevel(record.readingLevel||record.notebookJson?.state?.level),{replaceHash:!requestedPage});
   }catch(error){
     requestedNotebookLoaded=false;
     alert(`Notebookを読み込めませんでした：${error.message}`);
@@ -921,7 +951,11 @@ async function loadRequestedNotebook(){
   }
 }
 
-show("page-quick-basic");
+const initialNotebookPage=notebookHashPage();
+show(initialNotebookPage||"page-quick-basic",{
+  updateHash:!isAuthHash(),
+  replaceHash:!initialNotebookPage
+});
 window.addEventListener("papertrail:user-ready",event=>{
   const user=event.detail||{};
   const el=document.querySelector("#notebookAuthor");

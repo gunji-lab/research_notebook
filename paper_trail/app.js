@@ -7,6 +7,7 @@ const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
 let editingId = null;
 let backendMyCards = null;
 let backendMyLoadSeq = 0;
+const INDEX_ROUTE_VIEWS = new Set(["home","new","mine","lab","dashboard","journal"]);
 
 function uid(){
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -46,9 +47,26 @@ function showToast(message){
   el.classList.add("show");
   setTimeout(()=>el.classList.remove("show"), 2400);
 }
+function safeDecodeHash(){
+  try { return decodeURIComponent(location.hash.replace(/^#/,"")); }
+  catch { return ""; }
+}
+function indexHashView(){
+  const route = safeDecodeHash();
+  return INDEX_ROUTE_VIEWS.has(route) ? route : "";
+}
+function setIndexHash(name,replace=false){
+  if(!INDEX_ROUTE_VIEWS.has(name))return;
+  const nextHash = `#${encodeURIComponent(name)}`;
+  if(location.hash === nextHash)return;
+  const method = replace ? "replaceState" : "pushState";
+  history[method](null,"",nextHash);
+}
 function switchView(name){
+  if(!INDEX_ROUTE_VIEWS.has(name))return;
   $$(".view").forEach(v=>v.classList.toggle("active", v.id === `view-${name}`));
   $$(".tab").forEach(t=>t.classList.toggle("active", t.dataset.view === name));
+  setIndexHash(name);
   window.scrollTo({top:0,behavior:"smooth"});
   if(name==="home") renderRecent();
   if(name==="mine") renderMyCards();
@@ -579,7 +597,7 @@ switchView = function(name){
 
 renderHomeLobby();
 
-const initialView = new URLSearchParams(location.search).get("view");
+const initialView = new URLSearchParams(location.search).get("view") || indexHashView();
 
 
 /* =========================================================
@@ -799,6 +817,14 @@ window.addEventListener("load",()=>{
   setTimeout(refreshMyNotebookIfVisible,500);
 });
 
-if(["home","mine","lab","dashboard","journal"].includes(initialView)){
+if(INDEX_ROUTE_VIEWS.has(initialView)){
   switchView(initialView);
+  setIndexHash(initialView,true);
+}else if(!location.hash){
+  setIndexHash("home",true);
 }
+
+window.addEventListener("hashchange",()=>{
+  const view = indexHashView();
+  if(view) switchView(view);
+});
