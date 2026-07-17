@@ -6,6 +6,7 @@
  */
 (() => {
   const TIMEOUT_MS = 30000;
+  const PARENT_BRIDGE_TIMEOUT_MS = 2500;
   const pending = new Map();
   let frame = null;
   let bridgeWindow = null;
@@ -26,13 +27,13 @@
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
 
-  function ensureParentBridge() {
+  function ensureParentBridge(timeoutMs=PARENT_BRIDGE_TIMEOUT_MS) {
     bridgeId = createBridgeId();
 
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new Error("PaperTrail APIへ接続できませんでした。"));
-      }, TIMEOUT_MS);
+      }, timeoutMs);
 
       function onReady(event) {
         if (event.source !== window.parent) return;
@@ -55,11 +56,15 @@
       sayHello();
       setTimeout(sayHello, 500);
       setTimeout(sayHello, 1500);
+      setTimeout(sayHello, 2200);
     });
   }
 
   function ensureIframeBridge(config) {
     return new Promise((resolve, reject) => {
+      frame?.remove?.();
+      frame = null;
+      bridgeWindow = null;
       frame = document.createElement("iframe");
       frame.id = "papertrail-api-bridge";
       frame.hidden = true;
@@ -96,9 +101,16 @@
 
     try {
       const config = cfg();
-      readyPromise = window.parent && window.parent !== window
-        ? ensureParentBridge()
+      const bridgeAttempt = window.parent && window.parent !== window
+        ? ensureParentBridge().catch(error => {
+            console.warn("PaperTrail parent bridge unavailable; falling back to iframe bridge.", error);
+            return ensureIframeBridge(config);
+          })
         : ensureIframeBridge(config);
+      readyPromise = bridgeAttempt.catch(error => {
+        readyPromise = null;
+        throw error;
+      });
     } catch (error) {
       readyPromise = Promise.reject(error);
     }
