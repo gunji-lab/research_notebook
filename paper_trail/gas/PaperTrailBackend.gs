@@ -108,6 +108,9 @@ function route_(action, params, payload) {
       case 'listMyNotebooks':
         data = listMyNotebooks_(user);
         break;
+      case 'getMyNotebookDebug':
+        data = getMyNotebookDebug_(user);
+        break;
       case 'listLabNotebooks':
         data = listLabNotebooks_(user);
         break;
@@ -239,6 +242,26 @@ function listMyNotebooks_(user) {
     .filter(row => normalizeStudentId_(row.student_id) === normalizeStudentId_(user.studentId))
     .sort(byUpdatedDesc_)
     .map(row => publicNotebook_(row, true));
+}
+
+function getMyNotebookDebug_(user) {
+  const rows = sheetData_(sheet_(PT_SHEETS.NOTEBOOKS));
+  const normalizedUserId = normalizeStudentId_(user.studentId);
+  const matches = rows.filter(row => normalizeStudentId_(row.student_id) === normalizedUserId);
+  const recent = rows.sort(byUpdatedDesc_).slice(0, 5).map(row => ({
+    notebookId:String(row.notebook_id || ''),
+    studentId:String(row.student_id || ''),
+    normalizedStudentId:normalizeStudentId_(row.student_id),
+    title:String(row.title || ''),
+    updatedAt:String(row.updated_at || '')
+  }));
+  return {
+    userStudentId:user.studentId,
+    normalizedUserId,
+    totalNotebooks:rows.length,
+    matchedNotebooks:matches.length,
+    recent
+  };
 }
 
 function listLabNotebooks_(user) {
@@ -736,6 +759,7 @@ function bridgeRequest(request) {
       case "saveProfile": data=saveProfile_(user,args); break;
       case "saveNotebook": data=saveNotebook_(user,args); break;
       case "listMyNotebooks": data=listMyNotebooks_(user); break;
+      case "getMyNotebookDebug": data=getMyNotebookDebug_(user); break;
       case "listLabNotebooks": data=listLabNotebooks_(user); break;
       case "getNotebook": data=getNotebook_(user,args.notebookId); break;
       case "saveTrail": data=saveTrail_(user,args); break;

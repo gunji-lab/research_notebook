@@ -1557,3 +1557,37 @@ button.reading-map-item:focus-visible{outline:2px solid var(--orange);outline-of
   justify-content:center;
   text-decoration:none;
 }
+
+.debug-note{
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid var(--line);
+  color:var(--muted);
+  text-align:left;
+}
+.debug-note summary{
+  cursor:pointer;
+  color:var(--ink);
+  font-weight:800;
+}
+.debug-note dl{
+  display:grid;
+  gap:6px;
+  margin:10px 0;
+}
+.debug-note div{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.debug-note dt{
+  color:var(--ink);
+  font-weight:800;
+}
+.debug-note dd{
+  margin:0;
+}
+.debug-note ul{
+  margin:8px 0 0 18px;
+  padding:0;
+}

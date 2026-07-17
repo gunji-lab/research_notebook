@@ -625,6 +625,36 @@ function notebookItemToCard(item){
   };
 }
 
+function debugNotebookHtml(debug){
+  if(!debug)return "";
+  const recent=(debug.recent||[]).map(row=>
+    `<li>${escapeHtml(row.studentId||"student_idなし")} / ${escapeHtml(row.title||"Untitled")} / ${escapeHtml((row.updatedAt||"").slice(0,10))}</li>`
+  ).join("");
+  return `<details class="debug-note">
+    <summary>保存済みなのに表示されない場合の確認情報</summary>
+    <dl>
+      <div><dt>現在のアカウントID</dt><dd>${escapeHtml(debug.userStudentId||"")}</dd></div>
+      <div><dt>Notebooks総数</dt><dd>${Number(debug.totalNotebooks||0)}</dd></div>
+      <div><dt>このアカウントに一致した件数</dt><dd>${Number(debug.matchedNotebooks||0)}</dd></div>
+    </dl>
+    ${recent?`<p>最新の保存:</p><ul>${recent}</ul>`:""}
+  </details>`;
+}
+
+async function renderEmptyBackendNotebookState(target){
+  let debug=null;
+  try{
+    debug=await window.PaperTrailAPI.getMyNotebookDebug?.();
+  }catch(error){
+    console.warn("PaperTrail notebook debug failed:",error);
+  }
+  target.innerHTML=`<div class="empty-state">
+    <p>まだNotebookはありません。気になる論文を一本、さくっと読んでみましょう。</p>
+    <a class="primary button-link" href="notebook.html">論文を登録する</a>
+    ${debugNotebookHtml(debug)}
+  </div>`;
+}
+
 async function renderBackendMyNotebooks(){
   const target=document.querySelector("#my-list");
   if(!target)return;
@@ -645,6 +675,9 @@ async function renderBackendMyNotebooks(){
     backendMyCards=items.map(notebookItemToCard);
     renderMyCards();
     renderHomeLobby();
+    if(!items.length){
+      await renderEmptyBackendNotebookState(target);
+    }
 
     const latest=items[0];
     const lastNote=$("#my-last-note");

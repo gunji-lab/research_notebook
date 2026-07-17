@@ -163,6 +163,7 @@
     saveProfile: profile => call("saveProfile", profile),
     saveNotebook: payload => call("saveNotebook", payload),
     listMyNotebooks: () => call("listMyNotebooks"),
+    getMyNotebookDebug: () => call("getMyNotebookDebug"),
     listLabNotebooks: () => call("listLabNotebooks"),
     getNotebook: notebookId => call("getNotebook", { notebookId }),
     saveTrail: payload => call("saveTrail", payload),
