@@ -6,7 +6,7 @@
  */
 (() => {
   const TIMEOUT_MS = 30000;
-  const PARENT_BRIDGE_TIMEOUT_MS = 2500;
+  const PARENT_BRIDGE_TIMEOUT_MS = 5000;
   const pending = new Map();
   let frame = null;
   let bridgeWindow = null;
@@ -36,7 +36,7 @@
       }, timeoutMs);
 
       function onReady(event) {
-        if (event.source !== window.parent) return;
+        if (event.source && event.source !== window.parent) return;
         if (event.data?.type !== "papertrail:bridge-ready") return;
         if (event.data?.bridgeId !== bridgeId) return;
         bridgeWindow = event.source || window.parent;
@@ -155,7 +155,7 @@
 
   window.addEventListener("message", event => {
     if (!frame && !bridgeWindow) return;
-    if (bridgeWindow && event.source !== bridgeWindow) return;
+    if (bridgeWindow && event.source && event.source !== bridgeWindow) return;
     const data = event.data || {};
     if (data.bridgeId !== bridgeId) return;
     if (data.type !== "papertrail:response" || !data.id) return;
