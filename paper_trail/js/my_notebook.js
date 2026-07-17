@@ -17,6 +17,7 @@
 
   let cards = [];
   let loadSeq = 0;
+  const redirected = window.PaperTrailCommon.redirectToGasShellIfNeeded("mine");
 
   function renderMiniNotes(target, picker, emptyText) {
     if (!target) return;
@@ -53,7 +54,7 @@
     if (recentBox) {
       const recent = cards.slice(0, 3);
       recentBox.innerHTML = recent.length ? recent.map(c => cardHtml(c)).join("") :
-        '<div class="empty-state"><p>まだNotebookはありません。気になる論文を一本、さくっと読んでみましょう。</p><a class="primary button-link" href="notebook.html">論文を登録する</a></div>';
+        `<div class="empty-state"><p>まだNotebookはありません。気になる論文を一本、さくっと読んでみましょう。</p><a class="primary button-link" href="${window.PaperTrailCommon.getPaperTrailRouteUrl("new","notebook.html")}">論文を登録する</a></div>`;
     }
     const filtered = cards.filter(c => searchMatches(c, q) && roleMatches(c, role));
     const box = $("#my-cards");
@@ -79,7 +80,7 @@
     }
     target.innerHTML = `<div class="empty-state">
       <p>まだNotebookはありません。気になる論文を一本、さくっと読んでみましょう。</p>
-      <a class="primary button-link" href="notebook.html">論文を登録する</a>
+      <a class="primary button-link" href="${window.PaperTrailCommon.getPaperTrailRouteUrl("new","notebook.html")}">論文を登録する</a>
       ${debugNotebookHtml(debug)}
     </div>`;
   }
@@ -114,6 +115,7 @@
   }
 
   function boot() {
+    if (redirected) return;
     $("#my-search")?.addEventListener("input", renderCards);
     $("#my-role-filter")?.addEventListener("change", renderCards);
     loadCards();

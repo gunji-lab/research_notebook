@@ -129,8 +129,10 @@
 
             <div class="account-actions">
               <button type="button" class="primary" id="saveProfileButton">プロフィールを保存</button>
+              <button type="button" class="secondary" id="checkApiButton">API接続を確認</button>
               <button type="button" class="secondary" id="signOutButton">ログアウト</button>
             </div>
+            <pre class="api-debug-output" id="apiDebugOutput" hidden></pre>
             <p class="field-status" id="profileStatus"></p>
           </section>
 
@@ -178,6 +180,22 @@
         $("#profileStatus").textContent = "プロフィールを保存しました。";
       } catch (error) {
         $("#profileStatus").textContent = error.message;
+      }
+    });
+
+    $("#checkApiButton").addEventListener("click", async () => {
+      const output = $("#apiDebugOutput");
+      output.hidden = false;
+      output.textContent = "API接続を確認中…";
+      try {
+        const debug = await window.PaperTrailAPI.debugBridge?.();
+        output.textContent = JSON.stringify(debug, null, 2);
+        $("#profileStatus").textContent = debug?.ok
+          ? "API Bridgeに接続できました。"
+          : "API Bridgeに接続できませんでした。";
+      } catch (error) {
+        output.textContent = error.stack || error.message || String(error);
+        $("#profileStatus").textContent = error.message || String(error);
       }
     });
 

@@ -9,6 +9,7 @@ else localStorage.removeItem(NOTEBOOK_ID_KEY);
 let deepReturnPage="page-quick-complete";
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const redirectedToGasShell=window.PaperTrailCommon?.redirectToGasShellIfNeeded?.("new");
 
 const state={
   level:"quick",
@@ -122,7 +123,7 @@ async function saveAndFinish(level){
   const saved=await saveToPaperTrail({silent:false});
   if(saved){
     localStorage.removeItem(NOTEBOOK_ID_KEY);
-    location.href="my_notebook.html";
+    location.href=window.PaperTrailCommon?.getPaperTrailRouteUrl?.("mine","my_notebook.html") || "my_notebook.html";
   }
 }
 

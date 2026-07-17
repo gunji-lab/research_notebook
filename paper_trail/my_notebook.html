@@ -25,12 +25,12 @@
   </header>
 
   <nav class="tabs" aria-label="メインメニュー">
-    <a class="tab tab-link" href="index.html">ホーム</a>
+    <a class="tab tab-link" href="index.html" data-papertrail-route="home" data-papertrail-file="index.html">ホーム</a>
     <a class="tab tab-link" href="starter.html">Research Starter</a>
-    <a class="tab tab-link" href="notebook.html">Research Notebook</a>
-    <a class="tab tab-link active" href="my_notebook.html">My Notebook</a>
-    <a class="tab tab-link" href="lab_notebook.html">Lab Notebook</a>
-    <a class="tab tab-link" href="dashboard.html">ダッシュボード</a>
+    <a class="tab tab-link" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">Research Notebook</a>
+    <a class="tab tab-link active" href="my_notebook.html" data-papertrail-route="mine" data-papertrail-file="my_notebook.html">My Notebook</a>
+    <a class="tab tab-link" href="lab_notebook.html" data-papertrail-route="lab" data-papertrail-file="lab_notebook.html">Lab Notebook</a>
+    <a class="tab tab-link" href="dashboard.html" data-papertrail-route="dashboard" data-papertrail-file="dashboard.html">ダッシュボード</a>
   </nav>
 
   <main>
@@ -41,8 +41,8 @@
         <p id="my-last-note">前回の続きからでも、新しい一本からでも大丈夫です。</p>
       </div>
       <div class="my-notebook-actions">
-        <a class="primary button-link" id="continue-latest" href="notebook.html">続きを読む</a>
-        <a class="secondary button-link" href="notebook.html">新しい論文を読む</a>
+        <a class="primary button-link" id="continue-latest" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">続きを読む</a>
+        <a class="secondary button-link" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">新しい論文を読む</a>
       </div>
     </section>
 
@@ -94,10 +94,10 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="papertrail_config.js"></script>
-  <script src="papertrail_api.js?v=20260718-v29-bridge"></script>
-  <script src="papertrail_auth.js?v=20260718-v29-auth"></script>
-  <script src="js/common.js?v=20260717-v3-refactor"></script>
-  <script src="js/my_notebook.js?v=20260717-v3-refactor"></script>
+  <script src="papertrail_api.js?v=20260718-api-debug"></script>
+  <script src="papertrail_auth.js?v=20260718-api-debug"></script>
+  <script src="js/common.js?v=20260718-gas-route"></script>
+  <script src="js/my_notebook.js?v=20260718-gas-route"></script>
 
   <footer class="site-footer">
     <p>© Megu GUNJI <span class="footer-sep">[</span> Toyo University <span class="footer-sep">]</span></p>

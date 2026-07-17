@@ -1,5 +1,6 @@
 (() => {
   const { $, escapeHtml, requireAuth, readingLevelLabel } = window.PaperTrailCommon;
+  const redirected = window.PaperTrailCommon.redirectToGasShellIfNeeded("dashboard");
 
   function renderDashboard(data) {
     const target = $("#dashboard-content");
@@ -37,6 +38,7 @@
   }
 
   async function loadDashboard() {
+    if (redirected) return;
     const target = $("#dashboard-content");
     if (!target) return;
     if (!requireAuth(target, "大学アカウントでログインすると、学習分析が表示されます。")) return;

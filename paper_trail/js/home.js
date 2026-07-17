@@ -8,19 +8,21 @@
     notebookUrl,
     cardStage
   } = window.PaperTrailCommon;
+  let redirected = redirectLegacyRoute()
+    || window.PaperTrailCommon.redirectToGasShellIfNeeded("home");
 
   function redirectLegacyRoute() {
     const params = new URLSearchParams(location.search);
     const rawHash = location.hash.replace(/^#/, "");
     const route = params.get("view") || rawHash;
     const map = {
-      new: "notebook.html",
-      mine: "my_notebook.html",
-      lab: "lab_notebook.html",
-      dashboard: "dashboard.html"
+      new: ["new", "notebook.html"],
+      mine: ["mine", "my_notebook.html"],
+      lab: ["lab", "lab_notebook.html"],
+      dashboard: ["dashboard", "dashboard.html"]
     };
     if (map[route]) {
-      location.replace(map[route]);
+      location.replace(window.PaperTrailCommon.getPaperTrailRouteUrl(map[route][0], map[route][1]));
       return true;
     }
     return false;
@@ -38,7 +40,7 @@
     if (!box) return;
     box.innerHTML = `<div class="continue-empty">
       <p>${escapeHtml(message)}</p>
-      <a class="secondary button-link" href="notebook.html">最初の1本を開く</a>
+      <a class="secondary button-link" href="${window.PaperTrailCommon.getPaperTrailRouteUrl("new","notebook.html")}">最初の1本を開く</a>
     </div>`;
   }
 
@@ -99,7 +101,7 @@
   }
 
   function boot() {
-    if (redirectLegacyRoute()) return;
+    if (redirected) return;
     setHomeGreeting();
     $("#home-doi-button")?.addEventListener("click", event => {
       const doi = $("#home-doi")?.value.trim();

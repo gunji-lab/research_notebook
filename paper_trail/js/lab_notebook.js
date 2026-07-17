@@ -10,6 +10,7 @@
   } = window.PaperTrailCommon;
 
   let cards = [];
+  const redirected = window.PaperTrailCommon.redirectToGasShellIfNeeded("lab");
 
   function renderCards() {
     const q = $("#lab-search")?.value.trim() || "";
@@ -37,6 +38,7 @@
   }
 
   function boot() {
+    if (redirected) return;
     $("#lab-search")?.addEventListener("input", renderCards);
     $("#lab-role-filter")?.addEventListener("change", renderCards);
     loadCards();

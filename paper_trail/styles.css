@@ -1591,3 +1591,16 @@ button.reading-map-item:focus-visible{outline:2px solid var(--orange);outline-of
   margin:8px 0 0 18px;
   padding:0;
 }
+
+.api-debug-output{
+  max-height:220px;
+  overflow:auto;
+  margin:12px 0 0;
+  padding:12px;
+  border:1px solid #eadcc8;
+  border-radius:10px;
+  background:#fffaf2;
+  color:#3a3027;
+  font-size:12px;
+  white-space:pre-wrap;
+}

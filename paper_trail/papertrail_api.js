@@ -6,11 +6,23 @@
  */
 (() => {
   const TIMEOUT_MS = 30000;
+  const debugEvents = [];
   const pending = new Map();
   let frame = null;
   let bridgeWindow = null;
   let bridgeId = "";
   let readyPromise = null;
+
+  function debug(message, detail={}) {
+    const entry = {
+      at: new Date().toISOString(),
+      message,
+      detail
+    };
+    debugEvents.push(entry);
+    if (debugEvents.length > 40) debugEvents.shift();
+    console.debug("[PaperTrail API]", message, detail);
+  }
 
   function cfg() {
     const value = window.PAPERTRAIL_CONFIG || {};
@@ -28,9 +40,11 @@
 
   function ensureParentBridge() {
     bridgeId = createBridgeId();
+    debug("parent-bridge:start", { bridgeId });
 
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
+        debug("parent-bridge:timeout", { bridgeId });
         reject(new Error("PaperTrail APIへ接続できませんでした。"));
       }, TIMEOUT_MS);
 
@@ -41,10 +55,12 @@
         bridgeWindow = event.source || window.parent;
         clearTimeout(timer);
         window.removeEventListener("message", onReady);
+        debug("parent-bridge:ready", { bridgeId });
         resolve();
       }
 
       function sayHello() {
+        debug("parent-bridge:hello", { bridgeId });
         window.parent.postMessage({
           type: "papertrail:hello",
           bridgeId
@@ -60,6 +76,7 @@
 
   function ensureIframeBridge(config) {
     return new Promise((resolve, reject) => {
+      debug("iframe-bridge:start");
       frame = document.createElement("iframe");
       frame.id = "papertrail-api-bridge";
       frame.hidden = true;
@@ -71,8 +88,10 @@
       bridgeId = createBridgeId();
       url.searchParams.set("bridge", bridgeId);
       frame.src = url.toString();
+      debug("iframe-bridge:src", { bridgeId, src: url.toString() });
 
       const timer = setTimeout(() => {
+        debug("iframe-bridge:timeout", { bridgeId });
         reject(new Error("PaperTrail APIへ接続できませんでした。"));
       }, TIMEOUT_MS);
 
@@ -82,11 +101,15 @@
         bridgeWindow = event.source || frame.contentWindow;
         clearTimeout(timer);
         window.removeEventListener("message", onReady);
+        debug("iframe-bridge:ready", { bridgeId });
         resolve();
       }
 
       window.addEventListener("message", onReady);
-      frame.onerror = () => reject(new Error("PaperTrail APIを読み込めませんでした。"));
+      frame.onerror = () => {
+        debug("iframe-bridge:error", { bridgeId, src: frame.src });
+        reject(new Error("PaperTrail APIを読み込めませんでした。"));
+      };
       document.body.appendChild(frame);
     });
   }
@@ -96,10 +119,16 @@
 
     try {
       const config = cfg();
+      debug("ensure-bridge", {
+        mode: window.parent && window.parent !== window ? "parent" : "iframe",
+        href: location.href,
+        referrer: document.referrer || ""
+      });
       readyPromise = window.parent && window.parent !== window
         ? ensureParentBridge()
         : ensureIframeBridge(config);
     } catch (error) {
+      debug("ensure-bridge:error", { error: error.message || String(error) });
       readyPromise = Promise.reject(error);
     }
 
@@ -107,6 +136,7 @@
   }
 
   async function call(method, args={}) {
+    debug("call:start", { method });
     await ensureBridge();
 
     const token = window.PaperTrailAuth?.getToken?.() || "";
@@ -127,9 +157,11 @@
       if (!target) {
         pending.delete(id);
         clearTimeout(timer);
+        debug("call:no-target", { method, bridgeId });
         reject(new Error("PaperTrail APIへ接続できませんでした。"));
         return;
       }
+      debug("call:post", { method, id, bridgeId });
       target.postMessage({
         type: "papertrail:request",
         bridgeId,
@@ -153,6 +185,7 @@
 
     clearTimeout(request.timer);
     pending.delete(data.id);
+    debug("call:response", { id: data.id, ok: data.ok, error: data.error || "" });
 
     if (data.ok) request.resolve(data.data);
     else request.reject(new Error(data.error || "PaperTrail APIエラー"));
@@ -169,6 +202,27 @@
     saveTrail: payload => call("saveTrail", payload),
     getDashboard: () => call("getDashboard"),
     openAlexWorkByDoi: doi => call("openAlexWorkByDoi", { doi }),
-    openAlexSearch: (query, year="") => call("openAlexSearch", { query, year })
+    openAlexSearch: (query, year="") => call("openAlexSearch", { query, year }),
+    debugBridge: async () => {
+      try {
+        await ensureBridge();
+        return {
+          ok: true,
+          bridgeId,
+          hasFrame: Boolean(frame),
+          hasBridgeWindow: Boolean(bridgeWindow),
+          events: debugEvents.slice()
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          error: error.message || String(error),
+          bridgeId,
+          hasFrame: Boolean(frame),
+          hasBridgeWindow: Boolean(bridgeWindow),
+          events: debugEvents.slice()
+        };
+      }
+    }
   };
 })();

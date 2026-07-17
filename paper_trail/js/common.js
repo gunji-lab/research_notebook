@@ -29,6 +29,43 @@
     return Boolean(window.PaperTrailAuth?.getToken?.());
   }
 
+  function isInsideGasShell() {
+    return Boolean(window.parent && window.parent !== window);
+  }
+
+  function getPaperTrailRouteUrl(route, filename) {
+    if (isInsideGasShell()) return filename;
+    const gasUrl = window.PAPERTRAIL_CONFIG?.GAS_WEB_APP_URL || "";
+    if (!gasUrl || gasUrl.includes("PASTE_")) {
+      console.warn("[PaperTrail] GAS_WEB_APP_URL is missing.");
+      return filename;
+    }
+    const url = new URL(gasUrl);
+    url.searchParams.set("view", "app");
+    url.searchParams.set("route", route);
+    return url.toString();
+  }
+
+  function initializePaperTrailNavigation() {
+    $$("[data-papertrail-route]").forEach(link => {
+      const route = link.dataset.papertrailRoute;
+      const filename = link.dataset.papertrailFile;
+      if (!route || !filename) return;
+      link.href = getPaperTrailRouteUrl(route, filename);
+    });
+  }
+
+  function redirectToGasShellIfNeeded(route) {
+    if (isInsideGasShell()) return false;
+    const gasUrl = window.PAPERTRAIL_CONFIG?.GAS_WEB_APP_URL || "";
+    if (!gasUrl || gasUrl.includes("PASTE_")) return false;
+    const url = new URL(gasUrl);
+    url.searchParams.set("view", "app");
+    url.searchParams.set("route", route);
+    window.location.replace(url.toString());
+    return true;
+  }
+
   function requireAuth(target, message="大学アカウントでログインすると、保存したNotebookが表示されます。") {
     if (isBackendConfigured() && hasAuthToken()) return true;
     if (target) {
@@ -129,7 +166,8 @@
 
   function notebookUrl(card) {
     const id = card.notebookId || card.id || "";
-    return id ? `notebook.html?notebook=${encodeURIComponent(id)}` : "notebook.html";
+    const filename = id ? `notebook.html?notebook=${encodeURIComponent(id)}` : "notebook.html";
+    return isInsideGasShell() ? filename : getPaperTrailRouteUrl("new", filename);
   }
 
   function cardHtml(card, { lab=false }={}) {
@@ -193,6 +231,10 @@
     showToast,
     isBackendConfigured,
     hasAuthToken,
+    isInsideGasShell,
+    getPaperTrailRouteUrl,
+    initializePaperTrailNavigation,
+    redirectToGasShellIfNeeded,
     requireAuth,
     formatDate,
     readingLevelLabel,
@@ -207,4 +249,6 @@
     debugNotebookHtml,
     loadMyNotebookCards
   };
+
+  document.addEventListener("DOMContentLoaded", initializePaperTrailNavigation);
 })();

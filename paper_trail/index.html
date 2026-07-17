@@ -28,12 +28,12 @@
   </header>
 
   <nav class="tabs" aria-label="メインメニュー">
-    <a class="tab tab-link active" href="index.html">ホーム</a>
+    <a class="tab tab-link active" href="index.html" data-papertrail-route="home" data-papertrail-file="index.html">ホーム</a>
     <a class="tab tab-link" href="starter.html">Research Starter</a>
-    <a class="tab tab-link" href="notebook.html">Research Notebook</a>
-    <a class="tab tab-link" href="my_notebook.html">My Notebook</a>
-    <a class="tab tab-link" href="lab_notebook.html">Lab Notebook</a>
-    <a class="tab tab-link" href="dashboard.html">ダッシュボード</a>
+    <a class="tab tab-link" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">Research Notebook</a>
+    <a class="tab tab-link" href="my_notebook.html" data-papertrail-route="mine" data-papertrail-file="my_notebook.html">My Notebook</a>
+    <a class="tab tab-link" href="lab_notebook.html" data-papertrail-route="lab" data-papertrail-file="lab_notebook.html">Lab Notebook</a>
+    <a class="tab tab-link" href="dashboard.html" data-papertrail-route="dashboard" data-papertrail-file="dashboard.html">ダッシュボード</a>
   </nav>
 
   <main>
@@ -58,7 +58,7 @@
         </div>
         <div class="doi-form-row">
           <input id="home-doi" placeholder="10.xxxx/xxxxx" aria-label="DOI">
-          <a class="primary button-link" id="home-doi-button" href="notebook.html">論文を開く</a>
+          <a class="primary button-link" id="home-doi-button" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">論文を開く</a>
         </div>
         <small class="quiet-note">OpenAlex連携は次の開発フェーズで実装予定です。</small>
       </section>
@@ -74,7 +74,7 @@
           </div>
         </a>
 
-        <a class="home-action-card card" href="notebook.html">
+        <a class="home-action-card card" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">
           <div class="home-action-icon">02</div>
           <div>
             <span class="eyebrow">NEW NOTEBOOK</span>
@@ -95,7 +95,7 @@
         <div id="continue-card" class="continue-card card">
           <div class="continue-empty">
             <p>ログイン後、最近保存したNotebookがここに表示されます。</p>
-            <a class="secondary button-link" href="notebook.html">最初の1本を開く</a>
+            <a class="secondary button-link" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">最初の1本を開く</a>
           </div>
         </div>
       </section>
@@ -106,7 +106,7 @@
             <span class="eyebrow">LAB ACTIVITY</span>
             <h2>ラボの最近の動き</h2>
           </div>
-          <a class="text-button" href="lab_notebook.html">Lab Notebookを見る →</a>
+          <a class="text-button" href="lab_notebook.html" data-papertrail-route="lab" data-papertrail-file="lab_notebook.html">Lab Notebookを見る →</a>
         </div>
         <div id="home-lab-activity" class="lab-activity-grid"></div>
       </section>
@@ -115,7 +115,7 @@
         <span class="eyebrow">TODAY'S QUESTION</span>
         <blockquote>この論文は、何を「まだ分かっていない」と言っている？</blockquote>
         <p>未解明点を見つけることは、研究の入口を見つけることです。</p>
-        <a class="secondary button-link" href="notebook.html">Notebookを開く</a>
+        <a class="secondary button-link" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">Notebookを開く</a>
       </section>
     </section>
   </main>
@@ -123,10 +123,10 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="papertrail_config.js"></script>
-  <script src="papertrail_api.js?v=20260718-v29-bridge"></script>
-  <script src="papertrail_auth.js?v=20260718-v29-auth"></script>
-  <script src="js/common.js?v=20260717-v3-refactor"></script>
-  <script src="js/home.js?v=20260717-v3-refactor"></script>
+  <script src="papertrail_api.js?v=20260718-api-debug"></script>
+  <script src="papertrail_auth.js?v=20260718-api-debug"></script>
+  <script src="js/common.js?v=20260718-gas-route"></script>
+  <script src="js/home.js?v=20260718-gas-route"></script>
 
   <footer class="site-footer">
     <p>© Megu GUNJI <span class="footer-sep">[</span> Toyo University <span class="footer-sep">]</span></p>
