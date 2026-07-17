@@ -260,10 +260,11 @@
         <span>Small steps, big discoveries.</span>
       </blockquote>
 
-      <p>この論文の概要がつかめました。Abstractしか読めない論文は、ここで完了にして大丈夫です。</p>
+      <p>Abstractだけでも、この論文の概要をつかめました。今日はここまででも大丈夫です。</p>
       <div class="completion-actions">
-        <button type="button" class="secondary" data-go="page-quick-abstract">内容を見直す</button>
-        <button type="button" class="primary" id="startCareful">この論文をじっくり読む →</button>
+        <button type="button" class="primary" id="startCareful">📖 じっくり読む</button>
+        <button type="button" class="secondary" id="startDeepFromQuick">🔍 気になるところを深掘りする</button>
+        <button type="button" class="secondary" id="finishQuickNotebook">📚 Notebookに保存して終わる</button>
       </div>
     </div>
   </section>
@@ -568,7 +569,7 @@
         <span>Small steps, big discoveries.</span>
       </blockquote>
 
-      <p>結果・背景・考察・方法をたどり、この論文の全体像が見えてきました。</p>
+      <p>論文全体を読むことができました。今日はここまででも十分です。</p>
 
 
       <section class="stage-reflection">
@@ -634,7 +635,8 @@
 
       <div class="completion-actions">
         <button type="button" class="secondary" data-go="page-careful-overview">内容を見直す</button>
-        <button type="button" class="primary" id="continueToDeep">この論文を深掘りする →</button>
+        <button type="button" class="primary" id="continueToDeep">🔍 気になるところを深掘りする</button>
+        <button type="button" class="secondary" id="finishCarefulNotebook">📚 Notebookに保存して終わる</button>
       </div>
     </div>
   </section>
@@ -681,7 +683,7 @@
     <div class="rn-page-head">
       <span class="eyebrow">LEVEL 3</span>
       <h2>深掘りする</h2>
-      <p>ここからは、自分がもう少し考えたいことを自由に記録します。</p>
+      <p>論文全体をもう一度読む必要はありません。Figure、Discussion、Methods、引用文献など、気になったところだけ自由に掘り下げます。</p>
     </div>
     <section class="card rn-block">
       <div class="guided-note-head">
@@ -710,7 +712,7 @@
       </div>
     </section>
     <div class="rn-actions split">
-      <button type="button" class="secondary" data-go="page-careful-overview">← じっくりへ戻る</button>
+      <button type="button" class="secondary" id="backFromDeep">← 前の画面へ戻る</button>
       <button type="button" class="primary" id="saveDeep">深掘りを保存</button>
     </div>
   </section>
@@ -809,6 +811,6 @@
   <script src="papertrail_auth.js?v=20260716-appshell"></script>
 
 
-<script src="notebook.js"></script>
+<script src="notebook.js?v=20260717-reading-flow"></script>
 </body>
 </html>

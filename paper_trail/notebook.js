@@ -2,6 +2,7 @@ const KEY="papertrail_notebook_v284";
 const NOTEBOOK_ID_KEY="papertrail_current_notebook_id";
 let serverSaveTimer=null;
 let currentNotebookId=localStorage.getItem(NOTEBOOK_ID_KEY)||"";
+let deepReturnPage="page-quick-complete";
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 
@@ -79,6 +80,18 @@ $("#startCareful").addEventListener("click",()=>{
   $("#map-careful").classList.remove("locked");
   save();
   show("page-careful-overview");
+});
+
+async function saveAndFinish(level){
+  state.level=level;
+  save();
+  clearTimeout(serverSaveTimer);
+  const saved=await saveToPaperTrail({silent:false});
+  if(saved)location.href="index.html?view=mine";
+}
+
+$("#finishQuickNotebook")?.addEventListener("click",async()=>{
+  await saveAndFinish("quick-complete");
 });
 
 function buildFigureMap(){
@@ -352,46 +365,57 @@ $("#finishSectionSummary").addEventListener("click",()=>{
     };
   }
 
-  markComplete(s);
+  const allDone=markComplete(s);
   save();
-  show("page-careful-overview");
+  if(!allDone)show("page-careful-overview");
 });
 
-$("#saveMethods").addEventListener("click",()=>{markComplete("methods");save();saveToPaperTrail({silent:true});show("page-careful-overview")});
+$("#saveMethods").addEventListener("click",()=>{
+  const allDone=markComplete("methods");
+  save();
+  saveToPaperTrail({silent:true});
+  if(!allDone)show("page-careful-overview");
+});
 
 function markComplete(section){
   state.completed[section]=true;
   const el=$(`[data-status="${section}"]`);if(el){el.textContent="完了";el.classList.add("done")}
   $("#map-deep").classList.remove("locked");
-}
-function openDeepReading(){
-  if(state.level==="quick"){
-    show("page-quick-basic");
-    return;
+  if(Object.values(state.completed).every(Boolean)){
+    state.level="careful-complete";
+    save();
+    saveToPaperTrail({silent:true});
+    show("page-careful-complete");
+    return true;
   }
+  return false;
+}
+function openDeepReading(returnPage="page-careful-overview"){
+  deepReturnPage=returnPage;
   state.level="deep";
   save();
   saveToPaperTrail({silent:true});
   $("#map-deep").classList.remove("locked");
   show("deep-page");
 }
-$("#startDeep").addEventListener("click",openDeepReading);
-$("#map-deep").addEventListener("click",openDeepReading);
+$("#startDeep").addEventListener("click",()=>openDeepReading("page-careful-overview"));
+$("#startDeepFromQuick")?.addEventListener("click",()=>openDeepReading("page-quick-complete"));
+$("#map-deep").addEventListener("click",()=>openDeepReading(state.level==="quick-complete"?"page-quick-complete":"page-careful-overview"));
 $("#continueToDeep")?.addEventListener("click",()=>{
-  state.level="deep";
-  save();
-  show("deep-page");
+  openDeepReading("page-careful-complete");
 });
+$("#backFromDeep")?.addEventListener("click",()=>show(deepReturnPage||"page-quick-complete"));
 $("#saveDeep").addEventListener("click",()=>{
   state.level="deep-complete";
   save();
   saveToPaperTrail({silent:true});
   show("page-deep-complete");
 });
+$("#finishCarefulNotebook")?.addEventListener("click",async()=>{
+  await saveAndFinish("careful-complete");
+});
 $("#finishDeepNotebook")?.addEventListener("click",async()=>{
-  state.level="deep-complete";
-  save();
-  await saveToPaperTrail({silent:false});
+  await saveAndFinish("deep-complete");
 });
 
 function collect(){

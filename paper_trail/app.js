@@ -563,6 +563,11 @@ switchView = function(name){
 
 renderHomeLobby();
 
+const initialView = new URLSearchParams(location.search).get("view");
+if(["home","mine","lab","dashboard","journal"].includes(initialView)){
+  switchView(initialView);
+}
+
 
 /* =========================================================
    v2.5.0 — GAS-backed My Notebook / Lab / Dashboard
