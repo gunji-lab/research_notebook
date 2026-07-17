@@ -786,3 +786,9 @@ function escapeHtml_(value) {
 function setupPaperTrail(){
   ensureSheets_();
 }
+
+function debugMyNotebook(){
+  const data=getMyNotebookDebug_(currentUser_());
+  console.log(JSON.stringify(data,null,2));
+  return data;
+}
