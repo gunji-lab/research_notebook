@@ -54,7 +54,12 @@ function doGet(e) {
   }
 
   if(view==="app"){
-    const user=currentUser_();
+    let user;
+    try{
+      user=currentUser_();
+    }catch(error){
+      return serveAppLogin_(params);
+    }
     const template=HtmlService.createTemplateFromFile("AppShell");
     template.frontendUrl=paperTrailFrontendUrl_();
     template.frontendOrigin=paperTrailFrontendOrigin_();
@@ -657,6 +662,45 @@ function serveAuth_(params) {
     +'<p>PaperTrailへ戻ります…</p>'
     +'<script>location.replace('+JSON.stringify(destination)+');</script>'
     +'</body></html>'
+  ).setTitle("PaperTrail Login");
+}
+
+function serveAppLogin_(params) {
+  const route=validateRoute_(String(params.route||""));
+  const allowedDomain=String(
+    PropertiesService.getScriptProperties().getProperty("ALLOWED_DOMAIN")||"toyo.jp"
+  ).trim().toLowerCase();
+  const selfUrl=ScriptApp.getService().getUrl();
+  let appUrl=selfUrl+"?view=app";
+  if(route)appUrl+="&route="+encodeURIComponent(route);
+  const addSession="https://accounts.google.com/AddSession?hl=ja&continue="
+    +encodeURIComponent(appUrl);
+  const chooser="https://accounts.google.com/AccountChooser?hd="
+    +encodeURIComponent(allowedDomain)
+    +"&continue="+encodeURIComponent(appUrl);
+
+  return HtmlService.createHtmlOutput(
+    '<!doctype html><html lang="ja"><meta charset="utf-8">'
+    +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+    +'<title>PaperTrail Login</title>'
+    +'<body style="margin:0;background:#f6f7f8;font-family:system-ui,-apple-system,'
+    +"'Hiragino Sans','Yu Gothic',sans-serif;color:#252525\">"
+    +'<main style="width:min(620px,calc(100% - 32px));margin:8vh auto">'
+    +'<section style="background:#fff;border:1px solid #ddd;border-radius:20px;'
+    +'padding:28px;box-shadow:0 12px 32px #00000010">'
+    +'<h1 style="margin-top:0">大学Googleアカウントでログイン</h1>'
+    +'<p style="line-height:1.8">PaperTrailを保存機能つきで開くには <strong>@'+escapeHtml_(allowedDomain)
+    +'</strong> の大学アカウントが必要です。</p>'
+    +'<div style="display:grid;gap:12px;margin:22px 0">'
+    +'<a href="'+escapeHtml_(addSession)+'" style="display:block;padding:14px 18px;'
+    +'border-radius:12px;background:#a96524;color:#fff;text-decoration:none;'
+    +'font-weight:900;text-align:center">大学アカウントを追加して開く</a>'
+    +'<a href="'+escapeHtml_(chooser)+'" style="display:block;padding:14px 18px;'
+    +'border-radius:12px;background:#fff4e8;color:#8a4d19;text-decoration:none;'
+    +'font-weight:900;text-align:center">追加済みの大学アカウントを選ぶ</a>'
+    +'</div>'
+    +'<p style="line-height:1.8;color:#666">ログイン後、PaperTrailの画面に戻ります。</p>'
+    +'</section></main></body></html>'
   ).setTitle("PaperTrail Login");
 }
 

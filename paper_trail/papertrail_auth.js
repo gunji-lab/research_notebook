@@ -46,6 +46,15 @@
     catch (_) { return ""; }
   }
 
+  function currentAppRoute() {
+    const page = location.pathname.split("/").pop() || "index.html";
+    if (page === "notebook.html") return "new";
+    if (page === "my_notebook.html") return "mine";
+    if (page === "lab_notebook.html") return "lab";
+    if (page === "dashboard.html") return "dashboard";
+    return currentRoute() || "home";
+  }
+
   function dispatchHashRouteChange() {
     try {
       window.dispatchEvent(new HashChangeEvent("hashchange"));
@@ -95,11 +104,9 @@
   function loginUrl() {
     const cfg = config();
     const params = new URLSearchParams({
-      view: "auth",
-      return: cleanUrl()
+      view: "app",
+      route: currentAppRoute()
     });
-    const route = currentRoute();
-    if (route) params.set("route", route);
     return cfg.GAS_WEB_APP_URL + "?" + params.toString();
   }
 
