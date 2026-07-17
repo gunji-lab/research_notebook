@@ -6,7 +6,6 @@
  */
 (() => {
   const TIMEOUT_MS = 30000;
-  const PARENT_BRIDGE_TIMEOUT_MS = 5000;
   const pending = new Map();
   let frame = null;
   let bridgeWindow = null;
@@ -27,16 +26,16 @@
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
 
-  function ensureParentBridge(timeoutMs=PARENT_BRIDGE_TIMEOUT_MS) {
+  function ensureParentBridge() {
     bridgeId = createBridgeId();
 
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new Error("PaperTrail APIへ接続できませんでした。"));
-      }, timeoutMs);
+      }, TIMEOUT_MS);
 
       function onReady(event) {
-        if (event.source && event.source !== window.parent) return;
+        if (event.source !== window.parent) return;
         if (event.data?.type !== "papertrail:bridge-ready") return;
         if (event.data?.bridgeId !== bridgeId) return;
         bridgeWindow = event.source || window.parent;
@@ -56,15 +55,11 @@
       sayHello();
       setTimeout(sayHello, 500);
       setTimeout(sayHello, 1500);
-      setTimeout(sayHello, 2200);
     });
   }
 
   function ensureIframeBridge(config) {
     return new Promise((resolve, reject) => {
-      frame?.remove?.();
-      frame = null;
-      bridgeWindow = null;
       frame = document.createElement("iframe");
       frame.id = "papertrail-api-bridge";
       frame.hidden = true;
@@ -101,16 +96,9 @@
 
     try {
       const config = cfg();
-      const bridgeAttempt = window.parent && window.parent !== window
-        ? ensureParentBridge().catch(error => {
-            console.warn("PaperTrail parent bridge unavailable; falling back to iframe bridge.", error);
-            return ensureIframeBridge(config);
-          })
+      readyPromise = window.parent && window.parent !== window
+        ? ensureParentBridge()
         : ensureIframeBridge(config);
-      readyPromise = bridgeAttempt.catch(error => {
-        readyPromise = null;
-        throw error;
-      });
     } catch (error) {
       readyPromise = Promise.reject(error);
     }
@@ -155,7 +143,7 @@
 
   window.addEventListener("message", event => {
     if (!frame && !bridgeWindow) return;
-    if (bridgeWindow && event.source && event.source !== bridgeWindow) return;
+    if (bridgeWindow && event.source !== bridgeWindow) return;
     const data = event.data || {};
     if (data.bridgeId !== bridgeId) return;
     if (data.type !== "papertrail:response" || !data.id) return;

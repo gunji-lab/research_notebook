@@ -39,40 +39,12 @@
     return location.href.replace(/#.*$/, "");
   }
 
-  function currentRoute() {
-    const hash = location.hash.replace(/^#/, "");
-    if (!hash || hash.startsWith("auth=")) return "";
-    try { return decodeURIComponent(hash); }
-    catch (_) { return ""; }
-  }
-
-  function currentAppRoute() {
-    const page = location.pathname.split("/").pop() || "index.html";
-    if (page === "notebook.html") return "new";
-    if (page === "my_notebook.html") return "mine";
-    if (page === "lab_notebook.html") return "lab";
-    if (page === "dashboard.html") return "dashboard";
-    return currentRoute() || "home";
-  }
-
-  function dispatchHashRouteChange() {
-    try {
-      window.dispatchEvent(new HashChangeEvent("hashchange"));
-    } catch (_) {
-      window.dispatchEvent(new Event("hashchange"));
-    }
-  }
-
   function readAuthFromHash() {
     const params = new URLSearchParams(location.hash.slice(1));
     const token = params.get("auth");
     if (!token) return false;
-    const route = params.get("route") || "";
     setToken(token);
-    const nextUrl = location.pathname + location.search
-      + (route ? `#${encodeURIComponent(route)}` : "");
-    history.replaceState(null, document.title, nextUrl);
-    if (route) dispatchHashRouteChange();
+    history.replaceState(null, document.title, location.pathname + location.search);
     return true;
   }
 
@@ -103,11 +75,9 @@
 
   function loginUrl() {
     const cfg = config();
-    const params = new URLSearchParams({
-      view: "app",
-      route: currentAppRoute()
-    });
-    return cfg.GAS_WEB_APP_URL + "?" + params.toString();
+    return cfg.GAS_WEB_APP_URL
+      + "?view=auth&return="
+      + encodeURIComponent(cleanUrl());
   }
 
   function injectAccountUI() {
