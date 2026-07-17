@@ -648,6 +648,12 @@ async function renderEmptyBackendNotebookState(target){
   }catch(error){
     console.warn("PaperTrail notebook debug failed:",error);
   }
+  if(Array.isArray(debug?.notebooks)&&debug.notebooks.length){
+    backendMyCards=debug.notebooks.map(notebookItemToCard);
+    renderMyCards();
+    renderHomeLobby();
+    return;
+  }
   target.innerHTML=`<div class="empty-state">
     <p>まだNotebookはありません。気になる論文を一本、さくっと読んでみましょう。</p>
     <a class="primary button-link" href="notebook.html">論文を登録する</a>
@@ -677,6 +683,7 @@ async function renderBackendMyNotebooks(){
     renderHomeLobby();
     if(!items.length){
       await renderEmptyBackendNotebookState(target);
+      return;
     }
 
     const latest=items[0];

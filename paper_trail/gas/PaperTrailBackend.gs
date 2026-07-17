@@ -248,6 +248,7 @@ function getMyNotebookDebug_(user) {
   const rows = sheetData_(sheet_(PT_SHEETS.NOTEBOOKS));
   const normalizedUserId = normalizeStudentId_(user.studentId);
   const matches = rows.filter(row => normalizeStudentId_(row.student_id) === normalizedUserId);
+  const sortedMatches = matches.sort(byUpdatedDesc_);
   const recent = rows.sort(byUpdatedDesc_).slice(0, 5).map(row => ({
     notebookId:String(row.notebook_id || ''),
     studentId:String(row.student_id || ''),
@@ -260,7 +261,8 @@ function getMyNotebookDebug_(user) {
     normalizedUserId,
     totalNotebooks:rows.length,
     matchedNotebooks:matches.length,
-    recent
+    recent,
+    notebooks:sortedMatches.map(row => publicNotebook_(row, true))
   };
 }
 
