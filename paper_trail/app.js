@@ -21,6 +21,13 @@ function setCards(cards){
 function activeMyCards(){
   return Array.isArray(backendMyCards) ? backendMyCards : getCards();
 }
+function shouldUseBackendMyNotebooks(){
+  return Boolean(
+    window.PAPERTRAIL_CONFIG?.GAS_WEB_APP_URL
+    && !window.PAPERTRAIL_CONFIG.GAS_WEB_APP_URL.includes("PASTE_")
+    && window.PaperTrailAuth?.getToken?.()
+  );
+}
 function getLabCards(){
   try {
     const saved = JSON.parse(localStorage.getItem(LAB_KEY) || "null");
@@ -285,6 +292,14 @@ function renderMyNotebookHome(cards){
 function renderMyCards(){
   const q=$("#my-search").value.trim();
   const role=$("#my-role-filter").value;
+  if(backendMyCards===null&&shouldUseBackendMyNotebooks()){
+    const loading='<div class="empty">PaperTrailから読み込み中…</div>';
+    const recentBox=$("#my-list");
+    const box=$("#my-cards");
+    if(recentBox)recentBox.innerHTML=loading;
+    if(box)box.innerHTML=loading;
+    return;
+  }
   const allCards=activeMyCards();
   renderMyNotebookHome(allCards);
   const recentBox=$("#my-list");
@@ -664,7 +679,9 @@ async function renderEmptyBackendNotebookState(target){
 async function renderBackendMyNotebooks(){
   const target=document.querySelector("#my-list");
   if(!target)return;
-  if(!window.PAPERTRAIL_CONFIG?.GAS_WEB_APP_URL || window.PAPERTRAIL_CONFIG.GAS_WEB_APP_URL.includes("PASTE_"))return;
+  if(!window.PAPERTRAIL_CONFIG?.GAS_WEB_APP_URL || window.PAPERTRAIL_CONFIG.GAS_WEB_APP_URL.includes("PASTE_")){
+    return;
+  }
   if(!window.PaperTrailAuth?.getToken?.()){
     target.innerHTML='<div class="empty-state"><p>大学アカウントでログインすると、保存したNotebookが表示されます。</p></div>';
     return;
@@ -760,13 +777,24 @@ switchView=function(name){
   if(name==="dashboard")renderBackendDashboard();
 };
 
+function refreshMyNotebookIfVisible(){
+  const mine=document.querySelector("#view-mine");
+  if(mine?.classList.contains("active")){
+    renderBackendMyNotebooks();
+  }
+}
+
 
 // Authentication may finish after the initial My Notebook render.
 // Reload the server-backed list as soon as the signed user is ready.
 window.addEventListener("papertrail:user-ready",()=>{
-  const mine=document.querySelector("#view-mine");
-  if(mine?.classList.contains("active")) renderBackendMyNotebooks();
+  refreshMyNotebookIfVisible();
   renderHomeLobby();
+});
+
+window.addEventListener("load",()=>{
+  refreshMyNotebookIfVisible();
+  setTimeout(refreshMyNotebookIfVisible,500);
 });
 
 if(["home","mine","lab","dashboard","journal"].includes(initialView)){
