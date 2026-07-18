@@ -31,6 +31,9 @@
     if (!window.parent || window.parent === window) {
       throw new Error("PaperTrailのGAS入口から開き直してください。");
     }
+    if (!/^https:\/\/[^/]*script\.googleusercontent\.com\//.test(document.referrer || "")) {
+      throw new Error("PaperTrailのGAS入口から開き直してください。");
+    }
     return window.parent;
   }
 

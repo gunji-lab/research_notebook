@@ -30,7 +30,8 @@
   }
 
   function isInsideGasShell() {
-    return Boolean(window.parent && window.parent !== window);
+    if (!window.parent || window.parent === window) return false;
+    return /^https:\/\/[^/]*script\.googleusercontent\.com\//.test(document.referrer || "");
   }
 
   function getPaperTrailRouteUrl(route, filename) {
