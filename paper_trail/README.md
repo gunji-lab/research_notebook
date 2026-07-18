@@ -113,7 +113,6 @@ paper_trail/
 └── gas/
     ├── PaperTrailBackend.gs
     ├── AppShell.html
-    ├── Bridge.html
     ├── Code.gs                    # 旧scaffold
     └── README_GAS.md
 ```
@@ -261,12 +260,12 @@ APIキーはNotebookデータには含めず、ブラウザのlocalStorageにの
 - GASへOpenAlex DOI検索・書誌検索・PaperCacheを統合
 - 既存シートへ列を追加できる移行対応setup
 
-## v2.8.0 — GitHub Frontend + Signed GAS Bridge
+## v2.8.0 — GitHub Frontend + Signed GAS Integration
 
 - UIをGitHub Pagesへ戻し、pushだけで更新可能
 - Google Identity Servicesによる大学アカウントログイン
 - Google署名付きIDトークンをGASで検証
-- GitHubとGASの通信はGAS iframe bridge + postMessage
+- GitHubとGASの通信はGAS親ページ + postMessage
 - 認証付きGASへの直接fetchを廃止
 - 学生のGAS URL入力・OpenAlex APIキー入力を廃止
 - GAS URLとGoogle Client IDは管理者がconfigへ一度設定

@@ -1,5 +1,5 @@
 /**
- * PaperTrail Physics-Style Auth API v2.9.1
+ * PaperTrail Physics-Style Auth API v3.0.0
  *
  * Script Properties:
  *   SPREADSHEET_ID   required
@@ -36,21 +36,12 @@ function doGet(e) {
   if(action==="health"){
     return json_({
       ok:true,
-      data:{status:"ok",service:"PaperTrail Physics-Style Auth API",version:"2.9.1"}
+      data:{status:"ok",service:"PaperTrail Physics-Style Auth API",version:"3.0.0"}
     });
   }
 
   if(view==="auth"){
     return serveAuth_(params);
-  }
-
-  if(view==="bridge"){
-    const template=HtmlService.createTemplateFromFile("Bridge");
-    template.frontendOrigin=paperTrailFrontendOrigin_();
-    template.bridgeId=String(params.bridge||"");
-    return template.evaluate()
-      .setTitle("PaperTrail API Bridge")
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
 
   if(view==="app"){
@@ -60,19 +51,23 @@ function doGet(e) {
     }catch(error){
       return serveAppLogin_(params);
     }
-    const template=HtmlService.createTemplateFromFile("AppShell");
-    template.frontendUrl=paperTrailFrontendUrl_();
-    template.frontendOrigin=paperTrailFrontendOrigin_();
-    template.authToken=createPaperTrailAuthToken_(user);
-    template.route=validateRoute_(String(params.route||""));
-    return template.evaluate()
-      .setTitle("PaperTrail")
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    return buildPaperTrailHtml_(params,user);
   }
 
   return HtmlService.createHtmlOutput(
     "<p>PaperTrailの入口URLからアクセスしてください。</p>"
   ).setTitle("PaperTrail");
+}
+
+function buildPaperTrailHtml_(params,user) {
+  const template=HtmlService.createTemplateFromFile("AppShell");
+  template.frontendUrl=paperTrailFrontendUrl_();
+  template.frontendOrigin=paperTrailFrontendOrigin_();
+  template.authToken=createPaperTrailAuthToken_(user);
+  template.route=validateRoute_(String((params&&params.route)||""));
+  return template.evaluate()
+    .setTitle("PaperTrail")
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 function doPost(e) {
@@ -841,7 +836,7 @@ function paperTrailFrontendUrl_() {
   return url+"/research_notebook/paper_trail";
 }
 
-function bridgeRequest(request) {
+function paperTrailApiRequest(request) {
   try{
     ensureSheets_();
     request=request||{};
@@ -862,7 +857,7 @@ function bridgeRequest(request) {
       case "getDashboard": data=getDashboard_(user); break;
       case "openAlexWorkByDoi": data=openAlexWorkByDoi_(args.doi); break;
       case "openAlexSearch": data=openAlexSearch_(args.query,args.year); break;
-      default: throw new Error("Unknown bridge method: "+method);
+      default: throw new Error("Unknown PaperTrail API method: "+method);
     }
     return {ok:true,data:data};
   }catch(error){

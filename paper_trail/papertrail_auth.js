@@ -2,7 +2,7 @@
  * PaperTrail authentication v2.9.1
  *
  * Same policy as Physics Trainer:
- * 1. Redirect to GAS ?view=auth
+ * 1. Open PaperTrail through GAS ?view=app
  * 2. GAS checks the active university Google account
  * 3. GAS issues a signed, time-limited token
  * 4. GitHub Pages stores the token and attaches it to API calls
@@ -35,8 +35,17 @@
     } catch (_) {}
   }
 
-  function cleanUrl() {
-    return location.href.replace(/#.*$/, "");
+  function currentRoute() {
+    const filename = location.pathname.split("/").pop() || "index.html";
+    const routes = {
+      "index.html": "home",
+      "starter.html": "home",
+      "notebook.html": "new",
+      "my_notebook.html": "mine",
+      "lab_notebook.html": "lab",
+      "dashboard.html": "dashboard"
+    };
+    return routes[filename] || "home";
   }
 
   function readAuthFromHash() {
@@ -75,9 +84,10 @@
 
   function loginUrl() {
     const cfg = config();
-    return cfg.GAS_WEB_APP_URL
-      + "?view=auth&return="
-      + encodeURIComponent(cleanUrl());
+    const url = new URL(cfg.GAS_WEB_APP_URL);
+    url.searchParams.set("view", "app");
+    url.searchParams.set("route", currentRoute());
+    return url.toString();
   }
 
   function injectAccountUI() {
@@ -188,11 +198,11 @@
       output.hidden = false;
       output.textContent = "API接続を確認中…";
       try {
-        const debug = await window.PaperTrailAPI.debugBridge?.();
+        const debug = await window.PaperTrailAPI.debugConnection?.();
         output.textContent = JSON.stringify(debug, null, 2);
         $("#profileStatus").textContent = debug?.ok
-          ? "API Bridgeに接続できました。"
-          : "API Bridgeに接続できませんでした。";
+          ? "PaperTrail APIに接続できました。"
+          : "PaperTrail APIに接続できませんでした。";
       } catch (error) {
         output.textContent = error.stack || error.message || String(error);
         $("#profileStatus").textContent = error.message || String(error);

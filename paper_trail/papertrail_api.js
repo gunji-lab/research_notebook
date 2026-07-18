@@ -1,18 +1,14 @@
 /**
- * PaperTrail API v2.9.1
+ * PaperTrail API v3.0
  *
- * GitHub Pages communicates with a GAS-hosted iframe through postMessage.
- * The iframe calls google.script.run, so no cross-origin fetch is needed.
+ * GitHub Pages is the UI only. The GAS parent page owns authentication,
+ * google.script.run, and all spreadsheet access.
  */
 (() => {
+  const API_BUILD = "20260719-gas-parent-v3";
   const TIMEOUT_MS = 30000;
-  const PARENT_BRIDGE_TIMEOUT_MS = 5000;
-  const debugEvents = [];
   const pending = new Map();
-  let frame = null;
-  let bridgeWindow = null;
-  let bridgeId = "";
-  let readyPromise = null;
+  const debugEvents = [];
 
   function debug(message, detail={}) {
     const entry = {
@@ -25,186 +21,89 @@
     console.debug("[PaperTrail API]", message, detail);
   }
 
-  function cfg() {
-    const value = window.PAPERTRAIL_CONFIG || {};
-    if (!value.GAS_WEB_APP_URL || value.GAS_WEB_APP_URL.includes("PASTE_")) {
-      throw new Error("PaperTrail APIが設定されていません。");
-    }
-    return value;
-  }
-
-  function createBridgeId() {
+  function requestId() {
     return crypto.randomUUID
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
 
-  function ensureParentBridge(timeoutMs=PARENT_BRIDGE_TIMEOUT_MS) {
-    bridgeId = createBridgeId();
-    debug("parent-bridge:start", { bridgeId });
-
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        window.removeEventListener("message", onReady);
-        debug("parent-bridge:timeout", { bridgeId });
-        reject(new Error("PaperTrail APIへ接続できませんでした。"));
-      }, timeoutMs);
-
-      function onReady(event) {
-        if (event.source !== window.parent) return;
-        if (event.data?.type !== "papertrail:bridge-ready") return;
-        if (event.data?.bridgeId !== bridgeId) return;
-        bridgeWindow = event.source || window.parent;
-        clearTimeout(timer);
-        window.removeEventListener("message", onReady);
-        debug("parent-bridge:ready", { bridgeId });
-        resolve();
-      }
-
-      function sayHello() {
-        debug("parent-bridge:hello", { bridgeId });
-        window.parent.postMessage({
-          type: "papertrail:hello",
-          bridgeId
-        }, "*");
-      }
-
-      window.addEventListener("message", onReady);
-      sayHello();
-      setTimeout(sayHello, 500);
-      setTimeout(sayHello, 1500);
-      setTimeout(sayHello, 3000);
-    });
-  }
-
-  function ensureIframeBridge(config) {
-    return new Promise((resolve, reject) => {
-      frame?.remove?.();
-      frame = null;
-      bridgeWindow = null;
-      debug("iframe-bridge:start");
-      frame = document.createElement("iframe");
-      frame.id = "papertrail-api-bridge";
-      frame.hidden = true;
-      frame.setAttribute("aria-hidden", "true");
-      frame.title = "PaperTrail API bridge";
-
-      const url = new URL(config.GAS_WEB_APP_URL);
-      url.searchParams.set("view", "bridge");
-      bridgeId = createBridgeId();
-      url.searchParams.set("bridge", bridgeId);
-      frame.src = url.toString();
-      debug("iframe-bridge:src", { bridgeId, src: url.toString() });
-
-      const timer = setTimeout(() => {
-        window.removeEventListener("message", onReady);
-        debug("iframe-bridge:timeout", { bridgeId });
-        reject(new Error("PaperTrail APIへ接続できませんでした。"));
-      }, TIMEOUT_MS);
-
-      function onReady(event) {
-        if (event.data?.type !== "papertrail:bridge-ready") return;
-        if (event.data?.bridgeId !== bridgeId) return;
-        bridgeWindow = event.source || frame.contentWindow;
-        clearTimeout(timer);
-        window.removeEventListener("message", onReady);
-        debug("iframe-bridge:ready", { bridgeId });
-        resolve();
-      }
-
-      window.addEventListener("message", onReady);
-      frame.onerror = () => {
-        debug("iframe-bridge:error", { bridgeId, src: frame.src });
-        reject(new Error("PaperTrail APIを読み込めませんでした。"));
-      };
-      document.body.appendChild(frame);
-    });
-  }
-
-  function ensureBridge() {
-    if (readyPromise) return readyPromise;
-
-    try {
-      const config = cfg();
-      debug("ensure-bridge", {
-        mode: window.parent && window.parent !== window ? "parent" : "iframe",
-        href: location.href,
-        referrer: document.referrer || ""
-      });
-      const bridgeAttempt = window.parent && window.parent !== window
-        ? ensureParentBridge().catch(error => {
-            debug("parent-bridge:fallback-to-iframe", {
-              error: error.message || String(error)
-            });
-            return ensureIframeBridge(config);
-          })
-        : ensureIframeBridge(config);
-      readyPromise = bridgeAttempt.catch(error => {
-        readyPromise = null;
-        throw error;
-      });
-    } catch (error) {
-      debug("ensure-bridge:error", { error: error.message || String(error) });
-      readyPromise = Promise.reject(error);
+  function parentWindow() {
+    if (!window.parent || window.parent === window) {
+      throw new Error("PaperTrailのGAS入口から開き直してください。");
     }
-
-    return readyPromise;
+    return window.parent;
   }
 
-  async function call(method, args={}) {
-    debug("call:start", { method });
-    await ensureBridge();
-
+  function getToken() {
     const token = window.PaperTrailAuth?.getToken?.() || "";
-    if (!token) throw new Error("大学Googleアカウントでログインしてください。");
+    if (!token) {
+      throw new Error("大学Googleアカウントでログインしてください。");
+    }
+    return token;
+  }
 
-    const id = crypto.randomUUID
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  function call(method, args={}) {
+    const id = requestId();
+    const type = `papertrail:${method}`;
+    debug("call:start", { method, requestId: id });
 
     return new Promise((resolve, reject) => {
+      let target;
+      try {
+        target = parentWindow();
+      } catch (error) {
+        reject(error);
+        return;
+      }
+
+      let authToken;
+      try {
+        authToken = getToken();
+      } catch (error) {
+        reject(error);
+        return;
+      }
+
       const timer = setTimeout(() => {
         pending.delete(id);
+        debug("call:timeout", { method, requestId: id });
         reject(new Error("PaperTrail APIがタイムアウトしました。"));
       }, TIMEOUT_MS);
 
       pending.set(id, { resolve, reject, timer });
-      const target = bridgeWindow || frame?.contentWindow;
-      if (!target) {
-        pending.delete(id);
-        clearTimeout(timer);
-        debug("call:no-target", { method, bridgeId });
-        reject(new Error("PaperTrail APIへ接続できませんでした。"));
-        return;
-      }
-      debug("call:post", { method, id, bridgeId });
       target.postMessage({
-        type: "papertrail:request",
-        bridgeId,
-        id,
-        method,
-        args,
-        authToken: token
+        type,
+        requestId: id,
+        payload: {
+          args,
+          authToken
+        }
       }, "*");
     });
   }
 
   window.addEventListener("message", event => {
-    if (!frame && !bridgeWindow) return;
-    if (bridgeWindow && event.source !== bridgeWindow) return;
-    const data = event.data || {};
-    if (data.bridgeId !== bridgeId) return;
-    if (data.type !== "papertrail:response" || !data.id) return;
+    if (event.source !== window.parent) return;
 
-    const request = pending.get(data.id);
+    const data = event.data || {};
+    if (data.type !== "papertrail:result" || !data.requestId) return;
+
+    const request = pending.get(data.requestId);
     if (!request) return;
 
     clearTimeout(request.timer);
-    pending.delete(data.id);
-    debug("call:response", { id: data.id, ok: data.ok, error: data.error || "" });
+    pending.delete(data.requestId);
+    debug("call:result", {
+      requestId: data.requestId,
+      ok: data.ok,
+      error: data.error || ""
+    });
 
-    if (data.ok) request.resolve(data.data);
-    else request.reject(new Error(data.error || "PaperTrail APIエラー"));
+    if (data.ok) {
+      request.resolve(data.result);
+    } else {
+      request.reject(new Error(data.error || "PaperTrail APIエラー"));
+    }
   });
 
   window.PaperTrailAPI = {
@@ -219,26 +118,14 @@
     getDashboard: () => call("getDashboard"),
     openAlexWorkByDoi: doi => call("openAlexWorkByDoi", { doi }),
     openAlexSearch: (query, year="") => call("openAlexSearch", { query, year }),
-    debugBridge: async () => {
-      try {
-        await ensureBridge();
-        return {
-          ok: true,
-          bridgeId,
-          hasFrame: Boolean(frame),
-          hasBridgeWindow: Boolean(bridgeWindow),
-          events: debugEvents.slice()
-        };
-      } catch (error) {
-        return {
-          ok: false,
-          error: error.message || String(error),
-          bridgeId,
-          hasFrame: Boolean(frame),
-          hasBridgeWindow: Boolean(bridgeWindow),
-          events: debugEvents.slice()
-        };
-      }
-    }
+    debugConnection: async () => ({
+      ok: Boolean(window.parent && window.parent !== window),
+      apiBuild: API_BUILD,
+      mode: window.parent && window.parent !== window ? "gas-parent" : "direct",
+      href: location.href,
+      referrer: document.referrer || "",
+      pending: pending.size,
+      events: debugEvents.slice()
+    })
   };
 })();

@@ -367,7 +367,7 @@ Students列: student_id, real_name, nickname, display_name, display_mode, domain
 
 GitHub PagesでGoogle Identity Servicesを使ってIDトークンを取得する。GASはtokeninfoでトークンを検証し、aud、iss、exp、email_verified、大学ドメインを確認する。
 
-GitHubからGASへの通信は、GAS HTML Serviceで配信するBridge iframeを経由する。親画面とBridgeはpostMessageで通信し、Bridgeからgoogle.script.runでバックエンドを呼び出す。
+GitHubからGASへの通信は、GAS HTML Serviceで配信する親ページを経由する。GAS親ページがGitHub Pagesをiframe表示し、GitHub側からのpostMessageを受けてgoogle.script.runでバックエンドを呼び出す。
 
 ## v2.8.1 Authentication
 

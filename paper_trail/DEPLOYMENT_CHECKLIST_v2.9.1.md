@@ -17,7 +17,7 @@ Do not upload only the changed JavaScript files; the HTML cache-busting query st
 
 ## Google Apps Script
 
-Replace `PaperTrailBackend.gs` with `gas/PaperTrailBackend.gs`. Also keep the included `AppShell.html` and `Bridge.html` synchronized with the project.
+Replace `PaperTrailBackend.gs` with `gas/PaperTrailBackend.gs`. Also keep the included `AppShell.html` synchronized with the project.
 
 Save the GAS project and deploy a **new web-app version**. Updating the source without creating a new deployment version will leave the old backend active.
 
