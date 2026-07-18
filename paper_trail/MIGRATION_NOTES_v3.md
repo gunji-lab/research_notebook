@@ -43,7 +43,7 @@ GAS認証後の戻り先もv3構成に合わせました。
 
 ## 運用メモ
 
-- GASへ貼り替える対象は `gas/PaperTrailBackend.gs` と `gas/AppShell.html` です。
+- GASへ貼り替える対象は `gas/PaperTrailBackend.gs` だけです。
 - `gas/Code.gs` は旧ローカル保存プロトタイプ用のscaffoldであり、v3運用の主系ではありません。
 - 旧URL互換のため `app.js` は残していますが、新画面では読み込みません。
 - 今後の新機能は、原則として該当ページのJSに閉じ込め、共通化が必要になった時だけ `js/common.js` へ移します。

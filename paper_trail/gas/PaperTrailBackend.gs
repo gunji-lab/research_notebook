@@ -60,12 +60,74 @@ function doGet(e) {
 }
 
 function buildPaperTrailHtml_(params,user) {
-  const template=HtmlService.createTemplateFromFile("AppShell");
-  template.frontendUrl=paperTrailFrontendUrl_();
-  template.frontendOrigin=paperTrailFrontendOrigin_();
-  template.authToken=createPaperTrailAuthToken_(user);
-  template.route=validateRoute_(String((params&&params.route)||""));
-  return template.evaluate()
+  const frontendUrlJson=JSON.stringify(paperTrailFrontendUrl_()).replace(/</g,"\\u003c");
+  const frontendOriginJson=JSON.stringify(paperTrailFrontendOrigin_()).replace(/</g,"\\u003c");
+  const authTokenJson=JSON.stringify(createPaperTrailAuthToken_(user)).replace(/</g,"\\u003c");
+  const routeJson=JSON.stringify(validateRoute_(String((params&&params.route)||""))).replace(/</g,"\\u003c");
+
+  return HtmlService.createHtmlOutput(`<!doctype html><html lang="ja"><head><meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1"><title>PaperTrail</title>
+  <style>html,body{height:100%;margin:0;background:#f7f5f1}iframe{display:block;width:100%;height:100%;border:0;background:#f7f5f1}</style></head>
+  <body><iframe id="papertrailApp" title="PaperTrail"></iframe>
+  <script>
+  const FRONTEND_URL=${frontendUrlJson};
+  const FRONTEND_ORIGIN=${frontendOriginJson};
+  const AUTH_TOKEN=${authTokenJson};
+  const ROUTE=${routeJson};
+  const frame=document.getElementById("papertrailApp");
+  const API_METHODS={
+    "papertrail:whoAmI":"whoAmI",
+    "papertrail:saveProfile":"saveProfile",
+    "papertrail:saveNotebook":"saveNotebook",
+    "papertrail:listMyNotebooks":"listMyNotebooks",
+    "papertrail:getMyNotebookDebug":"getMyNotebookDebug",
+    "papertrail:listLabNotebooks":"listLabNotebooks",
+    "papertrail:getNotebook":"getNotebook",
+    "papertrail:saveTrail":"saveTrail",
+    "papertrail:getDashboard":"getDashboard",
+    "papertrail:openAlexSearch":"openAlexSearch",
+    "papertrail:openAlexWorkByDoi":"openAlexWorkByDoi"
+  };
+  function routedFrontendUrl(){
+    const url=new URL(FRONTEND_URL);
+    const pageRoutes={home:"index.html",mine:"my_notebook.html",lab:"lab_notebook.html",dashboard:"dashboard.html",new:"notebook.html"};
+    const page=pageRoutes[ROUTE]||"";
+    if(!page)return{url:url,consumeRouteInHash:Boolean(ROUTE)};
+    url.hash="";
+    url.search="";
+    const basePath=url.pathname.endsWith("/")?url.pathname:/\\.[^/]+$/.test(url.pathname)?url.pathname.replace(/\\/[^/]*$/,"/"):url.pathname+"/";
+    url.pathname=basePath+page;
+    return{url:url,consumeRouteInHash:false};
+  }
+  function appUrlWithToken(){
+    const routed=routedFrontendUrl();
+    const url=routed.url;
+    if(!url.pathname.endsWith("/")&&!/\\.[^/]+$/.test(url.pathname))url.pathname+="/";
+    url.hash="auth="+encodeURIComponent(AUTH_TOKEN)+(routed.consumeRouteInHash?"&route="+encodeURIComponent(ROUTE):"");
+    return url.toString();
+  }
+  function postResult(requestId,payload){
+    if(!frame.contentWindow||!requestId)return;
+    frame.contentWindow.postMessage(Object.assign({type:"papertrail:result",requestId:requestId},payload),FRONTEND_ORIGIN);
+  }
+  window.addEventListener("message",event=>{
+    if(event.source!==frame.contentWindow||event.origin!==FRONTEND_ORIGIN)return;
+    const request=event.data||{};
+    const method=API_METHODS[request.type];
+    if(!method||!request.requestId)return;
+    const payload=request.payload||{};
+    google.script.run
+      .withSuccessHandler(response=>{
+        const ok=Boolean(response&&response.ok);
+        postResult(request.requestId,{ok:ok,result:response&&response.data,error:response&&response.error});
+      })
+      .withFailureHandler(error=>{
+        postResult(request.requestId,{ok:false,error:error&&error.message?error.message:String(error)});
+      })
+      .paperTrailApiRequest({method:method,args:payload.args||{},authToken:payload.authToken||AUTH_TOKEN});
+  });
+  frame.src=appUrlWithToken();
+  </script></body></html>`)
     .setTitle("PaperTrail")
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }

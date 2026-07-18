@@ -112,7 +112,6 @@ paper_trail/
 ├── MIGRATION_NOTES_v3.md
 └── gas/
     ├── PaperTrailBackend.gs
-    ├── AppShell.html
     ├── Code.gs                    # 旧scaffold
     └── README_GAS.md
 ```

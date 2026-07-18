@@ -121,14 +121,31 @@
     getDashboard: () => call("getDashboard"),
     openAlexWorkByDoi: doi => call("openAlexWorkByDoi", { doi }),
     openAlexSearch: (query, year="") => call("openAlexSearch", { query, year }),
-    debugConnection: async () => ({
-      ok: Boolean(window.parent && window.parent !== window),
-      apiBuild: API_BUILD,
-      mode: window.parent && window.parent !== window ? "gas-parent" : "direct",
-      href: location.href,
-      referrer: document.referrer || "",
-      pending: pending.size,
-      events: debugEvents.slice()
-    })
+    debugConnection: async () => {
+      try {
+        const profile = await call("whoAmI");
+        return {
+          ok: true,
+          apiBuild: API_BUILD,
+          mode: "gas-parent",
+          profile,
+          href: location.href,
+          referrer: document.referrer || "",
+          pending: pending.size,
+          events: debugEvents.slice()
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          apiBuild: API_BUILD,
+          error: error.message || String(error),
+          mode: window.parent && window.parent !== window ? "embedded" : "direct",
+          href: location.href,
+          referrer: document.referrer || "",
+          pending: pending.size,
+          events: debugEvents.slice()
+        };
+      }
+    }
   };
 })();

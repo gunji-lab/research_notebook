@@ -65,10 +65,8 @@ AUTH_TOKEN_HOURS = 12
 ## 3. GASコードを更新
 
 1. `gas/PaperTrailBackend.gs`の内容で現在のバックエンドを上書き
-2. GASにHTMLファイル`AppShell`を追加
-3. `gas/AppShell.html`の内容を貼り付け
-4. `setupPaperTrail`を実行
-5. 新しいバージョンとして再デプロイ
+2. `setupPaperTrail`を実行
+3. 新しいバージョンとして再デプロイ
 
 ## 4. GASのデプロイ
 
