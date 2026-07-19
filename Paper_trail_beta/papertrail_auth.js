@@ -118,7 +118,7 @@
           <section class="account-section" id="loginSection">
             <h3>大学Googleアカウントでログイン</h3>
             <p>GAS URLやOpenAlex APIキーを入力する必要はありません。</p>
-            <a class="primary button-link" id="loginLink" href="#">大学アカウントでログイン</a>
+            <a class="primary button-link" id="loginLink" href="#" target="_top" rel="noopener">大学アカウントでログイン</a>
             <p class="field-status" id="loginStatus"></p>
           </section>
 
@@ -164,7 +164,16 @@
     $("#accountChip").addEventListener("click", () => dialog.showModal());
 
     try {
-      $("#loginLink").href = loginUrl();
+      const authUrl = loginUrl();
+      $("#loginLink").href = authUrl;
+      $("#loginLink").addEventListener("click", event => {
+        event.preventDefault();
+        try {
+          window.top.location.href = authUrl;
+        } catch (error) {
+          window.location.href = authUrl;
+        }
+      });
     } catch (error) {
       $("#loginStatus").textContent = error.message;
     }
