@@ -6,8 +6,9 @@
   <title>My Notebook | PaperTrail</title>
   <link rel="stylesheet" href="css/style.css?v=20260717-v3-refactor" />
   <link rel="stylesheet" href="css/components.css?v=20260717-v3-refactor" />
+  <link rel="stylesheet" href="css/notebook_theme.css?v=20260720-my-bookshelf-v1" />
 </head>
-<body>
+<body class="my-notebook-page">
   <header class="topbar home-topbar">
     <div class="papertrail-header">
       <div class="papertrail-lockup">
@@ -37,8 +38,8 @@
     <section class="my-notebook-home card">
       <div>
         <span class="eyebrow">MY NOTEBOOK</span>
-        <h2>今日は、どの論文を開いてみますか？</h2>
-        <p id="my-last-note">前回の続きからでも、新しい一本からでも大丈夫です。</p>
+        <h2>これまで読んだ論文</h2>
+        <p id="my-last-note">タイトルと書誌情報を一覧し、考えの詳細は各Notebookで開きます。</p>
       </div>
       <div class="my-notebook-actions">
         <a class="primary button-link" id="continue-latest" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">続きを読む</a>
@@ -50,8 +51,8 @@
       <div class="section-head compact">
         <div>
           <span class="eyebrow">RECENT</span>
-          <h2>最近読んだ論文</h2>
-          <p>前回の続きに戻るための入口です。</p>
+          <h2>最近のNotebook</h2>
+          <p>読み返したい論文へ、すぐ戻れます。</p>
         </div>
       </div>
       <div id="my-list" class="my-notebook-board"></div>
@@ -61,8 +62,8 @@
       <div class="section-head compact">
         <div>
           <span class="eyebrow">BOOKSHELF</span>
-          <h2>あなたの本棚</h2>
-          <p>タイトル、DOI、著者、キーワード、「へぇ！」や「なんで？」から探せます。</p>
+          <h2>本棚</h2>
+          <p>タイトル、著者、雑誌、年、キーワードから探せます。</p>
         </div>
       </div>
       <div class="filters card">
@@ -76,19 +77,6 @@
         </select>
       </div>
       <div id="my-cards" class="my-notebook-board"></div>
-    </section>
-
-    <section class="my-notebook-reflections">
-      <article class="card">
-        <span class="eyebrow">HEH</span>
-        <h3>最近見つけた「へぇ！」</h3>
-        <div id="my-heh-list" class="mini-note-list"></div>
-      </article>
-      <article class="card">
-        <span class="eyebrow">WHY</span>
-        <h3>最近見つけた「なんで？」</h3>
-        <div id="my-why-list" class="mini-note-list"></div>
-      </article>
     </section>
   </main>
 

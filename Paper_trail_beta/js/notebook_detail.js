@@ -24,6 +24,7 @@
   }
 
   function renderNotebook(card) {
+    const paperTitle = card.paperTitle || card.englishTitle || card.openAlexTitle || card.originalTitle || card.title || "Untitled";
     const metaRows = [
       ["Authors", card.authors],
       ["Journal", card.journal],
@@ -36,7 +37,7 @@
     return `<article class="paper-notebook-detail">
       <header class="paper-notebook-head">
         <span class="eyebrow">PAPER NOTEBOOK</span>
-        <h2>${escapeHtml(card.title || "Untitled")}</h2>
+        <h2>${escapeHtml(paperTitle)}</h2>
         <dl class="paper-notebook-meta">${metaRows}</dl>
         <div class="paper-notebook-tags">
           <span class="level-badge">${escapeHtml(cardStage(card))}</span>

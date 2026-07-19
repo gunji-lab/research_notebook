@@ -1,0 +1,273 @@
+/* PaperTrail beta My Notebook bookshelf theme.
+   Scoped to my_notebook.html only. */
+
+.my-notebook-page{
+  --nb-paper:#fbfaf6;
+  --nb-ink:#292d2f;
+  --nb-muted:#687075;
+  --nb-line:#ddd9cf;
+  --nb-line-soft:#ebe7de;
+  --nb-accent:#b96a34;
+  --nb-accent-deep:#8f4e27;
+  --nb-accent-pale:#f5e9df;
+  --nb-bluegray:#667982;
+  --nb-white:#fffefa;
+  background:var(--nb-paper);
+  color:var(--nb-ink);
+}
+
+.my-notebook-page main{
+  width:min(1080px,calc(100% - 40px));
+  max-width:none;
+  padding:44px 0 90px;
+}
+
+.my-notebook-page .topbar,
+.my-notebook-page .tabs{
+  background:rgba(251,250,246,.94);
+  border-bottom:1px solid var(--nb-line-soft);
+  box-shadow:none;
+}
+
+.my-notebook-page .tab{
+  border-radius:0;
+}
+
+.my-notebook-page .tab.active{
+  color:var(--nb-accent-deep);
+  background:transparent;
+  box-shadow:inset 0 -2px 0 var(--nb-accent);
+}
+
+.my-notebook-page .card{
+  background:var(--nb-white);
+  border:1px solid var(--nb-line);
+  border-radius:10px;
+  box-shadow:none;
+}
+
+.my-notebook-page h2,
+.my-notebook-page h3{
+  color:var(--nb-ink);
+  letter-spacing:.01em;
+}
+
+.my-notebook-page .eyebrow{
+  color:var(--nb-accent-deep);
+  letter-spacing:.14em;
+  font-size:.72rem;
+}
+
+.my-notebook-page .my-notebook-home{
+  display:flex;
+  justify-content:space-between;
+  gap:34px;
+  align-items:flex-end;
+  margin-bottom:52px;
+  padding:34px 38px;
+  border-left:4px solid var(--nb-accent);
+  border-radius:4px 10px 10px 4px;
+}
+
+.my-notebook-page .my-notebook-home h2{
+  margin:8px 0 10px;
+  font-family:ui-serif,"Hiragino Mincho ProN","Yu Mincho",serif;
+  font-size:clamp(1.6rem,3vw,2.15rem);
+  font-weight:600;
+}
+
+.my-notebook-page .my-notebook-home p{
+  max-width:620px;
+  color:var(--nb-muted);
+}
+
+.my-notebook-page .my-notebook-actions{
+  flex:0 0 auto;
+}
+
+.my-notebook-page .my-notebook-section{
+  margin-bottom:48px;
+}
+
+.my-notebook-page .section-head.compact{
+  padding-bottom:18px;
+  border-bottom:1px solid var(--nb-line);
+}
+
+.my-notebook-page .section-head h2{
+  margin:6px 0 5px;
+  font-family:ui-serif,"Hiragino Mincho ProN","Yu Mincho",serif;
+  font-weight:600;
+}
+
+.my-notebook-page .section-head p{
+  color:var(--nb-muted);
+}
+
+.my-notebook-page .filters{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(190px,260px);
+  gap:12px;
+  padding:14px;
+  margin-bottom:18px;
+  background:transparent;
+  border-color:var(--nb-line);
+}
+
+.my-notebook-page .filters input,
+.my-notebook-page .filters select{
+  background:var(--nb-white);
+  border:1px solid var(--nb-line);
+  border-radius:6px;
+  box-shadow:none;
+}
+
+.my-notebook-page .my-notebook-board{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+}
+
+.my-notebook-page .paper-card{
+  position:relative;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:9px 24px;
+  align-items:start;
+  padding:22px 24px;
+  border-radius:7px;
+  transition:border-color .15s ease,background .15s ease,transform .15s ease;
+}
+
+.my-notebook-page .paper-card:hover{
+  border-color:#c9b5a5;
+  background:#fffdf8;
+  transform:translateY(-1px);
+  box-shadow:0 6px 18px rgba(52,45,36,.05);
+}
+
+.my-notebook-page .paper-card-top{
+  grid-column:1 / -1;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:2px;
+}
+
+.my-notebook-page .paper-card-top small{
+  margin-left:auto;
+  color:var(--nb-muted);
+}
+
+.my-notebook-page .level-badge{
+  background:transparent;
+  border:1px solid var(--nb-line);
+  color:var(--nb-muted);
+  border-radius:999px;
+  font-size:.72rem;
+  font-weight:600;
+}
+
+.my-notebook-page .paper-card-title{
+  grid-column:1;
+  color:inherit;
+  text-decoration:none;
+}
+
+.my-notebook-page .paper-card h3{
+  margin:2px 0 0;
+  font-size:1.02rem;
+  line-height:1.55;
+}
+
+.my-notebook-page .paper-card .meta{
+  grid-column:1;
+  margin:0;
+  color:var(--nb-muted);
+  font-size:.86rem;
+}
+
+.my-notebook-page .paper-card .tags{
+  grid-column:1;
+  margin-top:4px;
+}
+
+.my-notebook-page .tag{
+  background:transparent;
+  color:var(--nb-bluegray);
+  border:0;
+  padding:0;
+  margin-right:10px;
+  font-size:.78rem;
+}
+
+.my-notebook-page .card-actions{
+  grid-column:2;
+  grid-row:2 / span 4;
+  align-self:center;
+  min-width:92px;
+  justify-content:flex-end;
+}
+
+.my-notebook-page .card-actions .primary,
+.my-notebook-page .button-link.primary{
+  background:transparent;
+  color:var(--nb-accent-deep);
+  border:1px solid #d7bca8;
+  border-radius:6px;
+  box-shadow:none;
+}
+
+.my-notebook-page .card-actions .primary:hover,
+.my-notebook-page .button-link.primary:hover{
+  background:var(--nb-accent-pale);
+}
+
+.my-notebook-page .button-link.secondary{
+  background:transparent;
+  color:var(--nb-ink);
+  border-color:var(--nb-line);
+  box-shadow:none;
+}
+
+.my-notebook-page .empty-state{
+  padding:42px;
+  border:1px dashed var(--nb-line);
+  border-radius:7px;
+  background:transparent;
+  text-align:center;
+  color:var(--nb-muted);
+}
+
+@media(max-width:760px){
+  .my-notebook-page main{
+    width:min(100% - 24px,1080px);
+    padding-top:26px;
+  }
+
+  .my-notebook-page .my-notebook-home{
+    display:block;
+    padding:24px 20px;
+  }
+
+  .my-notebook-page .my-notebook-actions{
+    margin-top:20px;
+    justify-content:flex-start;
+  }
+
+  .my-notebook-page .filters{
+    grid-template-columns:1fr;
+  }
+
+  .my-notebook-page .paper-card{
+    grid-template-columns:1fr;
+    padding:20px;
+  }
+
+  .my-notebook-page .card-actions{
+    grid-column:1;
+    grid-row:auto;
+    justify-content:flex-start;
+    margin-top:8px;
+  }
+}

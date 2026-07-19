@@ -1,12 +1,6 @@
 (() => {
-  const { $, escapeHtml, cardHtml, cardHeh, cardWhy, cardStage, searchMatches, roleMatches, notebookUrl, loadMyNotebookCards } = window.PaperTrailCommon;
+  const { $, cardHtml, searchMatches, roleMatches, notebookUrl, loadMyNotebookCards } = window.PaperTrailCommon;
   let cards = [];
-
-  function renderMiniNotes(target, picker, emptyText) {
-    if (!target) return;
-    const notes = cards.map(card => ({ title: card.title, text: picker(card), href: notebookUrl(card) })).filter(item => item.text).slice(0, 4);
-    target.innerHTML = notes.length ? notes.map(item => `<a class="mini-note" href="${item.href}"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.text)}</span></a>`).join("") : `<p class="empty-mini">${escapeHtml(emptyText)}</p>`;
-  }
 
   function renderBoards() {
     const q = $("#my-search")?.value.trim() || "";
@@ -24,13 +18,11 @@
     const latest = cards[0];
     if (lastNote) {
       lastNote.textContent = latest
-        ? `前回は「${latest.title}」に、${cardHeh(latest) || cardWhy(latest) || "短いメモ"}を残しました。`
+        ? `最近更新したNotebookは「${latest.title}」です。タイトルと書誌情報から読み返せます。`
         : "まだNotebookはありません。気になる論文を一本、さくっと読んでみましょう。";
     }
     if (continueButton) continueButton.href = latest ? notebookUrl(latest) : "notebook.html";
     renderBoards();
-    renderMiniNotes($("#my-heh-list"), cardHeh, "まだ「へぇ！」はありません。");
-    renderMiniNotes($("#my-why-list"), cardWhy, "まだ「なんで？」はありません。");
   }
 
   $("#my-search")?.addEventListener("input", renderBoards);
