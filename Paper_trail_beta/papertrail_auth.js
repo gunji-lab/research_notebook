@@ -288,12 +288,16 @@
     }
   }
 
-  document.addEventListener("DOMContentLoaded", boot);
-
   window.PaperTrailAuth = {
     getToken,
     setToken,
     loginUrl,
     refreshUser
   };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else {
+    queueMicrotask(boot);
+  }
 })();
