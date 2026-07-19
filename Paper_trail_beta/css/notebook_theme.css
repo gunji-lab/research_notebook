@@ -71,9 +71,9 @@
 
 .my-notebook-page .my-notebook-home h2{
   margin:8px 0 10px;
-  font-family:ui-serif,"Hiragino Mincho ProN","Yu Mincho",serif;
-  font-size:clamp(1.6rem,3vw,2.15rem);
-  font-weight:600;
+  font-family:inherit;
+  font-size:clamp(2rem,4vw,3rem);
+  font-weight:800;
 }
 
 .my-notebook-page .my-notebook-home p{
@@ -96,8 +96,9 @@
 
 .my-notebook-page .section-head h2{
   margin:6px 0 5px;
-  font-family:ui-serif,"Hiragino Mincho ProN","Yu Mincho",serif;
-  font-weight:600;
+  font-family:inherit;
+  font-size:clamp(2rem,4vw,3rem);
+  font-weight:800;
 }
 
 .my-notebook-page .section-head p{
