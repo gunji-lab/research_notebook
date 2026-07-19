@@ -1,0 +1,102 @@
+[
+  {
+    "id": "paper-001",
+    "notebookId": "nb-001",
+    "title": "Circadian rhythms of hosts and their gut microbiomes: Implications for animal physiology and ecology",
+    "authors": "Sato, M.; Klein, R.; Fernandez, L.",
+    "journal": "Ecology Letters",
+    "year": "2025",
+    "doi": "10.1000/pt.2025.001",
+    "tags": ["microbiome", "circadian", "ecology"],
+    "abstract": "Daily rhythms in host physiology influence microbial communities, and microbial activity may in turn shape host metabolism, behavior, and ecological interactions.",
+    "sections": [
+      {
+        "heading": "Why it matters",
+        "body": "The paper connects chronobiology with ecological context, showing how time of day can change the interpretation of host-microbe data."
+      },
+      {
+        "heading": "Methods",
+        "body": "The authors combine time-series sampling, metagenomic profiling, and controlled feeding schedules to separate host-driven and microbial effects."
+      },
+      {
+        "heading": "Reading hint",
+        "body": "Students who care about methods can focus on the sampling design first, then return to the ecological interpretation later."
+      }
+    ]
+  },
+  {
+    "id": "paper-002",
+    "notebookId": "nb-002",
+    "title": "Bone density and the lightweight skeletons of birds",
+    "authors": "Nguyen, T.; Patel, A.; Hoshino, Y.",
+    "journal": "Journal of Experimental Biology",
+    "year": "2024",
+    "doi": "10.1000/pt.2024.014",
+    "tags": ["morphology", "biomechanics", "birds"],
+    "abstract": "Bird skeletons are often described as lightweight, but density, internal structure, and mechanical strength vary across species and flight styles.",
+    "sections": [
+      {
+        "heading": "Core question",
+        "body": "The paper asks whether lightness is best understood as low density, altered geometry, or optimized internal architecture."
+      },
+      {
+        "heading": "Methods",
+        "body": "Micro-CT scans and comparative measurements are used to compare limb bones across flying and non-flying taxa."
+      },
+      {
+        "heading": "Reading hint",
+        "body": "The figures carry much of the argument. Read the figure captions before reading the full discussion."
+      }
+    ]
+  },
+  {
+    "id": "paper-003",
+    "notebookId": "nb-003",
+    "title": "Reduced seed dispersal potential in dandelions isolated within urban historical sites",
+    "authors": "Arai, K.; Wilson, J.; Morita, N.",
+    "journal": "Urban Ecosystems",
+    "year": "2026",
+    "doi": "10.1000/pt.2026.007",
+    "tags": ["urban ecology", "plants", "dispersal"],
+    "abstract": "Urban isolation can alter traits related to dispersal, potentially reducing the ability of plant populations to move across fragmented landscapes.",
+    "sections": [
+      {
+        "heading": "Study system",
+        "body": "The authors compare dandelion populations across connected urban green spaces and isolated historical sites."
+      },
+      {
+        "heading": "Key result",
+        "body": "Seeds from isolated populations show reduced traits associated with wind dispersal, suggesting local selection or demographic effects."
+      },
+      {
+        "heading": "Reading hint",
+        "body": "Focus on how the paper links trait measurements to ecological interpretation, not only on the statistical significance."
+      }
+    ]
+  },
+  {
+    "id": "paper-004",
+    "notebookId": "nb-004",
+    "title": "Student-generated questions improve retention in introductory physics laboratories",
+    "authors": "Ishikawa, R.; Miller, S.",
+    "journal": "Physics Education Research",
+    "year": "2023",
+    "doi": "10.1000/pt.2023.032",
+    "tags": ["education", "physics", "questions"],
+    "abstract": "Structured opportunities for students to write their own questions during laboratory work can improve conceptual retention and ownership of inquiry.",
+    "sections": [
+      {
+        "heading": "Design",
+        "body": "The intervention places question writing before formal explanation, making students' uncertainty part of the learning process."
+      },
+      {
+        "heading": "Evidence",
+        "body": "Retention gains are strongest for students who revise questions after peer discussion."
+      },
+      {
+        "heading": "Reading hint",
+        "body": "This paper is useful when thinking about PaperTrail's educational philosophy and how prompts should invite autonomy."
+      }
+    ]
+  }
+]

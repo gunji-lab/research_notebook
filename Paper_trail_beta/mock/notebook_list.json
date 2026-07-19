@@ -1,0 +1,54 @@
+[
+  {
+    "id": "nb-001",
+    "paperId": "paper-001",
+    "title": "Circadian rhythms of hosts and their gut microbiomes",
+    "authors": "Sato, M.; Klein, R.; Fernandez, L.",
+    "journal": "Ecology Letters",
+    "year": "2025",
+    "status": "reading",
+    "progress": 72,
+    "updatedAt": "2026-07-18",
+    "tags": ["microbiome", "sampling", "time"],
+    "note": "採集時刻の扱いについて、方法を中心に読み返したい。"
+  },
+  {
+    "id": "nb-002",
+    "paperId": "paper-002",
+    "title": "Bone density and the lightweight skeletons of birds",
+    "authors": "Nguyen, T.; Patel, A.; Hoshino, Y.",
+    "journal": "Journal of Experimental Biology",
+    "year": "2024",
+    "status": "saved",
+    "progress": 46,
+    "updatedAt": "2026-07-17",
+    "tags": ["biomechanics", "figures"],
+    "note": "図表から読み直す。Discussionは後でよい。"
+  },
+  {
+    "id": "nb-003",
+    "paperId": "paper-003",
+    "title": "Reduced seed dispersal potential in dandelions",
+    "authors": "Arai, K.; Wilson, J.; Morita, N.",
+    "journal": "Urban Ecosystems",
+    "year": "2026",
+    "status": "skimmed",
+    "progress": 24,
+    "updatedAt": "2026-07-16",
+    "tags": ["urban", "plants"],
+    "note": "研究テーマに近い。まず仮説と図だけ拾った。"
+  },
+  {
+    "id": "nb-004",
+    "paperId": "paper-004",
+    "title": "Student-generated questions improve retention",
+    "authors": "Ishikawa, R.; Miller, S.",
+    "journal": "Physics Education Research",
+    "year": "2023",
+    "status": "deep dive",
+    "progress": 88,
+    "updatedAt": "2026-07-15",
+    "tags": ["education", "questions"],
+    "note": "PaperTrailのプロンプト設計に直接使える。"
+  }
+]

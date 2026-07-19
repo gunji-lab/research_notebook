@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PaperTrail Beta</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="PaperTrail home">
+        <span class="brand-mark">PT</span>
+        <span>
+          <strong>PaperTrail</strong>
+          <small>quiet research notebook</small>
+        </span>
+      </a>
+      <nav class="nav-tabs" aria-label="Main navigation">
+        <a href="#home" data-route="home">Home</a>
+        <a href="#search" data-route="search">Search</a>
+        <a href="#my" data-route="my">My Notebook</a>
+        <a href="#lab" data-route="lab">Lab Notebook</a>
+        <a href="#trail" data-route="trail">Trail</a>
+        <a href="#settings" data-route="settings">Settings</a>
+      </nav>
+    </header>
+
+    <main id="app" class="page" tabindex="-1">
+      <section class="loading-view">
+        <p>PaperTrailを準備しています...</p>
+      </section>
+    </main>
+  </div>
+
+  <template id="paperCardTemplate">
+    <article class="paper-card">
+      <div>
+        <p class="eyebrow paper-year"></p>
+        <h3 class="paper-title"></h3>
+        <p class="paper-meta"></p>
+      </div>
+      <p class="paper-abstract"></p>
+      <div class="tag-row paper-tags"></div>
+      <div class="card-actions">
+        <a class="button secondary paper-open" href="#">論文を見る</a>
+        <a class="button primary paper-notebook" href="#">Notebookへ</a>
+      </div>
+    </article>
+  </template>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
