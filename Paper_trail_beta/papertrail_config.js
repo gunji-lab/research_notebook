@@ -6,6 +6,6 @@
  */
 window.PAPERTRAIL_CONFIG = Object.freeze({
   APP_VERSION: "2.8.1",
-  GAS_WEB_APP_URL: "https://script.google.com/a/macros/toyo.jp/s/AKfycbwnmwX6DrVPtqpii8bvlNxZhCMG5ulkI46SmsKB7n_rNQwdAhTOapGGnmVBYThpOITh/exec",
+  GAS_WEB_APP_URL: "https://script.google.com/macros/library/d/1MBSvtLF3x6fUUoZzvyEPjDd8Rx-nwsULs1PdkscBZXEox94rPzFAVuKV/2",
   TOKEN_STORAGE_KEY: "paperTrailAuthV1"
 });
