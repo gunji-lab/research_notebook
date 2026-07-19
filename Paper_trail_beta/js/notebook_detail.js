@@ -34,11 +34,11 @@
     const trailQuestion = card.backendWhy || cardWhy(card) || card.question || "";
 
     return `<article class="paper-notebook-detail">
-      <header class="paper-notebook-cover">
+      <header class="paper-notebook-head">
         <span class="eyebrow">PAPER NOTEBOOK</span>
         <h2>${escapeHtml(card.title || "Untitled")}</h2>
-        <dl class="paper-notebook-detail-meta">${metaRows}</dl>
-        <div class="paper-notebook-detail-tags">
+        <dl class="paper-notebook-meta">${metaRows}</dl>
+        <div class="paper-notebook-tags">
           <span class="level-badge">${escapeHtml(cardStage(card))}</span>
           ${tagHtml(card.tags || [])}
         </div>
