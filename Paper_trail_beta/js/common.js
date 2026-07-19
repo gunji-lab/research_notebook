@@ -145,36 +145,33 @@
 
   function notebookUrl(card) {
     const id = card.notebookId || card.id || "";
-    const filename = id ? `notebook.html?notebook=${encodeURIComponent(id)}` : "notebook.html";
-    return isInsideGasShell() ? filename : getPaperTrailRouteUrl("new", filename);
+    const filename = id ? `notebook_detail.html?notebook=${encodeURIComponent(id)}` : "notebook.html";
+    return isInsideGasShell() ? filename : getPaperTrailRouteUrl("mine", filename);
   }
 
   function cardHtml(card, { lab=false }={}) {
     const tags = (card.tags || []).map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join("");
-    const snippet = cardHeh(card) || cardWhy(card) || card.wantToKnow || "まだ短いメモはありません";
     const reactions = card.reactions || { like:0, curious:0, useful:0 };
-    const meta = [card.journal, card.authors, card.year].filter(Boolean).join(" · ");
+    const meta = [card.authors, card.journal, card.year].filter(Boolean).join(" · ");
     const owner = lab ? `<span class="nickname-badge">${escapeHtml(card.displayName || card.owner || "Lab member")}</span>` : "";
+    const href = notebookUrl(card);
     return `<article class="paper-card card" data-id="${escapeHtml(card.id || "")}">
       <div class="paper-card-top">
         <span class="level-badge">${escapeHtml(cardStage(card))}</span>
         ${owner}
-        <small>${escapeHtml(formatDate(card.updatedAt || card.createdAt))}</small>
+        <small>最終更新 ${escapeHtml(formatDate(card.updatedAt || card.createdAt))}</small>
       </div>
-      <h3>${escapeHtml(card.title || "Untitled")}</h3>
+      <a class="paper-card-title" href="${href}">
+        <h3>${escapeHtml(card.title || "Untitled")}</h3>
+      </a>
       <p class="meta">${escapeHtml(meta || card.doi || "PaperTrail Notebook")}</p>
       <div class="tags">${tags}</div>
-      <div class="snippet">${escapeHtml(snippet)}</div>
-      <div class="notebook-markers">
-        <span>🌱 へぇ！ ${escapeHtml(cardHeh(card) || "未記入")}</span>
-        <span>🤔 なんで？ ${escapeHtml(cardWhy(card) || "未記入")}</span>
-      </div>
       <div class="card-actions">
         ${lab ? `
           <span class="reaction">👍 ${reactions.like || 0}</span>
           <span class="reaction">📚 ${reactions.curious || 0}</span>
           <span class="reaction">💡 ${reactions.useful || 0}</span>
-        ` : `<a class="primary small button-link" href="${notebookUrl(card)}">続きを読む</a>`}
+        ` : `<a class="primary small button-link" href="${href}">Notebookを開く</a>`}
       </div>
     </article>`;
   }
