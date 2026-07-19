@@ -1,0 +1,239 @@
+body.notebook-detail-page{
+  --detail-bg:#f7f4ee;
+  --detail-paper:#fffdf8;
+  --detail-ink:#302b27;
+  --detail-sub:#746a60;
+  --detail-rule:#e6dccf;
+  --detail-soft:#fbf6ed;
+  color:var(--detail-ink);
+  background:var(--detail-bg);
+}
+
+.notebook-detail-page .topbar{
+  padding-top:22px;
+  padding-bottom:10px;
+}
+
+.notebook-detail-page .papertrail-header{
+  border:0;
+  box-shadow:none;
+  background:transparent;
+}
+
+.notebook-detail-page .tabs{
+  background:rgba(247,244,238,.94);
+  border-bottom:1px solid var(--detail-rule);
+}
+
+.notebook-detail-main{
+  max-width:980px;
+  padding-top:26px;
+}
+
+.notebook-detail-back{
+  margin:0 0 18px;
+}
+
+.notebook-detail-back .secondary{
+  background:#fffaf2;
+  border-color:var(--detail-rule);
+  color:#79542b;
+  box-shadow:none;
+}
+
+.paper-notebook-detail{
+  background:var(--detail-paper);
+  border:1px solid var(--detail-rule);
+  border-radius:10px;
+  box-shadow:0 22px 60px rgba(58,45,31,.08);
+  overflow:hidden;
+}
+
+.paper-notebook-cover{
+  padding:56px clamp(28px,6vw,76px) 44px;
+  background:#fffefa;
+  border-bottom:1px solid var(--detail-rule);
+}
+
+.paper-notebook-cover .eyebrow,
+.notebook-detail-title .eyebrow{
+  color:#b76400;
+  letter-spacing:.18em;
+}
+
+.paper-notebook-cover h2{
+  max-width:880px;
+  margin:12px 0 34px;
+  color:var(--detail-ink);
+  font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+  font-size:clamp(2.05rem,4.1vw,3.65rem);
+  font-weight:700;
+  line-height:1.25;
+  letter-spacing:0;
+}
+
+.paper-notebook-detail-meta{
+  display:grid;
+  grid-template-columns:1.1fr 1fr .45fr 1fr;
+  gap:0;
+  margin:0 0 26px;
+  border-top:1px solid var(--detail-rule);
+  border-bottom:1px solid var(--detail-rule);
+}
+
+.paper-notebook-detail-meta div{
+  min-width:0;
+  padding:17px 20px 16px 0;
+  border-right:1px solid #eee5da;
+}
+
+.paper-notebook-detail-meta div + div{
+  padding-left:20px;
+}
+
+.paper-notebook-detail-meta div:last-child{
+  border-right:0;
+}
+
+.paper-notebook-detail-meta dt{
+  color:#a96511;
+  font-size:.68rem;
+  font-weight:900;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+}
+
+.paper-notebook-detail-meta dd{
+  margin:7px 0 0;
+  color:#554d45;
+  font-size:.94rem;
+  line-height:1.65;
+  overflow-wrap:anywhere;
+}
+
+.paper-notebook-detail-tags{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.paper-notebook-detail-tags .level-badge,
+.paper-notebook-detail-tags .tag{
+  border-radius:999px;
+  box-shadow:none;
+}
+
+.notebook-detail-body,
+.notebook-detail-trail{
+  padding:44px clamp(28px,6vw,76px);
+}
+
+.notebook-detail-body{
+  display:grid;
+  gap:0;
+  background:var(--detail-paper);
+}
+
+.notebook-detail-title{
+  margin-bottom:18px;
+}
+
+.notebook-detail-title h2{
+  margin:8px 0 8px;
+  color:var(--detail-ink);
+  font-size:clamp(1.45rem,2.2vw,2rem);
+  letter-spacing:0;
+}
+
+.notebook-detail-title p,
+.muted{
+  color:var(--detail-sub);
+}
+
+.notebook-detail-section{
+  display:grid;
+  grid-template-columns:180px 1fr;
+  gap:28px;
+  border-top:1px solid var(--detail-rule);
+  padding:28px 0;
+}
+
+.notebook-detail-section h3{
+  margin:0;
+  color:#7a4a12;
+  font-size:.94rem;
+  font-weight:900;
+  letter-spacing:.06em;
+}
+
+.notebook-detail-section p{
+  margin:0;
+  color:#48423d;
+  font-size:1.04rem;
+  line-height:1.95;
+}
+
+.notebook-detail-trail{
+  border-top:1px solid var(--detail-rule);
+  background:var(--detail-soft);
+}
+
+.trail-entry{
+  border-top:1px solid var(--detail-rule);
+  padding:22px 0 0;
+}
+
+.trail-entry time{
+  color:#a96511;
+  font-size:.78rem;
+  font-weight:900;
+  letter-spacing:.12em;
+}
+
+.trail-entry h3{
+  margin:9px 0 8px;
+  color:var(--detail-ink);
+  font-size:1.12rem;
+}
+
+.trail-entry p{
+  margin:0;
+  color:#554d45;
+  line-height:1.85;
+}
+
+.notebook-detail-page .site-footer{
+  color:#8b8176;
+}
+
+@media(max-width:760px){
+  .notebook-detail-main{
+    padding-top:18px;
+  }
+  .paper-notebook-detail{
+    border-radius:8px;
+  }
+  .paper-notebook-cover,
+  .notebook-detail-body,
+  .notebook-detail-trail{
+    padding-left:22px;
+    padding-right:22px;
+  }
+  .paper-notebook-detail-meta,
+  .notebook-detail-section{
+    grid-template-columns:1fr;
+  }
+  .paper-notebook-detail-meta div,
+  .paper-notebook-detail-meta div + div{
+    padding-left:0;
+    border-right:0;
+    border-bottom:1px solid #eee5da;
+  }
+  .paper-notebook-detail-meta div:last-child{
+    border-bottom:0;
+  }
+  .notebook-detail-section{
+    gap:10px;
+  }
+}
