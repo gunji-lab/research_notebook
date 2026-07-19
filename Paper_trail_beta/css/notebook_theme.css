@@ -166,6 +166,44 @@
   color: var(--nb-muted);
 }
 
+.notebook-page .paper-notebook-head {
+  margin: 0 0 46px;
+  padding: 0 2px 30px;
+  border-bottom: 1px solid var(--nb-line);
+}
+
+.notebook-page .paper-notebook-head h2 {
+  max-width: 820px;
+  margin: 10px 0 24px;
+  font-family: ui-serif, "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: clamp(1.8rem, 3.3vw, 2.65rem);
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.notebook-page .paper-notebook-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 30px;
+  margin: 0;
+}
+
+.notebook-page .paper-notebook-meta dt {
+  margin-bottom: 5px;
+  color: var(--nb-accent-deep);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.notebook-page .paper-notebook-meta dd {
+  margin: 0;
+  color: #3d4245;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
 .notebook-page .rn-page-head {
   margin: 0 0 26px;
   padding: 0 2px 22px;
@@ -327,6 +365,37 @@
   border-left-color: var(--nb-accent);
 }
 
+.notebook-page .notebook-trail {
+  margin: 56px 0 0;
+  padding: 0 2px 28px;
+  border-top: 1px solid var(--nb-line);
+  border-bottom: 1px solid var(--nb-line);
+}
+
+.notebook-page .notebook-trail .section-head {
+  margin: 28px 0 18px;
+  padding: 0;
+  border: 0;
+}
+
+.notebook-page .trail-placeholder {
+  padding: 22px 0;
+  color: var(--nb-muted);
+}
+
+.notebook-page .trail-placeholder p {
+  margin: 0 0 6px;
+  color: var(--nb-ink);
+  font-weight: 700;
+}
+
+.notebook-page .notebook-signature {
+  border: 0;
+  border-bottom: 1px solid var(--nb-line);
+  border-radius: 0;
+  background: transparent;
+}
+
 /* My Notebook: compact bookshelf */
 .my-notebook-page main,
 .lab-notebook-page main {
@@ -416,18 +485,19 @@
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px 24px;
+  gap: 9px 24px;
   align-items: start;
   padding: 22px 24px;
   border-radius: 7px;
-  transition: border-color .15s ease, background .15s ease;
+  transition: border-color .15s ease, background .15s ease, transform .15s ease;
 }
 
 .my-notebook-page .paper-card:hover,
 .lab-notebook-page .paper-card:hover {
   border-color: #c9b5a5;
   background: #fffdf8;
-  box-shadow: none;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(52,45,36,.05);
 }
 
 .my-notebook-page .paper-card-top,
@@ -461,9 +531,15 @@
   border-color: #d7bca8;
 }
 
+.my-notebook-page .paper-card-title,
+.lab-notebook-page .paper-card-title {
+  grid-column: 1;
+  color: inherit;
+  text-decoration: none;
+}
+
 .my-notebook-page .paper-card h3,
 .lab-notebook-page .paper-card h3 {
-  grid-column: 1;
   margin: 2px 0 0;
   font-size: 1.02rem;
   line-height: 1.55;
@@ -491,22 +567,6 @@
   padding: 0;
   margin-right: 10px;
   font-size: .78rem;
-}
-
-.my-notebook-page .paper-card .snippet,
-.lab-notebook-page .paper-card .snippet {
-  grid-column: 1;
-  margin-top: 7px;
-  padding: 0;
-  background: transparent;
-  color: #4c5357;
-  border: 0;
-  font-size: .9rem;
-  line-height: 1.65;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .my-notebook-page .notebook-markers,
@@ -545,12 +605,6 @@
   box-shadow: none;
 }
 
-.lab-notebook-page .reaction {
-  color: var(--nb-muted);
-  background: transparent;
-  border: 0;
-}
-
 .my-notebook-page .empty-state,
 .lab-notebook-page .empty-state {
   padding: 42px;
@@ -585,6 +639,10 @@
   .notebook-page .reading-map {
     grid-template-columns: 1fr;
     gap: 4px;
+  }
+
+  .notebook-page .paper-notebook-meta {
+    grid-template-columns: 1fr;
   }
 
   .notebook-page .reading-map-line {

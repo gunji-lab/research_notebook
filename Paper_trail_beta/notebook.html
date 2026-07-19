@@ -6,7 +6,7 @@
   <title>Research Notebook | PaperTrail</title>
   <link rel="stylesheet" href="css/style.css?v=20260717-v3-refactor">
   <link rel="stylesheet" href="css/components.css?v=20260717-v3-refactor">
-  <link rel="stylesheet" href="css/notebook_theme.css?v=20260719-calm-notebook-v1">
+  <link rel="stylesheet" href="css/notebook_theme.css?v=20260719-notebook-ui-v31">
 </head>
 <body class="notebook-page">
 <header class="topbar home-topbar">
@@ -63,6 +63,29 @@
   <section class="rn-policy card">
     <strong>保存するのは、あなたが考えて書いたことだけ。</strong>
     <p>原文、翻訳文、図表画像は作業中のみ使用し、Notebookには保存しません。</p>
+  </section>
+
+  <section class="paper-notebook-head" aria-label="論文情報">
+    <span class="eyebrow">PAPER NOTEBOOK</span>
+    <h2 id="paperNotebookTitle">論文タイトルを入力してください</h2>
+    <dl class="paper-notebook-meta">
+      <div>
+        <dt>Authors</dt>
+        <dd id="paperNotebookAuthors">—</dd>
+      </div>
+      <div>
+        <dt>Journal</dt>
+        <dd id="paperNotebookJournal">—</dd>
+      </div>
+      <div>
+        <dt>Year</dt>
+        <dd id="paperNotebookYear">—</dd>
+      </div>
+      <div>
+        <dt>DOI</dt>
+        <dd id="paperNotebookDoi">—</dd>
+      </div>
+    </dl>
   </section>
 <!-- QUICK: PAGE 1 -->
   <section class="rn-page active" id="page-quick-basic">
@@ -805,6 +828,20 @@
     </div>
   </section>
 
+<section class="notebook-trail" aria-label="Trail">
+  <div class="section-head compact">
+    <div>
+      <span class="eyebrow">TRAIL</span>
+      <h2>追記の足あと</h2>
+      <p>今後ここに、読み返して書き足した記録を時系列で表示します。</p>
+    </div>
+  </div>
+  <div class="trail-placeholder">
+    <p>Trail #1</p>
+    <small>日付と本文をここに追加できる構造を用意しています。</small>
+  </div>
+</section>
+
 <section class="notebook-signature card"><span>Notebook by</span><strong id="notebookAuthor">—</strong></section>
 </main>
 
@@ -817,6 +854,6 @@
   <script src="papertrail_auth.js?v=20260719-inline-parent-v1"></script>
 
 
-<script src="notebook.js?v=20260718-gas-route"></script>
+<script src="notebook.js?v=20260719-notebook-ui-v31"></script>
 </body>
 </html>

@@ -561,7 +561,21 @@ function save(){
   serverSaveTimer=setTimeout(()=>saveToPaperTrail({silent:true}),1200);
 }
 
+function updatePaperNotebookHeader(){
+  const text=id=>($("#"+id)?.value||"").trim();
+  const setText=(id,value,fallback="—")=>{
+    const el=$("#"+id);
+    if(el)el.textContent=value||fallback;
+  };
+  setText("paperNotebookTitle",text("title"),"論文タイトルを入力してください");
+  setText("paperNotebookAuthors",text("authors"));
+  setText("paperNotebookJournal",text("journal"));
+  setText("paperNotebookYear",text("year"));
+  setText("paperNotebookDoi",text("doi"));
+}
+
 document.body.addEventListener("input",()=>{
+  updatePaperNotebookHeader();
   clearTimeout(window.__t);
   window.__t=setTimeout(save,350);
 });
@@ -695,6 +709,7 @@ function fillMainPaper(work){
     if(abstractRadio&&!$('input[name="pdfStatus"]:checked'))abstractRadio.checked=true;
   }
   displayPaperMeta(paper);
+  updatePaperNotebookHeader();
   save();
   return paper;
 }
@@ -914,6 +929,7 @@ function restoreNotebook(data={}){
   }
   replaceVocabulary("careful",reflections.careful?.vocabulary||[]);
   replaceVocabulary("deep",reflections.deep?.vocabulary||[]);
+  updatePaperNotebookHeader();
 
   Object.entries(state.completed).forEach(([section,done])=>{
     const el=$(`[data-status="${section}"]`);
@@ -957,6 +973,7 @@ show(initialNotebookPage||"page-quick-basic",{
   updateHash:!isAuthHash(),
   replaceHash:!initialNotebookPage
 });
+updatePaperNotebookHeader();
 window.addEventListener("papertrail:user-ready",event=>{
   const user=event.detail||{};
   const el=document.querySelector("#notebookAuthor");

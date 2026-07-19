@@ -6,7 +6,7 @@
   <title>My Notebook | PaperTrail</title>
   <link rel="stylesheet" href="css/style.css?v=20260717-v3-refactor" />
   <link rel="stylesheet" href="css/components.css?v=20260717-v3-refactor" />
-  <link rel="stylesheet" href="css/notebook_theme.css?v=20260719-calm-notebook-v1">
+  <link rel="stylesheet" href="css/notebook_theme.css?v=20260719-notebook-ui-v31">
 </head>
 <body class="my-notebook-page">
   <header class="topbar home-topbar">
@@ -19,7 +19,7 @@
         </div>
       </div>
       <div class="papertrail-copy editorial">
-        <div class="copy-inner"><p>自分が考えて書いたことだけを、本棚に残す。</p></div>
+        <div class="copy-inner"><p>読み返したい論文を、静かな本棚に並べる。</p></div>
       </div>
       <div class="prototype-label">Prototype · v3.0</div>
     </div>
@@ -39,7 +39,7 @@
       <div>
         <span class="eyebrow">MY NOTEBOOK</span>
         <h2>これまで読んだ論文</h2>
-        <p id="my-last-note">タイトルと短い記録を一覧し、詳しいメモは各Notebookで開きます。</p>
+        <p id="my-last-note">タイトルと書誌情報を一覧し、考えの詳細は各Notebookで開きます。</p>
       </div>
       <div class="my-notebook-actions">
         <a class="primary button-link" id="continue-latest" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">続きを読む</a>
@@ -51,8 +51,8 @@
       <div class="section-head compact">
         <div>
           <span class="eyebrow">RECENT</span>
-          <h2>最近開いたNotebook</h2>
-          <p>読みかけの記録へ、すぐ戻れます。</p>
+          <h2>最近のNotebook</h2>
+          <p>読み返したい論文へ、すぐ戻れます。</p>
         </div>
       </div>
       <div id="my-list" class="my-notebook-board"></div>
@@ -62,7 +62,7 @@
       <div class="section-head compact">
         <div>
           <span class="eyebrow">BOOKSHELF</span>
-          <h2>すべてのNotebook</h2>
+          <h2>本棚</h2>
           <p>タイトル、著者、雑誌、年、キーワードから探せます。</p>
         </div>
       </div>
@@ -87,7 +87,7 @@
   <script src="js/common.js?v=20260719-inline-parent-v1"></script>
   <script src="papertrail_api.js?v=20260719-inline-parent-v1"></script>
   <script src="papertrail_auth.js?v=20260719-inline-parent-v1"></script>
-  <script src="js/my_notebook.js?v=20260718-gas-route"></script>
+  <script src="js/my_notebook.js?v=20260719-notebook-ui-v31"></script>
 
   <footer class="site-footer">
     <p>© Megu GUNJI <span class="footer-sep">[</span> Toyo University <span class="footer-sep">]</span></p>
