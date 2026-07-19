@@ -50,6 +50,16 @@ function tags(items = []) {
   return items.map(item => `<span class="tag">${escapeHtml(item)}</span>`).join("");
 }
 
+function statusLabel(status) {
+  const labels = {
+    reading: "読みかけ",
+    saved: "保存済み",
+    skimmed: "さくっと読了",
+    "deep dive": "深掘り中"
+  };
+  return labels[status] || status || "Notebook";
+}
+
 function paperCard(paper) {
   return html`
     <article class="paper-card">
@@ -71,17 +81,22 @@ function paperCard(paper) {
 function bookCard(notebook) {
   return html`
     <article class="book-card">
-      <div>
-        <p class="eyebrow">${escapeHtml(notebook.status)}</p>
-        <h3>${escapeHtml(notebook.title)}</h3>
-        <p class="book-meta">${escapeHtml(notebook.authors)} / ${escapeHtml(notebook.journal)} / ${escapeHtml(notebook.year)}</p>
+      <div class="book-card-top">
+        <span class="status-pill">${escapeHtml(statusLabel(notebook.status))}</span>
+        <span class="book-date">${escapeHtml(notebook.updatedAt)}</span>
       </div>
-      <p class="book-note">${escapeHtml(notebook.note)}</p>
-      <div class="progress" aria-label="reading progress"><span style="width:${notebook.progress}%"></span></div>
-      <div class="tag-row">${tags(notebook.tags)}</div>
+      <div>
+        <p class="eyebrow">Reading Record</p>
+        <h3>${escapeHtml(notebook.shortTitle || notebook.title)}</h3>
+      </div>
+      <p class="book-note">“${escapeHtml(notebook.note)}”</p>
+      <div class="book-stats">
+        <span>${escapeHtml(notebook.trailCount ?? 0)} Trails</span>
+        <span>${escapeHtml(notebook.progress)}% notebook</span>
+      </div>
       <div class="card-actions">
-        <a class="button primary" href="#notebook/${notebook.id}">開く</a>
-        <a class="button secondary" href="#trail/${notebook.paperId}">Trail</a>
+        <a class="button primary" href="#notebook/${notebook.id}">Notebookを開く</a>
+        <a class="button secondary" href="#trail/${notebook.paperId}">思考の履歴</a>
       </div>
     </article>
   `;
@@ -90,10 +105,13 @@ function bookCard(notebook) {
 function trailCard(trail) {
   return html`
     <article class="trail-card">
-      <p class="eyebrow">${escapeHtml(trail.date)} / ${escapeHtml(trail.kind)}</p>
-      <h3>${escapeHtml(trail.title)}</h3>
-      <p>${escapeHtml(trail.body)}</p>
-      <p class="trail-meta">${escapeHtml(trail.paperTitle)}</p>
+      <div class="trail-date">${escapeHtml(trail.date)}</div>
+      <div>
+        <p class="eyebrow">${escapeHtml(trail.kind)}</p>
+        <h3>${escapeHtml(trail.title)}</h3>
+        <p>${escapeHtml(trail.body)}</p>
+        <p class="trail-meta">${escapeHtml(trail.paperTitle)}</p>
+      </div>
     </article>
   `;
 }
@@ -220,15 +238,29 @@ async function renderPaper(id) {
 
 async function renderNotebook(id) {
   const notebook = await getNotebook(id);
+  const trails = await getTrail(notebook.paperId);
   app.innerHTML = html`
-    <article class="notebook-page">
-      <p class="eyebrow">Paper Notebook</p>
-      <h1>${escapeHtml(notebook.title)}</h1>
-      <dl class="meta-list">
-        <div><dt>Authors</dt><dd>${escapeHtml(notebook.authors)}</dd></div>
-        <div><dt>Journal</dt><dd>${escapeHtml(notebook.journal)} / ${escapeHtml(notebook.year)}</dd></div>
-        <div><dt>DOI</dt><dd>${escapeHtml(notebook.doi)}</dd></div>
-      </dl>
+    <article class="notebook-page research-notebook">
+      <header class="paper-cover">
+        <div>
+          <p class="eyebrow">Paper Cover</p>
+          <h1>${escapeHtml(notebook.title)}</h1>
+          <p class="cover-subtitle">${escapeHtml(notebook.authors)}</p>
+        </div>
+        <dl class="cover-meta">
+          <div><dt>Journal</dt><dd>${escapeHtml(notebook.journal)}</dd></div>
+          <div><dt>Year</dt><dd>${escapeHtml(notebook.year)}</dd></div>
+          <div><dt>DOI</dt><dd>${escapeHtml(notebook.doi)}</dd></div>
+        </dl>
+        <div class="tag-row cover-tags">${tags(notebook.keywords || [])}</div>
+      </header>
+
+      <section class="notebook-intro">
+        <p class="eyebrow">My Research Notebook</p>
+        <h2>${escapeHtml(notebook.shortTitle || "自分の研究ノート")}</h2>
+        <p>小さなメモを、読み返したくなる研究ノートとして残します。</p>
+      </section>
+
       <form class="notebook-form" id="notebookForm">
         ${notebook.sections.map(section => html`
           <section class="notebook-section">
@@ -240,7 +272,8 @@ async function renderNotebook(id) {
         `).join("")}
         <section class="notebook-section">
           <h2>Trail</h2>
-          <p>今後ここに追記履歴を重ねていきます。今回はUIプロトタイプとして表示だけ用意しています。</p>
+          <p>読み返すたびに、考えが少しずつ育っていく場所です。</p>
+          <div class="mini-trails">${trails.slice(0, 3).map(trailCard).join("") || `<div class="empty">まだTrailはありません。</div>`}</div>
           <div class="card-actions">
             <a class="button secondary" href="#trail/${notebook.paperId}">Trailを開く</a>
             <button class="button primary" type="submit">Notebookを保存</button>
@@ -271,8 +304,8 @@ async function renderMyNotebook() {
   app.innerHTML = html`
     <section class="page-title">
       <p class="eyebrow">My Notebook</p>
-      <h1>自分の本棚</h1>
-      <p>本文を詰め込まず、戻りたい論文を見つけやすい一覧にしています。</p>
+      <h1>研究室の本棚に、自分の読み跡が並ぶ。</h1>
+      <p>ここでは論文情報を詰め込みません。今日はどのノートを開きたいか、読書記録として選べる場所にします。</p>
     </section>
     <section class="bookshelf">${notebooks.map(bookCard).join("")}</section>
   `;
@@ -289,9 +322,12 @@ async function renderLabNotebook() {
     <section class="lab-grid">
       ${notebooks.map(item => html`
         <article class="lab-card">
-          <p class="eyebrow">${escapeHtml(item.reader)}</p>
-          <h3>${escapeHtml(item.title)}</h3>
-          <p class="lab-meta">${escapeHtml(item.authors)} / ${escapeHtml(item.updatedAt)}</p>
+          <div class="book-card-top">
+            <p class="eyebrow">${escapeHtml(item.reader)}</p>
+            <span class="book-date">${escapeHtml(item.updatedAt)}</span>
+          </div>
+          <h3>${escapeHtml(item.shortTitle || item.title)}</h3>
+          <p class="lab-meta">${escapeHtml(item.trailCount ?? 0)} Trails / ${escapeHtml(statusLabel(item.status))}</p>
           <p>${escapeHtml(item.summary)}</p>
           <div class="tag-row">${tags(item.tags)}</div>
           <div class="card-actions">
@@ -308,8 +344,8 @@ async function renderTrail(paperId) {
   app.innerHTML = html`
     <section class="page-title">
       <p class="eyebrow">Trail</p>
-      <h1>考えを書き足す</h1>
-      <p>一度で読み切るのではなく、気づき、疑問、次に読みたいことを時間順に重ねます。</p>
+      <h1>理解が育っていく時間。</h1>
+      <p>Trailは読書履歴ではなく、思考の履歴です。その日に残した一言が、次に読む自分の手がかりになります。</p>
     </section>
     <section class="trail-timeline">${trails.map(trailCard).join("")}</section>
     <section class="note-panel trail-compose">

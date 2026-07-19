@@ -3,10 +3,12 @@
     "id": "nb-001",
     "paperId": "paper-001",
     "title": "Circadian rhythms of hosts and their gut microbiomes: Implications for animal physiology and ecology",
+    "shortTitle": "体内時計と腸内細菌のノート",
     "authors": "Sato, M.; Klein, R.; Fernandez, L.",
     "journal": "Ecology Letters",
     "year": "2025",
     "doi": "10.1000/pt.2025.001",
+    "keywords": ["microbiome", "circadian rhythm", "field sampling"],
     "sections": [
       {
         "key": "purpose",
@@ -44,10 +46,12 @@
     "id": "nb-002",
     "paperId": "paper-002",
     "title": "Bone density and the lightweight skeletons of birds",
+    "shortTitle": "鳥の骨はなぜ軽いのか",
     "authors": "Nguyen, T.; Patel, A.; Hoshino, Y.",
     "journal": "Journal of Experimental Biology",
     "year": "2024",
     "doi": "10.1000/pt.2024.014",
+    "keywords": ["biomechanics", "bone density", "micro-CT"],
     "sections": [
       {
         "key": "purpose",
@@ -85,10 +89,12 @@
     "id": "nb-003",
     "paperId": "paper-003",
     "title": "Reduced seed dispersal potential in dandelions isolated within urban historical sites",
+    "shortTitle": "都市のタンポポと種子散布",
     "authors": "Arai, K.; Wilson, J.; Morita, N.",
     "journal": "Urban Ecosystems",
     "year": "2026",
     "doi": "10.1000/pt.2026.007",
+    "keywords": ["urban ecology", "dispersal", "plant traits"],
     "sections": [
       {
         "key": "purpose",
@@ -126,10 +132,12 @@
     "id": "nb-004",
     "paperId": "paper-004",
     "title": "Student-generated questions improve retention in introductory physics laboratories",
+    "shortTitle": "学生の問いが学びを変える",
     "authors": "Ishikawa, R.; Miller, S.",
     "journal": "Physics Education Research",
     "year": "2023",
     "doi": "10.1000/pt.2023.032",
+    "keywords": ["education", "inquiry", "student questions"],
     "sections": [
       {
         "key": "purpose",

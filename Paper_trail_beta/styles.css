@@ -2,11 +2,12 @@
   --paper: #fbfaf6;
   --surface: #ffffff;
   --surface-soft: #f3f0e9;
-  --ink: #2f2c29;
-  --muted: #736d66;
+  --ink: #37322d;
+  --muted: #766f67;
   --line: #ded8ce;
   --accent: #d9730d;
   --accent-dark: #a95608;
+  --cover: #f7f2e8;
   --green: #4b6f52;
   --blue: #546a7b;
   --shadow: 0 12px 34px rgba(47, 44, 41, 0.08);
@@ -251,7 +252,6 @@ select {
 }
 
 .paper-card,
-.book-card,
 .lab-card,
 .trail-card,
 .stat-card {
@@ -265,6 +265,34 @@ select {
   border-radius: var(--radius);
   box-shadow: 0 8px 22px rgba(47, 44, 41, 0.05);
   transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.book-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 270px;
+  padding: 24px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(217, 115, 13, 0.18) 0 5px, transparent 5px),
+    var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 22px rgba(47, 44, 41, 0.045);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.book-card::after {
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+  color: rgba(47, 44, 41, 0.06);
+  content: "Notebook";
+  font-size: 2.2rem;
+  font-weight: 800;
+  pointer-events: none;
 }
 
 .paper-card:hover,
@@ -283,6 +311,12 @@ select {
   line-height: 1.45;
 }
 
+.book-card h3 {
+  max-width: 92%;
+  font-size: 1.45rem;
+  line-height: 1.45;
+}
+
 .paper-meta,
 .book-meta,
 .lab-meta,
@@ -295,6 +329,53 @@ select {
 .book-note {
   margin: 0;
   color: var(--muted);
+}
+
+.book-note {
+  position: relative;
+  z-index: 1;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.book-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 3px 10px;
+  color: var(--green);
+  background: #edf3ea;
+  border: 1px solid #d7e3d2;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.book-date {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.book-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.book-stats span {
+  padding: 5px 9px;
+  background: var(--surface-soft);
+  border-radius: 999px;
 }
 
 .tag-row {
@@ -333,6 +414,87 @@ select {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+}
+
+.research-notebook {
+  padding: 0;
+  overflow: hidden;
+}
+
+.paper-cover {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.35fr);
+  gap: 28px;
+  padding: clamp(28px, 6vw, 64px);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0)),
+    var(--cover);
+  border-bottom: 1px solid var(--line);
+}
+
+.paper-cover h1 {
+  margin: 8px 0 18px;
+  max-width: 900px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.1rem, 5vw, 4.8rem);
+  font-weight: 600;
+  line-height: 1.08;
+}
+
+.cover-subtitle {
+  margin: 0;
+  max-width: 760px;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.cover-meta {
+  align-self: end;
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(222, 216, 206, 0.86);
+  border-radius: var(--radius);
+}
+
+.cover-meta div {
+  display: grid;
+  gap: 3px;
+}
+
+.cover-meta dt {
+  color: var(--accent-dark);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cover-meta dd {
+  margin: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.cover-tags {
+  grid-column: 1 / -1;
+}
+
+.notebook-intro {
+  padding: clamp(28px, 5vw, 56px) clamp(28px, 6vw, 64px) 12px;
+}
+
+.notebook-intro h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.2;
+}
+
+.notebook-intro p:last-child {
+  margin: 0;
+  color: var(--muted);
 }
 
 .paper-reader h1,
@@ -411,7 +573,8 @@ select {
 
 .notebook-form {
   display: grid;
-  gap: 28px;
+  gap: 0;
+  padding: 0 clamp(28px, 6vw, 64px) clamp(32px, 6vw, 64px);
 }
 
 .field-stack {
@@ -420,7 +583,18 @@ select {
 }
 
 .field-stack label {
+  color: var(--ink);
+  font-size: 1.25rem;
   font-weight: 800;
+}
+
+.notebook-section .textarea {
+  min-height: 128px;
+  padding: 16px 0;
+  background: transparent;
+  border-width: 0 0 1px;
+  border-radius: 0;
+  line-height: 1.9;
 }
 
 .split {
@@ -436,7 +610,27 @@ select {
 }
 
 .trail-card {
+  display: grid;
+  grid-template-columns: 94px minmax(0, 1fr);
+  gap: 18px;
   border-left: 4px solid var(--accent);
+}
+
+.trail-date {
+  color: var(--accent-dark);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.mini-trails {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.mini-trails .trail-card {
+  padding: 16px;
+  box-shadow: none;
 }
 
 .trail-compose {
@@ -469,6 +663,7 @@ select {
 
   .hero,
   .paper-layout,
+  .paper-cover,
   .settings-grid,
   .split {
     grid-template-columns: 1fr;
@@ -507,5 +702,20 @@ select {
   .quick-panel,
   .note-panel {
     padding: 20px;
+  }
+
+  .research-notebook {
+    padding: 0;
+  }
+
+  .paper-cover,
+  .notebook-intro,
+  .notebook-form {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .trail-card {
+    grid-template-columns: 1fr;
   }
 }

@@ -3,8 +3,11 @@
     "id": "nb-001",
     "reader": "Gunji",
     "title": "Circadian rhythms of hosts and their gut microbiomes",
+    "shortTitle": "体内時計と腸内細菌のノート",
     "authors": "Sato, M.; Klein, R.; Fernandez, L.",
     "updatedAt": "2026-07-18",
+    "status": "reading",
+    "trailCount": 2,
     "summary": "採集時刻を研究デザインに入れる必要がありそう、という観点で方法を中心に整理。",
     "tags": ["microbiome", "method"]
   },
@@ -12,8 +15,11 @@
     "id": "nb-002",
     "reader": "M. Aoki",
     "title": "Bone density and the lightweight skeletons of birds",
+    "shortTitle": "鳥の骨はなぜ軽いのか",
     "authors": "Nguyen, T.; Patel, A.; Hoshino, Y.",
     "updatedAt": "2026-07-17",
+    "status": "saved",
+    "trailCount": 1,
     "summary": "骨の軽さを密度だけで説明しない点が、形態比較の授業に使いやすい。",
     "tags": ["morphology", "teaching"]
   },
@@ -21,8 +27,11 @@
     "id": "nb-004",
     "reader": "S. Tanaka",
     "title": "Student-generated questions improve retention",
+    "shortTitle": "学生の問いが学びを変える",
     "authors": "Ishikawa, R.; Miller, S.",
     "updatedAt": "2026-07-14",
+    "status": "deep dive",
+    "trailCount": 1,
     "summary": "学生の疑問を先に置くことで、理解確認ではなく探究の入口になる。",
     "tags": ["education", "ux"]
   }
