@@ -5,7 +5,7 @@
  * google.script.run, and all spreadsheet access.
  */
 (() => {
-  const API_BUILD = "20260719-gas-parent-v3";
+  const API_BUILD = "20260720-gas-parent-referrer-v2";
   const TIMEOUT_MS = 30000;
   const pending = new Map();
   const debugEvents = [];
@@ -31,7 +31,7 @@
     if (!window.parent || window.parent === window) {
       throw new Error("PaperTrailのGAS入口から開き直してください。");
     }
-    if (!/^https:\/\/[^/]*script\.googleusercontent\.com\//.test(document.referrer || "")) {
+    if (!/^https:\/\/([^/]+\.)?script\.google(?:usercontent)?\.com\//.test(document.referrer || "")) {
       throw new Error("PaperTrailのGAS入口から開き直してください。");
     }
     return window.parent;

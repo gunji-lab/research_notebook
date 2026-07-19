@@ -31,7 +31,7 @@
 
   function isInsideGasShell() {
     if (!window.parent || window.parent === window) return false;
-    return /^https:\/\/[^/]*script\.googleusercontent\.com\//.test(document.referrer || "");
+    return /^https:\/\/([^/]+\.)?script\.google(?:usercontent)?\.com\//.test(document.referrer || "");
   }
 
   function getPaperTrailRouteUrl(route, filename) {
