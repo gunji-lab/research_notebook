@@ -86,10 +86,10 @@ function bookCard(notebook) {
         <span class="book-date">${escapeHtml(notebook.updatedAt)}</span>
       </div>
       <div>
-        <p class="eyebrow">Reading Record</p>
+        <p class="eyebrow">My Reading Record</p>
         <h3>${escapeHtml(notebook.shortTitle || notebook.title)}</h3>
       </div>
-      <p class="book-note">“${escapeHtml(notebook.note)}”</p>
+      <p class="book-note">${escapeHtml(notebook.note)}</p>
       <div class="book-stats">
         <span>${escapeHtml(notebook.trailCount ?? 0)} Trails</span>
         <span>${escapeHtml(notebook.progress)}% notebook</span>
@@ -258,7 +258,7 @@ async function renderNotebook(id) {
       <section class="notebook-intro">
         <p class="eyebrow">My Research Notebook</p>
         <h2>${escapeHtml(notebook.shortTitle || "自分の研究ノート")}</h2>
-        <p>小さなメモを、読み返したくなる研究ノートとして残します。</p>
+        <p>あなたが考えて書いた小さなメモを、読み返したくなる一冊へ。</p>
       </section>
 
       <form class="notebook-form" id="notebookForm">
@@ -302,11 +302,20 @@ async function renderNotebook(id) {
 async function renderMyNotebook() {
   const notebooks = await getNotebookList();
   app.innerHTML = html`
-    <section class="page-title">
-      <p class="eyebrow">My Notebook</p>
-      <h1>研究室の本棚に、自分の読み跡が並ぶ。</h1>
-      <p>ここでは論文情報を詰め込みません。今日はどのノートを開きたいか、読書記録として選べる場所にします。</p>
+    <section class="my-notebook-home">
+      <div>
+        <p class="eyebrow">My Notebook</p>
+        <h1>今日は、どの論文を開いてみますか？</h1>
+        <p>前回の続きからでも、新しい一本からでも大丈夫。自分が考えて書いたことが、少しずつ研究ノートへ育っていきます。</p>
+      </div>
+      <div class="card-actions">
+        <a class="button primary" href="#notebook/${notebooks[0]?.id || "nb-001"}">前回の続きを開く</a>
+        <a class="button secondary" href="#search">新しい論文を探す</a>
+      </div>
     </section>
+    <div class="section-head">
+      <div><p class="eyebrow">Bookshelf</p><h2>あなたの本棚</h2><p>論文そのものではなく、あなたの読み跡が並ぶ場所です。</p></div>
+    </div>
     <section class="bookshelf">${notebooks.map(bookCard).join("")}</section>
   `;
 }
