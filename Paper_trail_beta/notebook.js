@@ -40,11 +40,12 @@ function setNotebookHash(id,replace=false){
   history[method](null,"",nextHash);
 }
 let currentPageId="";
-function show(id,{updateHash=true,replaceHash=false}={}){
+function show(id,{updateHash=true,replaceHash=false,scroll=true}={}){
   if(!notebookPageIds().has(id))return;
   $$(".rn-page").forEach(p=>p.classList.toggle("active",p.id===id));
   currentPageId=id;
   if(updateHash)setNotebookHash(id,replaceHash);
+  if(!scroll)return;
   const policy=$(".rn-policy");
   const top=policy
     ? policy.getBoundingClientRect().bottom+window.scrollY+12
@@ -881,7 +882,6 @@ function pageForLevel(level){
 
 const initialNotebookPage=notebookHashPage();
 show(initialNotebookPage||"page-quick-basic",{
-  updateHash:!isAuthHash(),
-  replaceHash:!initialNotebookPage
+  updateHash:false,
+  scroll:false
 });
-
