@@ -100,6 +100,7 @@
 
   async function renderPage(pageNumber=state.page) {
     if (!state.pdf) return;
+    updateWorkspaceState();
     state.page = Math.min(Math.max(1, pageNumber), state.pages);
     const page = await state.pdf.getPage(state.page);
     const viewport = page.getViewport({ scale: state.scale });
@@ -117,6 +118,11 @@
     textLayer.innerHTML = "";
     await page.render({ canvasContext: context, viewport }).promise;
     await renderTextLayer(page, viewport, textLayer);
+    const wrap = $("#pdfCanvasWrap");
+    if (wrap) {
+      wrap.scrollLeft = 0;
+      wrap.scrollTop = 0;
+    }
 
     $("#pdfPageNumber").textContent = String(state.page);
     $("#pdfPageCount").textContent = String(state.pages);
