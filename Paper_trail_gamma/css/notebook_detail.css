@@ -1,0 +1,228 @@
+body.notebook-detail-page{
+  --nb-paper:#fbfaf6;
+  --nb-paper-deep:#f4f1e9;
+  --nb-ink:#292d2f;
+  --nb-muted:#687075;
+  --nb-line:#ddd9cf;
+  --nb-line-soft:#ebe7de;
+  --nb-accent:#b96a34;
+  --nb-accent-deep:#8f4e27;
+  --nb-accent-pale:#f5e9df;
+  --nb-white:#fffefa;
+  background:var(--nb-paper);
+  color:var(--nb-ink);
+}
+
+.notebook-detail-page .topbar,
+.notebook-detail-page .tabs{
+  background:rgba(251,250,246,.94);
+  border-bottom:1px solid var(--nb-line-soft);
+  box-shadow:none;
+}
+
+.notebook-detail-page .tab{
+  border-radius:0;
+}
+
+.notebook-detail-page .tab.active{
+  color:var(--nb-accent-deep);
+  background:transparent;
+  box-shadow:inset 0 -2px 0 var(--nb-accent);
+}
+
+.notebook-detail-main{
+  width:min(980px,calc(100% - 40px));
+  max-width:none;
+  padding:46px 0 96px;
+}
+
+.notebook-detail-back{
+  margin:0 0 28px;
+}
+
+.notebook-detail-back .secondary{
+  background:var(--nb-white);
+  border:1px solid var(--nb-line);
+  border-radius:6px;
+  box-shadow:none;
+  color:var(--nb-accent-deep);
+}
+
+.paper-notebook-detail{
+  background:transparent;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  overflow:visible;
+}
+
+.paper-notebook-head{
+  margin:0 0 46px;
+  padding:0 2px 30px;
+  border-bottom:1px solid var(--nb-line);
+}
+
+.paper-notebook-head .eyebrow,
+.notebook-detail-title .eyebrow{
+  color:var(--nb-accent-deep);
+  letter-spacing:.14em;
+  font-size:.72rem;
+}
+
+.paper-notebook-head h2{
+  max-width:820px;
+  margin:10px 0 24px;
+  color:var(--nb-ink);
+  font-family:ui-serif,"Hiragino Mincho ProN","Yu Mincho",serif;
+  font-size:clamp(1.8rem,3.3vw,2.65rem);
+  font-weight:600;
+  line-height:1.45;
+  letter-spacing:0;
+}
+
+.paper-notebook-meta{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px 30px;
+  margin:0;
+}
+
+.paper-notebook-meta div{
+  min-width:0;
+  padding:0;
+  border:0;
+}
+
+.paper-notebook-meta dt{
+  margin-bottom:5px;
+  color:var(--nb-accent-deep);
+  font-size:.68rem;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+
+.paper-notebook-meta dd{
+  margin:0;
+  color:#3d4245;
+  line-height:1.65;
+  overflow-wrap:anywhere;
+}
+
+.paper-notebook-tags{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:22px;
+}
+
+.paper-notebook-tags .level-badge,
+.paper-notebook-tags .tag{
+  border-radius:999px;
+  box-shadow:none;
+}
+
+.notebook-detail-body,
+.notebook-detail-trail{
+  background:var(--nb-white);
+  border:1px solid var(--nb-line);
+  border-radius:6px;
+  box-shadow:none;
+  padding:34px 38px 38px;
+}
+
+.notebook-detail-body{
+  display:grid;
+  gap:0;
+  margin-bottom:24px;
+}
+
+.notebook-detail-title{
+  margin:0 0 26px;
+  padding:0 2px 22px;
+  border-bottom:1px solid var(--nb-line);
+}
+
+.notebook-detail-title h2{
+  margin:7px 0 8px;
+  color:var(--nb-ink);
+  font-family:ui-serif,"Hiragino Mincho ProN","Yu Mincho",serif;
+  font-size:clamp(1.45rem,2.5vw,2rem);
+  font-weight:600;
+  letter-spacing:0;
+}
+
+.notebook-detail-title p,
+.muted{
+  color:var(--nb-muted);
+}
+
+.notebook-detail-section{
+  border-top:1px solid var(--nb-line-soft);
+  padding:24px 0;
+}
+
+.notebook-detail-section:first-of-type{
+  border-top:0;
+}
+
+.notebook-detail-section h3{
+  margin:0 0 10px;
+  color:var(--nb-ink);
+  font-size:1.02rem;
+  font-weight:700;
+  letter-spacing:.01em;
+}
+
+.notebook-detail-section p{
+  margin:0;
+  color:#3d4245;
+  font-size:1rem;
+  line-height:1.85;
+}
+
+.notebook-detail-trail{
+  background:#f7f8f6;
+}
+
+.trail-entry{
+  border-top:1px solid var(--nb-line-soft);
+  padding:22px 0 0;
+}
+
+.trail-entry time{
+  color:var(--nb-accent-deep);
+  font-size:.78rem;
+  font-weight:700;
+  letter-spacing:.12em;
+}
+
+.trail-entry h3{
+  margin:8px 0;
+  color:var(--nb-ink);
+  font-size:1.08rem;
+  font-weight:700;
+}
+
+.trail-entry p{
+  margin:0;
+  color:#3d4245;
+  line-height:1.8;
+}
+
+@media(max-width:760px){
+  .notebook-detail-main{
+    width:min(100% - 28px,980px);
+    padding-top:28px;
+  }
+
+  .paper-notebook-meta{
+    grid-template-columns:1fr;
+  }
+
+  .notebook-detail-body,
+  .notebook-detail-trail{
+    padding:26px 22px 30px;
+  }
+}

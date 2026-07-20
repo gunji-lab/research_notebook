@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PaperTrail</title>
+  <meta name="description" content="英語論文を迷わず読み、考えたことをラボで共有するためのResearch Notebookプロトタイプ" />
+  <link rel="stylesheet" href="css/style.css?v=20260717-v3-refactor" />
+  <link rel="stylesheet" href="css/components.css?v=20260717-v3-refactor" />
+</head>
+<body>
+  <header class="topbar home-topbar">
+    <div class="papertrail-header">
+      <div class="papertrail-lockup">
+        <img class="papertrail-logo" src="assets/logo.svg" alt="PaperTrail">
+        <div class="papertrail-brand">
+          <h1>PaperTrail</h1>
+          <p class="rtc">Read. Think. Connect.</p>
+        </div>
+      </div>
+      <div class="papertrail-copy editorial">
+        <div class="copy-inner">
+          <p>論文を読む最初の一歩を、もっとやさしく。</p>
+        </div>
+      </div>
+      <div class="prototype-label">Prototype · v3.0</div>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="メインメニュー">
+    <a class="tab tab-link active" href="index.html" data-papertrail-route="home" data-papertrail-file="index.html">ホーム</a>
+    <a class="tab tab-link" href="starter.html">Research Starter</a>
+    <a class="tab tab-link" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">Research Notebook</a>
+    <a class="tab tab-link" href="my_notebook.html" data-papertrail-route="mine" data-papertrail-file="my_notebook.html">My Notebook</a>
+    <a class="tab tab-link" href="lab_notebook.html" data-papertrail-route="lab" data-papertrail-file="lab_notebook.html">Lab Notebook</a>
+    <a class="tab tab-link" href="dashboard.html" data-papertrail-route="dashboard" data-papertrail-file="dashboard.html">ダッシュボード</a>
+  </nav>
+
+  <main>
+    <section class="home-lobby">
+      <section class="home-intro">
+        <p class="home-greeting" id="home-greeting">こんにちは。</p>
+        <h2>今日は、どんな論文を読んでみる？</h2>
+        <p class="home-lead">
+          英語論文は、最初から全部読まなくても大丈夫。<br>
+          まずは全体を眺めて、気になるところから少しずつ。<br>
+          論文を読むことは、知識の道を歩くこと。<br>
+          一歩一歩の発見が、やがてあなただけの研究の道になります。
+        </p>
+        <p class="home-philosophy"><em>We do not store papers. We store curiosity.</em></p>
+      </section>
+
+      <section class="doi-entry card">
+        <div class="doi-copy">
+          <span class="eyebrow">START WITH A DOI</span>
+          <h3>DOIから始める</h3>
+          <p>DOIを貼るだけで、論文情報を読み込めるようになる予定です。</p>
+        </div>
+        <div class="doi-form-row">
+          <input id="home-doi" placeholder="10.xxxx/xxxxx" aria-label="DOI">
+          <a class="primary button-link" id="home-doi-button" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">論文を開く</a>
+        </div>
+        <small class="quiet-note">OpenAlex連携は次の開発フェーズで実装予定です。</small>
+      </section>
+
+      <div class="home-actions-grid">
+        <a class="home-action-card card" href="starter.html">
+          <div class="home-action-icon">01</div>
+          <div>
+            <span class="eyebrow">RESEARCH STARTER</span>
+            <h3>問いづくりから始める</h3>
+            <p>最近気になったことから、自分だけの研究の問いを育てます。</p>
+            <span class="text-link">Starterを開く →</span>
+          </div>
+        </a>
+
+        <a class="home-action-card card" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">
+          <div class="home-action-icon">02</div>
+          <div>
+            <span class="eyebrow">NEW NOTEBOOK</span>
+            <h3>新しい論文を読んでみる</h3>
+            <p>論文の地図をつくり、自分の言葉で理解を残します。</p>
+            <span class="text-link">Notebookを始める →</span>
+          </div>
+        </a>
+      </div>
+
+      <section class="continue-section">
+        <div class="section-head quiet-head">
+          <div>
+            <span class="eyebrow">CONTINUE READING</span>
+            <h2>続きから読む</h2>
+          </div>
+        </div>
+        <div id="continue-card" class="continue-card card">
+          <div class="continue-empty">
+            <p>ログイン後、最近保存したNotebookがここに表示されます。</p>
+            <a class="secondary button-link" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">最初の1本を開く</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="home-lab-section">
+        <div class="section-head quiet-head">
+          <div>
+            <span class="eyebrow">LAB ACTIVITY</span>
+            <h2>ラボの最近の動き</h2>
+          </div>
+          <a class="text-button" href="lab_notebook.html" data-papertrail-route="lab" data-papertrail-file="lab_notebook.html">Lab Notebookを見る →</a>
+        </div>
+        <div id="home-lab-activity" class="lab-activity-grid"></div>
+      </section>
+
+      <section class="today-question card">
+        <span class="eyebrow">TODAY'S QUESTION</span>
+        <blockquote>この論文は、何を「まだ分かっていない」と言っている？</blockquote>
+        <p>未解明点を見つけることは、研究の入口を見つけることです。</p>
+        <a class="secondary button-link" href="notebook.html" data-papertrail-route="new" data-papertrail-file="notebook.html">Notebookを開く</a>
+      </section>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="js/common.js?v=20260719-inline-parent-v1"></script>
+<script src="js/home.js?v=20260718-gas-route"></script>
+
+  <footer class="site-footer">
+    <p>© Megu GUNJI <span class="footer-sep">[</span> Toyo University <span class="footer-sep">]</span></p>
+  </footer>
+</body>
+</html>
