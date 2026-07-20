@@ -281,14 +281,27 @@
   margin:24px 0 0;
 }
 
+.rn-main.reading-scroll-mode > .rn-page{
+  display:block;
+}
+
 .rn-main.quick-workspace-off > .reading-workspace{
   display:none;
 }
 
 .rn-main.quick-workspace-off > .rn-page{
+  display:none;
   grid-column:1 / -1;
   max-width:1040px;
   justify-self:center;
+}
+
+.rn-main.quick-workspace-off > :is(#page-quick-basic,#page-quick-abstract,#page-quick-complete){
+  display:block;
+}
+
+.rn-main:not(.quick-workspace-off) > :is(#page-quick-basic,#page-quick-abstract,#page-quick-complete){
+  display:none;
 }
 
 .rn-main.quick-workspace-off > .notebook-signature{

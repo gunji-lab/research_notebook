@@ -8,7 +8,7 @@
     hash: "",
     page: 1,
     pages: 1,
-    scale: 1.18,
+    scale: 1.48,
     selectedText: "",
     entries: [],
     paperId: ""
