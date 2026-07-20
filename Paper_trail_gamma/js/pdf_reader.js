@@ -25,6 +25,16 @@
     }[char]));
   }
 
+  function normalizePdfSelectionText(value="") {
+    return String(value)
+      .replace(/\u00ad/g, "")
+      .replace(/\r\n?/g, "\n")
+      .replace(/([A-Za-z])-\n\s*([A-Za-z])/g, "$1$2")
+      .replace(/\n+/g, " ")
+      .replace(/[ \t\f\v]+/g, " ")
+      .trim();
+  }
+
   function uuid() {
     return crypto.randomUUID ? crypto.randomUUID() : `entry-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
@@ -316,7 +326,8 @@
   }
 
   async function createQuote({ translation="" }={}) {
-    if (!state.selectedText.trim()) return;
+    const quote = normalizePdfSelectionText(state.selectedText);
+    if (!quote) return;
     await savePaper();
     const now = new Date().toISOString();
     const entry = {
@@ -325,7 +336,7 @@
       doi: currentDoi(),
       pdfHash: state.hash,
       page: state.page,
-      quote: state.selectedText.trim(),
+      quote,
       translation,
       note: "",
       readingMode: document.querySelector(".rn-page.active")?.id || "",
@@ -411,7 +422,7 @@
         state.page = Number(pageEl.dataset.pdfPage) || state.page;
         $("#pdfPageNumber").textContent = String(state.page);
       }
-      state.selectedText = text;
+      state.selectedText = normalizePdfSelectionText(text);
       const rect = selection.getRangeAt(0).getBoundingClientRect();
       const host = wrap.getBoundingClientRect();
       menu.style.left = `${Math.max(8, rect.left - host.left + wrap.scrollLeft)}px`;
@@ -453,10 +464,11 @@
       renderPage();
     });
     $("#pdfQuoteSelection")?.addEventListener("click", () => createQuote());
-    $("#pdfCopySelection")?.addEventListener("click", () => navigator.clipboard?.writeText(state.selectedText));
+    $("#pdfCopySelection")?.addEventListener("click", () => navigator.clipboard?.writeText(normalizePdfSelectionText(state.selectedText)));
     $("#pdfTranslateSelection")?.addEventListener("click", async () => {
-      const translation = await translateSelectedText(state.selectedText);
-      showTranslation(state.selectedText, translation);
+      const source = normalizePdfSelectionText(state.selectedText);
+      const translation = await translateSelectedText(source);
+      showTranslation(source, translation);
     });
 
     const dropZone = $("#pdfDropZone");
@@ -475,6 +487,13 @@
     $("#pdfCanvasWrap")?.addEventListener("scroll", () => {
       clearTimeout(scrollTimer);
       scrollTimer = setTimeout(syncCurrentPageFromScroll, 80);
+    });
+    $("#pdfCanvasWrap")?.addEventListener("copy", event => {
+      const text = normalizePdfSelectionText(window.getSelection()?.toString() || state.selectedText);
+      if (!text) return;
+      event.preventDefault();
+      event.clipboardData?.setData("text/plain", text);
+      state.selectedText = text;
     });
     ["doi", "title", "authors", "year"].forEach(id => {
       $("#" + id)?.addEventListener("input", () => {
