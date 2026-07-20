@@ -113,11 +113,34 @@
     canvas.style.height = `${viewport.height}px`;
     textLayer.style.width = `${viewport.width}px`;
     textLayer.style.height = `${viewport.height}px`;
+    textLayer.style.setProperty("--scale-factor", `${state.scale}`);
     textLayer.innerHTML = "";
     await page.render({ canvasContext: context, viewport }).promise;
+    await renderTextLayer(page, viewport, textLayer);
 
-    const content = await page.getTextContent();
-    content.items.forEach(item => {
+    $("#pdfPageNumber").textContent = String(state.page);
+    $("#pdfPageCount").textContent = String(state.pages);
+    await saveReadingState();
+    renderQuotes();
+  }
+
+  async function renderTextLayer(page, viewport, container) {
+    const textContent = await page.getTextContent();
+    container.innerHTML = "";
+    container.classList.add("textLayer");
+    if (window.pdfjsLib?.renderTextLayer) {
+      const task = window.pdfjsLib.renderTextLayer({
+        textContentSource: textContent,
+        container,
+        viewport,
+        textDivs: [],
+        enhanceTextSelection: true
+      });
+      await task.promise;
+      return;
+    }
+
+    textContent.items.forEach(item => {
       const span = document.createElement("span");
       const tx = window.pdfjsLib.Util.transform(viewport.transform, item.transform);
       span.textContent = item.str;
@@ -125,13 +148,8 @@
       span.style.top = `${tx[5] - Math.abs(tx[3])}px`;
       span.style.fontSize = `${Math.max(8, Math.abs(tx[3]))}px`;
       span.style.transform = `scaleX(${Math.max(.7, item.width ? (tx[0] / item.width) : 1)})`;
-      textLayer.appendChild(span);
+      container.appendChild(span);
     });
-
-    $("#pdfPageNumber").textContent = String(state.page);
-    $("#pdfPageCount").textContent = String(state.pages);
-    await saveReadingState();
-    renderQuotes();
   }
 
   function setViewerVisible(visible) {

@@ -527,7 +527,13 @@ async function openAlexFetch(path,params={}){
       headers:{Accept:"application/json"},
       signal:controller.signal
     });
-    if(!response.ok)throw new Error(`OpenAlex error ${response.status}`);
+    if(!response.ok){
+      const error=new Error(response.status===404
+        ?"OpenAlexでこのDOIの書誌情報は見つかりませんでした。DOIを確認するか、タイトルなどを手入力してください。"
+        :`OpenAlexへの接続でエラーが発生しました（${response.status}）。`);
+      error.status=response.status;
+      throw error;
+    }
     return await response.json();
   }catch(error){
     if(error.name==="AbortError")throw new Error("OpenAlexの応答が遅いため中断しました。もう一度試してください。");
@@ -541,6 +547,7 @@ function normalizeDoi(value=""){
   return value.trim()
     .replace(/^https?:\/\/(dx\.)?doi\.org\//i,"")
     .replace(/^doi:\s*/i,"")
+    .replace(/[)\].,;:]+$/g,"")
     .trim();
 }
 
