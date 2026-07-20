@@ -11,7 +11,8 @@
     scale: 1.48,
     selectedText: "",
     entries: [],
-    paperId: ""
+    paperId: "",
+    renderToken: 0
   };
 
   function escapeHtml(value="") {
@@ -98,34 +99,83 @@
     return true;
   }
 
+  async function scrollToPdfPage(pageNumber=state.page) {
+    if (!state.pdf) return;
+    state.page = Math.min(Math.max(1, Number(pageNumber) || 1), state.pages);
+    const wrap = $("#pdfCanvasWrap");
+    const pageEl = $(`.pdf-page[data-pdf-page="${state.page}"]`);
+    if (wrap && pageEl) {
+      wrap.scrollLeft = 0;
+      wrap.scrollTo({ top: pageEl.offsetTop, behavior: "smooth" });
+    }
+    $("#pdfPageNumber").textContent = String(state.page);
+    $("#pdfPageCount").textContent = String(state.pages);
+    await saveReadingState();
+    renderQuotes();
+  }
+
+  function syncCurrentPageFromScroll() {
+    const wrap = $("#pdfCanvasWrap");
+    if (!wrap || !state.pdf) return;
+    const pages = $$(".pdf-page", wrap);
+    if (!pages.length) return;
+    const current = pages.reduce((best, page) => {
+      return page.offsetTop <= wrap.scrollTop + 24 ? page : best;
+    }, pages[0]);
+    const nextPage = Number(current.dataset.pdfPage) || 1;
+    if (nextPage === state.page) return;
+    state.page = nextPage;
+    $("#pdfPageNumber").textContent = String(state.page);
+    saveReadingState();
+    renderQuotes();
+  }
+
   async function renderPage(pageNumber=state.page) {
     if (!state.pdf) return;
     updateWorkspaceState();
+    const token = ++state.renderToken;
     state.page = Math.min(Math.max(1, pageNumber), state.pages);
-    const page = await state.pdf.getPage(state.page);
-    const viewport = page.getViewport({ scale: state.scale });
-    const canvas = $("#pdfCanvas");
-    const textLayer = $("#pdfTextLayer");
-    if (!canvas || !textLayer) return;
-    const context = canvas.getContext("2d");
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    canvas.style.width = `${viewport.width}px`;
-    canvas.style.height = `${viewport.height}px`;
-    textLayer.style.width = `${viewport.width}px`;
-    textLayer.style.height = `${viewport.height}px`;
-    textLayer.style.setProperty("--scale-factor", `${state.scale}`);
-    textLayer.innerHTML = "";
-    await page.render({ canvasContext: context, viewport }).promise;
-    await renderTextLayer(page, viewport, textLayer);
-    const wrap = $("#pdfCanvasWrap");
-    if (wrap) {
-      wrap.scrollLeft = 0;
-      wrap.scrollTop = 0;
+    const pagesBox = $("#pdfPages");
+    if (!pagesBox) return;
+    pagesBox.innerHTML = "";
+
+    for (let pageIndex = 1; pageIndex <= state.pages; pageIndex += 1) {
+      if (token !== state.renderToken) return;
+      const page = await state.pdf.getPage(pageIndex);
+      const viewport = page.getViewport({ scale: state.scale });
+      const pageEl = document.createElement("section");
+      pageEl.className = "pdf-page";
+      pageEl.dataset.pdfPage = String(pageIndex);
+      pageEl.style.width = `${viewport.width}px`;
+      pageEl.style.height = `${viewport.height}px`;
+
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      canvas.style.width = `${viewport.width}px`;
+      canvas.style.height = `${viewport.height}px`;
+
+      const textLayer = document.createElement("div");
+      textLayer.className = "pdf-text-layer";
+      textLayer.style.width = `${viewport.width}px`;
+      textLayer.style.height = `${viewport.height}px`;
+      textLayer.style.setProperty("--scale-factor", `${state.scale}`);
+
+      pageEl.append(canvas, textLayer);
+      pagesBox.appendChild(pageEl);
+      await page.render({ canvasContext: context, viewport }).promise;
+      await renderTextLayer(page, viewport, textLayer);
     }
 
     $("#pdfPageNumber").textContent = String(state.page);
     $("#pdfPageCount").textContent = String(state.pages);
+    const wrap = $("#pdfCanvasWrap");
+    const target = $(`.pdf-page[data-pdf-page="${state.page}"]`);
+    if (wrap && target) {
+      wrap.scrollLeft = 0;
+      wrap.scrollTop = target.offsetTop;
+    }
     await saveReadingState();
     renderQuotes();
   }
@@ -312,7 +362,7 @@
       `).join("")}`;
     $$(".pdf-page-jump", box).forEach(button => {
       button.addEventListener("click", () => {
-        renderPage(Number(button.dataset.page));
+        scrollToPdfPage(Number(button.dataset.page));
       });
     });
     $$("[data-entry-note]", box).forEach(textarea => {
@@ -344,21 +394,28 @@
   }
 
   function bindSelectionMenu() {
-    const textLayer = $("#pdfTextLayer");
+    const wrap = $("#pdfCanvasWrap");
     const menu = $("#pdfSelectionMenu");
-    if (!textLayer || !menu) return;
-    textLayer.addEventListener("mouseup", () => {
+    if (!wrap || !menu) return;
+    wrap.addEventListener("mouseup", () => {
       const selection = window.getSelection();
       const text = selection?.toString().trim() || "";
       if (!text) {
         menu.hidden = true;
         return;
       }
+      const anchorNode = selection.anchorNode;
+      const anchorElement = anchorNode?.nodeType === Node.TEXT_NODE ? anchorNode.parentElement : anchorNode;
+      const pageEl = anchorElement?.closest?.(".pdf-page");
+      if (pageEl) {
+        state.page = Number(pageEl.dataset.pdfPage) || state.page;
+        $("#pdfPageNumber").textContent = String(state.page);
+      }
       state.selectedText = text;
       const rect = selection.getRangeAt(0).getBoundingClientRect();
-      const host = $("#pdfCanvasWrap").getBoundingClientRect();
-      menu.style.left = `${Math.max(8, rect.left - host.left)}px`;
-      menu.style.top = `${Math.max(8, rect.top - host.top - 44)}px`;
+      const host = wrap.getBoundingClientRect();
+      menu.style.left = `${Math.max(8, rect.left - host.left + wrap.scrollLeft)}px`;
+      menu.style.top = `${Math.max(8, rect.top - host.top + wrap.scrollTop - 44)}px`;
       menu.hidden = false;
     });
   }
@@ -371,10 +428,11 @@
       state.file = null;
       state.hash = "";
       state.entries = [];
+      state.renderToken += 1;
       $("#pdfFileInput").value = "";
       $("#pdfClearButton").hidden = true;
-      $("#pdfCanvas")?.getContext("2d")?.clearRect(0, 0, $("#pdfCanvas").width, $("#pdfCanvas").height);
-      $("#pdfTextLayer").innerHTML = "";
+      const pages = $("#pdfPages");
+      if (pages) pages.innerHTML = "";
       $("#pdfPageNumber").textContent = "-";
       $("#pdfPageCount").textContent = "-";
       updateWorkspaceState();
@@ -384,8 +442,8 @@
     });
     $("#openPdfForCareful")?.addEventListener("click", () => $("#pdfViewerPanel")?.scrollIntoView({ behavior: "smooth", block: "start" }));
     $("#openPdfForDeep")?.addEventListener("click", () => $("#pdfViewerPanel")?.scrollIntoView({ behavior: "smooth", block: "start" }));
-    $("#pdfPrevPage")?.addEventListener("click", () => renderPage(state.page - 1));
-    $("#pdfNextPage")?.addEventListener("click", () => renderPage(state.page + 1));
+    $("#pdfPrevPage")?.addEventListener("click", () => scrollToPdfPage(state.page - 1));
+    $("#pdfNextPage")?.addEventListener("click", () => scrollToPdfPage(state.page + 1));
     $("#pdfZoomOut")?.addEventListener("click", () => {
       state.scale = Math.max(.75, state.scale - .15);
       renderPage();
@@ -413,6 +471,11 @@
       }));
       dropZone.addEventListener("drop", event => handlePdfFile(event.dataTransfer?.files?.[0]));
     }
+    let scrollTimer = 0;
+    $("#pdfCanvasWrap")?.addEventListener("scroll", () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(syncCurrentPageFromScroll, 80);
+    });
     ["doi", "title", "authors", "year"].forEach(id => {
       $("#" + id)?.addEventListener("input", () => {
         state.paperId = paperFingerprint();

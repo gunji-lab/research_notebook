@@ -44,7 +44,6 @@ let currentPageId="";
 function syncWorkspaceMode(id){
   const main=$(".rn-main");
   if(!main)return;
-  main.classList.add("reading-scroll-mode");
   main.classList.toggle("quick-workspace-off", id.startsWith("page-quick"));
 }
 function show(id,{updateHash=true,replaceHash=false,scroll=true}={}){
@@ -54,9 +53,9 @@ function show(id,{updateHash=true,replaceHash=false,scroll=true}={}){
   syncWorkspaceMode(id);
   if(updateHash)setNotebookHash(id,replaceHash);
   if(!scroll)return;
-  const target=document.getElementById(id);
-  const top=target
-    ? target.getBoundingClientRect().top+window.scrollY-18
+  const policy=$(".rn-policy");
+  const top=policy
+    ? policy.getBoundingClientRect().bottom+window.scrollY+12
     : 180;
   window.scrollTo({top,behavior:"smooth"});
 }
