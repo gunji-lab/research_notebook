@@ -279,6 +279,23 @@
   margin:24px 0 0;
 }
 
+.rn-main.quick-workspace-off > .reading-workspace{
+  display:none;
+}
+
+.rn-main.quick-workspace-off > .rn-page{
+  grid-column:1 / -1;
+  max-width:1040px;
+  justify-self:center;
+}
+
+.rn-main.quick-workspace-off > .notebook-signature{
+  grid-column:1 / -1;
+  max-width:1040px;
+  justify-self:center;
+  width:100%;
+}
+
 .reading-workspace.pdf-viewer-panel{
   border-top:0;
   padding:18px;

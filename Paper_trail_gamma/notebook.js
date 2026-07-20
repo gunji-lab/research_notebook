@@ -41,10 +41,16 @@ function setNotebookHash(id,replace=false){
   history[method](null,"",nextHash);
 }
 let currentPageId="";
+function syncWorkspaceMode(id){
+  const main=$(".rn-main");
+  if(!main)return;
+  main.classList.toggle("quick-workspace-off", id.startsWith("page-quick"));
+}
 function show(id,{updateHash=true,replaceHash=false,scroll=true}={}){
   if(!notebookPageIds().has(id))return;
   $$(".rn-page").forEach(p=>p.classList.toggle("active",p.id===id));
   currentPageId=id;
+  syncWorkspaceMode(id);
   if(updateHash)setNotebookHash(id,replaceHash);
   if(!scroll)return;
   const policy=$(".rn-policy");
@@ -53,6 +59,7 @@ function show(id,{updateHash=true,replaceHash=false,scroll=true}={}){
     : 180;
   window.scrollTo({top,behavior:"smooth"});
 }
+syncWorkspaceMode($(".rn-page.active")?.id || "page-quick-basic");
 $$("[data-go]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.go)));
 $$("[data-open]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.open)));
 window.addEventListener("hashchange",()=>{
