@@ -65,16 +65,26 @@
     <p>原文、翻訳文、図表画像は作業中のみ使用し、Notebookには保存しません。</p>
   </section>
 
-  <section id="pdfViewerPanel" class="card pdf-viewer-panel" hidden>
-    <div class="pdf-toolbar">
-      <button type="button" class="secondary small" id="pdfPrevPage">前へ</button>
-      <span><b id="pdfPageNumber">1</b> / <span id="pdfPageCount">1</span></span>
-      <button type="button" class="secondary small" id="pdfNextPage">次へ</button>
-      <button type="button" class="secondary small" id="pdfZoomOut">縮小</button>
-      <button type="button" class="secondary small" id="pdfZoomIn">拡大</button>
+  <section id="pdfViewerPanel" class="card pdf-viewer-panel reading-workspace" aria-label="Reading Workspace">
+    <div class="workspace-head">
+      <div>
+        <span class="eyebrow">READING WORKSPACE</span>
+        <h3>論文を読む机</h3>
+      </div>
+      <div class="pdf-toolbar">
+        <button type="button" class="secondary small" id="pdfPrevPage">前へ</button>
+        <span><b id="pdfPageNumber">-</b> / <span id="pdfPageCount">-</span></span>
+        <button type="button" class="secondary small" id="pdfNextPage">次へ</button>
+        <button type="button" class="secondary small" id="pdfZoomOut">縮小</button>
+        <button type="button" class="secondary small" id="pdfZoomIn">拡大</button>
+      </div>
     </div>
     <div class="pdf-reader-layout">
       <div class="pdf-canvas-wrap" id="pdfCanvasWrap">
+        <div id="pdfWorkspaceEmpty" class="workspace-empty">
+          <strong>PDFを選ぶと、ここに論文が開きます。</strong>
+          <span>Workspaceは読書中ずっとここに残ります。STEPだけが下で切り替わります。</span>
+        </div>
         <canvas id="pdfCanvas"></canvas>
         <div id="pdfTextLayer" class="pdf-text-layer"></div>
         <div id="pdfSelectionMenu" class="pdf-selection-menu" hidden>
@@ -86,7 +96,8 @@
       <aside class="pdf-notebook-panel">
         <div class="pdf-panel-head">
           <span class="eyebrow">LOCAL NOTES</span>
-          <h4>PDFから残した引用</h4>
+          <h4>Notebook</h4>
+          <p>引用だけでなく、自分の言葉で考えを残します。</p>
         </div>
         <div id="pdfTranslationPanel" class="pdf-translation-panel" hidden></div>
         <div id="pdfQuoteList" class="pdf-quote-list"></div>
@@ -124,7 +135,6 @@
         </div>
         <div class="pdf-status-row">
           <small id="pdfDoiStatus" aria-live="polite"></small>
-          <button type="button" class="secondary small" id="pdfTogglePreview" hidden>PDFを確認</button>
         </div>
         <div id="pdfRestoreNotice" class="pdf-restore-notice" hidden></div>
       </section>
@@ -342,7 +352,7 @@
         </div>
         <p>PDFを開いている場合は、選択した英文を引用として保存できます。引用カードからPDFのページへ戻れます。</p>
       </div>
-      <button type="button" class="secondary" id="openPdfForCareful">PDFビューアを開く</button>
+      <button type="button" class="secondary" id="openPdfForCareful">PDFビューアへ戻る</button>
     </section>
 
     <div class="section-map">
@@ -761,7 +771,7 @@
         </div>
         <p>必要な英文だけを選び、引用やメモとして残します。自動翻訳はせず、選んだ時だけ翻訳UIを表示します。</p>
       </div>
-      <button type="button" class="secondary" id="openPdfForDeep">PDFビューアを開く</button>
+      <button type="button" class="secondary" id="openPdfForDeep">PDFビューアへ戻る</button>
     </section>
     <section class="card rn-block">
       <div class="guided-note-head">

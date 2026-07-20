@@ -152,12 +152,13 @@
     });
   }
 
-  function setViewerVisible(visible) {
+  function updateWorkspaceState() {
     const panel = $("#pdfViewerPanel");
-    const toggle = $("#pdfTogglePreview");
     if (!panel) return;
-    panel.hidden = !visible;
-    if (toggle) toggle.textContent = visible ? "PDFを閉じる" : "PDFを確認";
+    panel.hidden = false;
+    panel.classList.toggle("has-pdf", Boolean(state.pdf));
+    const empty = $("#pdfWorkspaceEmpty");
+    if (empty) empty.hidden = Boolean(state.pdf);
   }
 
   async function loadExistingLocalData() {
@@ -224,7 +225,6 @@
       state.pages = state.pdf.numPages;
       state.page = 1;
       $("#pdfClearButton").hidden = false;
-      $("#pdfTogglePreview").hidden = false;
       setStatus(`${file.name}（${state.pages}ページ）`);
       const detected = await extractDoi(state.pdf);
       if (detected.doi) {
@@ -241,6 +241,7 @@
       }
       await savePaper();
       await loadExistingLocalData();
+      updateWorkspaceState();
       await renderPage(state.page);
     } catch (error) {
       console.error(error);
@@ -305,7 +306,6 @@
       `).join("")}`;
     $$(".pdf-page-jump", box).forEach(button => {
       button.addEventListener("click", () => {
-        setViewerVisible(true);
         renderPage(Number(button.dataset.page));
       });
     });
@@ -367,15 +367,17 @@
       state.entries = [];
       $("#pdfFileInput").value = "";
       $("#pdfClearButton").hidden = true;
-      $("#pdfTogglePreview").hidden = true;
-      setViewerVisible(false);
+      $("#pdfCanvas")?.getContext("2d")?.clearRect(0, 0, $("#pdfCanvas").width, $("#pdfCanvas").height);
+      $("#pdfTextLayer").innerHTML = "";
+      $("#pdfPageNumber").textContent = "-";
+      $("#pdfPageCount").textContent = "-";
+      updateWorkspaceState();
       setStatus("PDFを解除しました。");
       setDoiStatus("");
       renderQuotes();
     });
-    $("#pdfTogglePreview")?.addEventListener("click", () => setViewerVisible($("#pdfViewerPanel").hidden));
-    $("#openPdfForCareful")?.addEventListener("click", () => setViewerVisible(true));
-    $("#openPdfForDeep")?.addEventListener("click", () => setViewerVisible(true));
+    $("#openPdfForCareful")?.addEventListener("click", () => $("#pdfViewerPanel")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    $("#openPdfForDeep")?.addEventListener("click", () => $("#pdfViewerPanel")?.scrollIntoView({ behavior: "smooth", block: "start" }));
     $("#pdfPrevPage")?.addEventListener("click", () => renderPage(state.page - 1));
     $("#pdfNextPage")?.addEventListener("click", () => renderPage(state.page + 1));
     $("#pdfZoomOut")?.addEventListener("click", () => {
@@ -412,6 +414,7 @@
       });
     });
     bindSelectionMenu();
+    updateWorkspaceState();
     renderQuotes();
   }
 
