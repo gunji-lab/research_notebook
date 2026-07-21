@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="css/components.css?v=20260717-v3-refactor">
   <link rel="stylesheet" href="css/pdf_reader.css?v=20260720-gamma-pdf-v1">
   <style>
-    .gamma-careful-workspace{
+    .gamma-careful-workspace.active{
       display:grid;
       gap:18px;
     }
@@ -121,6 +121,12 @@
       display:none;
     }
     .rn-main.gamma-section-select > #page-careful-overview{
+      grid-column:1 / -1;
+      max-width:1040px;
+      width:100%;
+      justify-self:center;
+    }
+    .rn-main > #careful-reading-workspace.active{
       grid-column:1 / -1;
       max-width:1040px;
       width:100%;
