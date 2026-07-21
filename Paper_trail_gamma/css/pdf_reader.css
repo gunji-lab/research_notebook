@@ -439,3 +439,5 @@
     max-height:58vh;
   }
 }
+
+.pdf-panel-head h4{color:#8a5200}.pdf-panel-head::after{content:'現在のSTEPだけ表示しています';display:block;color:var(--muted);font-size:.85rem;margin-top:6px;}
