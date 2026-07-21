@@ -7,6 +7,128 @@
   <link rel="stylesheet" href="css/style.css?v=20260717-v3-refactor">
   <link rel="stylesheet" href="css/components.css?v=20260717-v3-refactor">
   <link rel="stylesheet" href="css/pdf_reader.css?v=20260720-gamma-pdf-v1">
+  <style>
+    .gamma-careful-workspace{
+      display:grid;
+      gap:18px;
+    }
+    .gamma-current-step{
+      padding:22px 24px;
+      border-left:4px solid var(--orange);
+      box-shadow:none;
+    }
+    .gamma-current-step h3,
+    .gamma-step-input h3,
+    .gamma-review-card h3{
+      margin:4px 0 8px;
+    }
+    .gamma-current-step p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.7;
+    }
+    .gamma-pdf-host{
+      display:grid;
+      gap:10px;
+    }
+    .gamma-pdf-host-label{
+      color:var(--orange-deep);
+      font-size:.78rem;
+      font-weight:900;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+    }
+    .gamma-pdf-host #pdfViewerPanel{
+      display:block;
+      position:static;
+      grid-column:auto;
+      grid-row:auto;
+      max-height:none;
+      overflow:visible;
+      margin:0;
+    }
+    .gamma-pdf-host #pdfViewerPanel .pdf-canvas-wrap{
+      max-height:44vh;
+      min-height:320px;
+    }
+    .gamma-step-input{
+      padding:28px;
+      box-shadow:none;
+    }
+    .gamma-step-input textarea,
+    .gamma-step-input select{
+      width:100%;
+    }
+    .gamma-workspace-actions,
+    .gamma-step-actions{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+    .gamma-step-actions .right{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-left:auto;
+    }
+    .gamma-hint{
+      margin:16px 0 0;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 14px;
+      background:#fffdf8;
+    }
+    .gamma-hint summary{
+      cursor:pointer;
+      color:var(--orange-deep);
+      font-weight:850;
+    }
+    .gamma-hint p{
+      margin:10px 0 0;
+      color:var(--muted);
+      line-height:1.7;
+    }
+    .gamma-review-list{
+      display:grid;
+      gap:12px;
+      margin-top:14px;
+    }
+    .gamma-review-card{
+      padding:16px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fffdf8;
+    }
+    .gamma-review-card dl{
+      display:grid;
+      gap:8px;
+      margin:0;
+    }
+    .gamma-review-card dt{
+      color:var(--orange-deep);
+      font-size:.82rem;
+      font-weight:900;
+    }
+    .gamma-review-card dd{
+      margin:0;
+      color:var(--ink);
+      line-height:1.7;
+      white-space:pre-wrap;
+    }
+    .rn-main.gamma-section-select > #pdfViewerPanel{
+      display:none;
+    }
+    @media(max-width:760px){
+      .gamma-step-input{
+        padding:20px;
+      }
+      .gamma-pdf-host #pdfViewerPanel .pdf-canvas-wrap{
+        max-height:52vh;
+      }
+    }
+  </style>
 </head>
 <body>
 <header class="topbar home-topbar">
@@ -384,6 +506,30 @@
     <div class="rn-actions split">
       <button type="button" class="secondary" data-go="page-quick-complete">← さくっとへ戻る</button>
       <button type="button" class="primary" id="startDeep">深掘りへ進む</button>
+    </div>
+  </section>
+
+  <!-- CAREFUL READING WORKSPACE -->
+  <section class="rn-page gamma-careful-workspace" id="careful-reading-workspace">
+    <section class="card gamma-current-step" aria-live="polite">
+      <span class="eyebrow">CURRENT STEP</span>
+      <h3 id="gammaCurrentStepTitle">Background｜第1段落｜STEP 1</h3>
+      <p id="gammaCurrentStepLead">第1段落のTopic sentenceを選択します。</p>
+    </section>
+
+    <section class="gamma-pdf-host" aria-label="PDF Viewer">
+      <span class="gamma-pdf-host-label">PDF Viewer</span>
+      <div id="gammaPdfHost"></div>
+    </section>
+
+    <section class="card gamma-step-input" aria-label="Step Input">
+      <span class="eyebrow" id="gammaStepInputEyebrow">STEP INPUT</span>
+      <div id="gammaStepInput"></div>
+    </section>
+
+    <div class="rn-actions split">
+      <button type="button" class="secondary" id="gammaBackToCarefulOverview">← セクション選択へ戻る</button>
+      <button type="button" class="primary" id="gammaGoDeepFromWorkspace">深掘りへ進む</button>
     </div>
   </section>
 
@@ -898,5 +1044,301 @@
 <script src="js/local_store.js?v=20260720-gamma-pdf-v1"></script>
 <script src="js/pdf_reader.js?v=20260720-gamma-pdf-v1"></script>
 <script src="notebook.js?v=20260718-gas-route"></script>
+<script>
+(() => {
+  const $ = (selector, root=document) => root.querySelector(selector);
+  const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
+  const sectionConfig = {
+    results: {
+      label: "結果",
+      labelEn: "Results",
+      paragraphs: 3,
+      prompt: "図表や結果本文から、いま確認するポイントを選びます。",
+      roles: ["主要な結果", "補足的な結果", "予想外の結果", "結論を支える結果", "その他"]
+    },
+    background: {
+      label: "背景",
+      labelEn: "Background",
+      paragraphs: 4,
+      prompt: "第1段落のTopic sentenceを選択します。",
+      roles: ["一般背景", "先行研究", "未解明点", "研究目的", "その他"]
+    },
+    discussion: {
+      label: "考察",
+      labelEn: "Discussion",
+      paragraphs: 4,
+      prompt: "考察の流れを、段落ごとに確かめます。",
+      roles: ["結果の解釈", "先行研究との比較", "限界", "今後の課題", "その他"]
+    },
+    methods: {
+      label: "方法",
+      labelEn: "Methods",
+      paragraphs: 3,
+      prompt: "研究の設計や測定方法を、まとまりごとに確認します。",
+      roles: ["研究対象", "測定方法", "解析方法", "実験・観察デザイン", "その他"]
+    }
+  };
+  const workspaceState = {
+    section: "background",
+    paragraph: 1,
+    step: 1,
+    data: {}
+  };
+  let originalPdfParent = null;
+  let originalPdfNext = null;
+
+  function escapeGammaHtml(value="") {
+    return String(value).replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "\"": "&quot;",
+      "'": "&#039;"
+    }[char]));
+  }
+
+  function sectionData(sectionKey) {
+    if (!workspaceState.data[sectionKey]) {
+      workspaceState.data[sectionKey] = Array.from({ length: sectionConfig[sectionKey].paragraphs }, () => ({
+        topic: "",
+        summary: "",
+        role: sectionConfig[sectionKey].roles[0]
+      }));
+    }
+    return workspaceState.data[sectionKey];
+  }
+
+  function currentEntry() {
+    return sectionData(workspaceState.section)[workspaceState.paragraph - 1];
+  }
+
+  function saveCurrentInputs() {
+    const entry = currentEntry();
+    if (!entry) return;
+    const topic = $("#gammaTopicSentence");
+    const summary = $("#gammaParagraphSummary");
+    const role = $("#gammaParagraphRole");
+    if (topic) entry.topic = topic.value;
+    if (summary) entry.summary = summary.value;
+    if (role) entry.role = role.value;
+  }
+
+  function movePdfIntoWorkspace() {
+    const panel = $("#pdfViewerPanel");
+    const host = $("#gammaPdfHost");
+    if (!panel || !host) return;
+    if (!originalPdfParent) {
+      originalPdfParent = panel.parentNode;
+      originalPdfNext = panel.nextSibling;
+    }
+    host.appendChild(panel);
+  }
+
+  function restorePdfPanel() {
+    const panel = $("#pdfViewerPanel");
+    if (!panel || !originalPdfParent) return;
+    originalPdfParent.insertBefore(panel, originalPdfNext);
+  }
+
+  function setNotebookMode() {
+    const main = $(".rn-main");
+    if (!main) return;
+    const active = $(".rn-page.active");
+    main.classList.toggle("gamma-section-select", active?.id === "page-careful-overview");
+    if (active?.id !== "careful-reading-workspace") restorePdfPanel();
+  }
+
+  function showPage(id) {
+    if (typeof window.show === "function") {
+      window.show(id);
+    } else {
+      $$(".rn-page").forEach(page => page.classList.toggle("active", page.id === id));
+    }
+    setNotebookMode();
+  }
+
+  function updateCurrentStep(review=false) {
+    const config = sectionConfig[workspaceState.section];
+    const title = $("#gammaCurrentStepTitle");
+    const lead = $("#gammaCurrentStepLead");
+    if (!title || !lead) return;
+    if (review) {
+      title.textContent = `${config.labelEn}｜Review`;
+      lead.textContent = "入力した内容を段落ごとに確認します。必要なところだけ戻って直せます。";
+      return;
+    }
+    const stepLabels = {
+      1: "Topic sentenceを選ぶ",
+      2: "段落の要点を自分の言葉でまとめる",
+      3: "段落の役割を選ぶ"
+    };
+    title.textContent = `${config.labelEn}｜第${workspaceState.paragraph}段落｜STEP ${workspaceState.step}`;
+    lead.textContent = stepLabels[workspaceState.step];
+  }
+
+  function renderStepInput() {
+    const config = sectionConfig[workspaceState.section];
+    const entry = currentEntry();
+    const input = $("#gammaStepInput");
+    if (!input) return;
+    updateCurrentStep(false);
+    const roleOptions = config.roles.map(role => `<option ${entry.role === role ? "selected" : ""}>${role}</option>`).join("");
+    const stepMarkup = {
+      1: `
+        <h3>Topic sentenceを選ぶ</h3>
+        <p class="helper-copy">${config.prompt}</p>
+        <label>Topic sentence
+          <textarea id="gammaTopicSentence" rows="3" placeholder="PDFから選んだTopic sentenceを貼り付けます">${escapeGammaHtml(entry.topic)}</textarea>
+        </label>
+        <details class="gamma-hint">
+          <summary>ヒントを見る</summary>
+          <p>段落の最初または最後に、その段落で一番言いたい文が置かれることがあります。全文を訳す前に、一文だけ選んでみます。</p>
+        </details>
+      `,
+      2: `
+        <h3>要点を自分の言葉でまとめる</h3>
+        <p class="helper-copy">選んだTopic sentenceを手がかりに、この段落で言っていることを短く書きます。</p>
+        <label>自分の言葉
+          <textarea id="gammaParagraphSummary" rows="4" placeholder="この段落は何を言っている？">${escapeGammaHtml(entry.summary)}</textarea>
+        </label>
+        <details class="gamma-hint">
+          <summary>ヒントを見る</summary>
+          <p>「何について」「何が分かった／何が問題なのか」の順に書くと、短くまとまりやすくなります。</p>
+        </details>
+      `,
+      3: `
+        <h3>段落の役割を選ぶ</h3>
+        <p class="helper-copy">この段落が、論文全体の中でどんな仕事をしているかを選びます。</p>
+        <label>役割
+          <select id="gammaParagraphRole">${roleOptions}</select>
+        </label>
+        <details class="gamma-hint">
+          <summary>ヒントを見る</summary>
+          <p>背景では「一般背景 → 先行研究 → 未解明点 → 研究目的」のように流れることがあります。合わない場合は「その他」で大丈夫です。</p>
+        </details>
+      `
+    };
+    input.innerHTML = `
+      ${stepMarkup[workspaceState.step]}
+      <div class="gamma-step-actions">
+        <button type="button" class="secondary" id="gammaPrevStep">← 戻る</button>
+        <div class="right">
+          <button type="button" class="secondary" id="gammaShowReview">Reviewを見る</button>
+          <button type="button" class="primary" id="gammaNextStep">次へ</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderReview() {
+    saveCurrentInputs();
+    const config = sectionConfig[workspaceState.section];
+    const input = $("#gammaStepInput");
+    if (!input) return;
+    updateCurrentStep(true);
+    const items = sectionData(workspaceState.section).map((entry, index) => `
+      <article class="gamma-review-card">
+        <h3>第${index + 1}段落</h3>
+        <dl>
+          <dt>Topic sentence</dt>
+          <dd>${escapeGammaHtml(entry.topic || "未入力")}</dd>
+          <dt>自分の言葉</dt>
+          <dd>${escapeGammaHtml(entry.summary || "未入力")}</dd>
+          <dt>役割</dt>
+          <dd>${escapeGammaHtml(entry.role || config.roles[0])}</dd>
+        </dl>
+        <button type="button" class="secondary small" data-gamma-edit-paragraph="${index + 1}">この段落を直す</button>
+      </article>
+    `).join("");
+    input.innerHTML = `
+      <h3>${config.label}のReview</h3>
+      <p class="helper-copy">ここまでに書いた内容を確認します。未入力のところだけ戻って直せます。</p>
+      <div class="gamma-review-list">${items}</div>
+      <div class="gamma-workspace-actions">
+        <button type="button" class="secondary" id="gammaBackToStep">STEPへ戻る</button>
+        <button type="button" class="primary" id="gammaSectionDone">STEP完了</button>
+      </div>
+    `;
+  }
+
+  function openWorkspace(sectionKey) {
+    workspaceState.section = sectionKey;
+    workspaceState.paragraph = 1;
+    workspaceState.step = 1;
+    sectionData(sectionKey);
+    showPage("careful-reading-workspace");
+    movePdfIntoWorkspace();
+    renderStepInput();
+  }
+
+  document.addEventListener("click", event => {
+    const card = event.target.closest?.(".section-card[data-open]");
+    if (!card) return;
+    const map = {
+      "results-map": "results",
+      "background-overview": "background",
+      "discussion-overview": "discussion",
+      "methods-page": "methods"
+    };
+    const sectionKey = map[card.dataset.open];
+    if (!sectionKey) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    openWorkspace(sectionKey);
+  }, true);
+
+  $("#gammaStepInput")?.addEventListener("input", saveCurrentInputs);
+  $("#gammaStepInput")?.addEventListener("change", saveCurrentInputs);
+  $("#gammaStepInput")?.addEventListener("click", event => {
+    const edit = event.target.closest?.("[data-gamma-edit-paragraph]");
+    if (edit) {
+      workspaceState.paragraph = Number(edit.dataset.gammaEditParagraph) || 1;
+      workspaceState.step = 1;
+      renderStepInput();
+      return;
+    }
+    if (event.target.id === "gammaPrevStep") {
+      saveCurrentInputs();
+      if (workspaceState.step > 1) workspaceState.step -= 1;
+      else if (workspaceState.paragraph > 1) {
+        workspaceState.paragraph -= 1;
+        workspaceState.step = 3;
+      }
+      renderStepInput();
+      return;
+    }
+    if (event.target.id === "gammaNextStep") {
+      saveCurrentInputs();
+      if (workspaceState.step < 3) workspaceState.step += 1;
+      else if (workspaceState.paragraph < sectionConfig[workspaceState.section].paragraphs) {
+        workspaceState.paragraph += 1;
+        workspaceState.step = 1;
+      } else {
+        renderReview();
+        return;
+      }
+      renderStepInput();
+      return;
+    }
+    if (event.target.id === "gammaShowReview") {
+      renderReview();
+      return;
+    }
+    if (event.target.id === "gammaBackToStep") {
+      renderStepInput();
+      return;
+    }
+    if (event.target.id === "gammaSectionDone") {
+      showPage("page-careful-overview");
+    }
+  });
+
+  $("#gammaBackToCarefulOverview")?.addEventListener("click", () => showPage("page-careful-overview"));
+  $("#gammaGoDeepFromWorkspace")?.addEventListener("click", () => showPage("deep-page"));
+  document.addEventListener("click", () => setTimeout(setNotebookMode, 0));
+  window.addEventListener("hashchange", () => setTimeout(setNotebookMode, 0));
+  setNotebookMode();
+})();
+</script>
 </body>
 </html>
