@@ -104,11 +104,11 @@ $("#translateAbstract").addEventListener("click",()=>{
   alert("翻訳APIは未接続です。UI確認用のデモです。");
 });
 
-$("#finishQuick").addEventListener("click",async()=>{
+$("#finishQuick").addEventListener("click",()=>{
   state.level="quick-complete";
   $("#map-careful").classList.remove("locked");
   $("#map-deep").classList.remove("locked");
-  await save();
+  void save();
   show("page-quick-complete");
 });
 $("#startCareful").addEventListener("click",()=>{
@@ -120,7 +120,7 @@ $("#startCareful").addEventListener("click",()=>{
 
 async function saveAndFinish(level){
   state.level=level;
-  await save();
+  await saveWithTimeout();
   location.href="my_notebook.html";
 }
 
@@ -569,6 +569,13 @@ async function save(){
     console.error("PaperTrail IndexedDB save failed",error);
     return null;
   }
+}
+
+async function saveWithTimeout(timeoutMs=4000){
+  await Promise.race([
+    save(),
+    new Promise(resolve=>setTimeout(resolve,timeoutMs))
+  ]);
 }
 
 document.body.addEventListener("input",()=>{});
