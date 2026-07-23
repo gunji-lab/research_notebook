@@ -12,20 +12,9 @@
       display:grid;
       gap:18px;
     }
-    .gamma-current-step{
-      padding:22px 24px;
-      border-left:4px solid var(--orange);
-      box-shadow:none;
-    }
-    .gamma-current-step h3,
     .gamma-step-input h3,
     .gamma-review-card h3{
       margin:4px 0 8px;
-    }
-    .gamma-current-step p{
-      margin:0;
-      color:var(--muted);
-      line-height:1.7;
     }
     .gamma-pdf-host{
       display:grid;
@@ -47,13 +36,19 @@
       overflow:visible;
       margin:0;
     }
+    .gamma-pdf-host #pdfViewerPanel .pdf-reader-layout{
+      grid-template-columns:1fr;
+    }
     .gamma-pdf-host #pdfViewerPanel .pdf-canvas-wrap{
-      max-height:44vh;
-      min-height:320px;
+      max-height:38vh;
+      min-height:260px;
     }
     .gamma-step-input{
       padding:28px;
       box-shadow:none;
+    }
+    .gamma-step-input .helper-copy{
+      margin-bottom:16px;
     }
     .gamma-step-input textarea,
     .gamma-step-input select{
@@ -137,7 +132,7 @@
         padding:20px;
       }
       .gamma-pdf-host #pdfViewerPanel .pdf-canvas-wrap{
-        max-height:52vh;
+        max-height:38vh;
       }
     }
   </style>
@@ -226,15 +221,6 @@
           <button type="button" id="pdfCopySelection">コピー</button>
         </div>
       </div>
-      <aside class="pdf-notebook-panel">
-        <div class="pdf-panel-head">
-          <span class="eyebrow">TODAY'S TASK</span>
-          <h4>Today's Task</h4>
-          <p>今取り組むステップだけに集中しましょう。選択した文章を自分の言葉で整理すると、あとでMy Notebookへ自動的に保存されます。</p>
-        </div>
-        <div id="pdfTranslationPanel" class="pdf-translation-panel" hidden></div>
-        <div id="pdfQuoteList" class="pdf-quote-list"></div>
-      </aside>
     </div>
   </section>
 <!-- QUICK: PAGE 1 -->
@@ -523,12 +509,6 @@
 
   <!-- CAREFUL READING WORKSPACE -->
   <section class="rn-page gamma-careful-workspace" id="careful-reading-workspace">
-    <section class="card gamma-current-step" aria-live="polite">
-      <span class="eyebrow">CURRENT STEP</span>
-      <h3 id="gammaCurrentStepTitle">Background｜第1段落｜STEP 1</h3>
-      <p id="gammaCurrentStepLead">第1段落のTopic sentenceを選択します。</p>
-    </section>
-
     <section class="gamma-pdf-host" aria-label="PDF Viewer">
       <span class="gamma-pdf-host-label">PDF Viewer</span>
       <div id="gammaPdfHost"></div>
@@ -1113,6 +1093,7 @@
     if (!workspaceState.data[sectionKey]) {
       workspaceState.data[sectionKey] = Array.from({ length: sectionConfig[sectionKey].paragraphs }, () => ({
         topic: "",
+        translation: "",
         summary: "",
         role: sectionConfig[sectionKey].roles[0]
       }));
@@ -1127,10 +1108,12 @@
   function saveCurrentInputs() {
     const entry = currentEntry();
     if (!entry) return;
-    const topic = $("#gammaTopicSentence");
+    const topic = $("#gammaOriginalText");
+    const translation = $("#gammaTranslatedText");
     const summary = $("#gammaParagraphSummary");
     const role = $("#gammaParagraphRole");
     if (topic) entry.topic = topic.value;
+    if (translation) entry.translation = translation.value;
     if (summary) entry.summary = summary.value;
     if (role) entry.role = role.value;
   }
@@ -1169,23 +1152,30 @@
     setNotebookMode();
   }
 
-  function updateCurrentStep(review=false) {
-    const config = sectionConfig[workspaceState.section];
-    const title = $("#gammaCurrentStepTitle");
-    const lead = $("#gammaCurrentStepLead");
-    if (!title || !lead) return;
-    if (review) {
-      title.textContent = `${config.labelEn}｜Review`;
-      lead.textContent = "入力した内容を段落ごとに確認します。必要なところだけ戻って直せます。";
-      return;
-    }
-    const stepLabels = {
-      1: "Topic sentenceを選ぶ",
-      2: "段落の要点を自分の言葉でまとめる",
-      3: "段落の役割を選ぶ"
-    };
-    title.textContent = `${config.labelEn}｜第${workspaceState.paragraph}段落｜STEP ${workspaceState.step}`;
-    lead.textContent = stepLabels[workspaceState.step];
+  function normalizeGammaSelectionText(value="") {
+    return String(value)
+      .replace(/\u00ad/g, "")
+      .replace(/\r\n?/g, "\n")
+      .replace(/([A-Za-z])-\n\s*([A-Za-z])/g, "$1$2")
+      .replace(/\n+/g, " ")
+      .replace(/[ \t\f\v]+/g, " ")
+      .trim();
+  }
+
+  function fillGammaStepField(kind, value) {
+    const text = normalizeGammaSelectionText(value);
+    if (!text) return;
+    const entry = currentEntry();
+    const field = kind === "translation" ? $("#gammaTranslatedText") : $("#gammaOriginalText");
+    if (!field) return;
+    field.value = text;
+    if (kind === "translation") entry.translation = text;
+    else entry.topic = text;
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  function currentPdfSelectionText() {
+    return normalizeGammaSelectionText(window.getSelection()?.toString() || "");
   }
 
   function renderStepInput() {
@@ -1193,45 +1183,28 @@
     const entry = currentEntry();
     const input = $("#gammaStepInput");
     if (!input) return;
-    updateCurrentStep(false);
     const roleOptions = config.roles.map(role => `<option ${entry.role === role ? "selected" : ""}>${role}</option>`).join("");
-    const stepMarkup = {
-      1: `
-        <h3>Topic sentenceを選ぶ</h3>
-        <p class="helper-copy">${config.prompt}</p>
-        <label>Topic sentence
-          <textarea id="gammaTopicSentence" rows="3" placeholder="PDFから選んだTopic sentenceを貼り付けます">${escapeGammaHtml(entry.topic)}</textarea>
+    input.innerHTML = `
+      <h3>第${workspaceState.paragraph}段落のTopic sentenceを選択します</h3>
+      <p class="helper-copy">${config.prompt}</p>
+      <div class="form-grid single">
+        <label>原文
+          <textarea id="gammaOriginalText" rows="3" placeholder="PDFで選択して「この文章を使う」を押すと入ります">${escapeGammaHtml(entry.topic)}</textarea>
         </label>
-        <details class="gamma-hint">
-          <summary>ヒントを見る</summary>
-          <p>段落の最初または最後に、その段落で一番言いたい文が置かれることがあります。全文を訳す前に、一文だけ選んでみます。</p>
-        </details>
-      `,
-      2: `
-        <h3>要点を自分の言葉でまとめる</h3>
-        <p class="helper-copy">選んだTopic sentenceを手がかりに、この段落で言っていることを短く書きます。</p>
-        <label>自分の言葉
+        <label>翻訳
+          <textarea id="gammaTranslatedText" rows="3" placeholder="PDFで選択して「翻訳」を押すと入ります">${escapeGammaHtml(entry.translation || "")}</textarea>
+        </label>
+        <label>要点を自分でまとめる
           <textarea id="gammaParagraphSummary" rows="4" placeholder="この段落は何を言っている？">${escapeGammaHtml(entry.summary)}</textarea>
         </label>
-        <details class="gamma-hint">
-          <summary>ヒントを見る</summary>
-          <p>「何について」「何が分かった／何が問題なのか」の順に書くと、短くまとまりやすくなります。</p>
-        </details>
-      `,
-      3: `
-        <h3>段落の役割を選ぶ</h3>
-        <p class="helper-copy">この段落が、論文全体の中でどんな仕事をしているかを選びます。</p>
-        <label>役割
+        <label>段落の役割を選ぶ
           <select id="gammaParagraphRole">${roleOptions}</select>
         </label>
-        <details class="gamma-hint">
-          <summary>ヒントを見る</summary>
-          <p>背景では「一般背景 → 先行研究 → 未解明点 → 研究目的」のように流れることがあります。合わない場合は「その他」で大丈夫です。</p>
-        </details>
-      `
-    };
-    input.innerHTML = `
-      ${stepMarkup[workspaceState.step]}
+      </div>
+      <details class="gamma-hint">
+        <summary>ヒントを見る</summary>
+        <p>段落の最初または最後に、その段落で一番言いたい文が置かれることがあります。全文を訳す前に、一文だけ選んでみます。</p>
+      </details>
       <div class="gamma-step-actions">
         <button type="button" class="secondary" id="gammaPrevStep">← 戻る</button>
         <div class="right">
@@ -1247,13 +1220,14 @@
     const config = sectionConfig[workspaceState.section];
     const input = $("#gammaStepInput");
     if (!input) return;
-    updateCurrentStep(true);
     const items = sectionData(workspaceState.section).map((entry, index) => `
       <article class="gamma-review-card">
         <h3>第${index + 1}段落</h3>
         <dl>
           <dt>Topic sentence</dt>
           <dd>${escapeGammaHtml(entry.topic || "未入力")}</dd>
+          <dt>翻訳</dt>
+          <dd>${escapeGammaHtml(entry.translation || "未入力")}</dd>
           <dt>自分の言葉</dt>
           <dd>${escapeGammaHtml(entry.summary || "未入力")}</dd>
           <dt>役割</dt>
@@ -1276,7 +1250,6 @@
   function openWorkspace(sectionKey) {
     workspaceState.section = sectionKey;
     workspaceState.paragraph = 1;
-    workspaceState.step = 1;
     sectionData(sectionKey);
     showPage("careful-reading-workspace");
     movePdfIntoWorkspace();
@@ -1284,6 +1257,26 @@
   }
 
   document.addEventListener("click", event => {
+    if (event.target.closest?.("#pdfQuoteSelection")) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      fillGammaStepField("original", currentPdfSelectionText());
+      const menu = $("#pdfSelectionMenu");
+      if (menu) menu.hidden = true;
+      return;
+    }
+    if (event.target.closest?.("#pdfTranslateSelection")) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const source = currentPdfSelectionText() || $("#gammaOriginalText")?.value || "";
+      if (!source) return;
+      const translator = window.PaperTrailPdf?.translateSelectedText;
+      Promise.resolve(translator ? translator(source) : `［翻訳デモ］${source}`)
+        .then(translation => fillGammaStepField("translation", translation));
+      const menu = $("#pdfSelectionMenu");
+      if (menu) menu.hidden = true;
+      return;
+    }
     const card = event.target.closest?.(".section-card[data-open]");
     if (!card) return;
     const map = {
@@ -1305,26 +1298,19 @@
     const edit = event.target.closest?.("[data-gamma-edit-paragraph]");
     if (edit) {
       workspaceState.paragraph = Number(edit.dataset.gammaEditParagraph) || 1;
-      workspaceState.step = 1;
       renderStepInput();
       return;
     }
     if (event.target.id === "gammaPrevStep") {
       saveCurrentInputs();
-      if (workspaceState.step > 1) workspaceState.step -= 1;
-      else if (workspaceState.paragraph > 1) {
-        workspaceState.paragraph -= 1;
-        workspaceState.step = 3;
-      }
+      if (workspaceState.paragraph > 1) workspaceState.paragraph -= 1;
       renderStepInput();
       return;
     }
     if (event.target.id === "gammaNextStep") {
       saveCurrentInputs();
-      if (workspaceState.step < 3) workspaceState.step += 1;
-      else if (workspaceState.paragraph < sectionConfig[workspaceState.section].paragraphs) {
+      if (workspaceState.paragraph < sectionConfig[workspaceState.section].paragraphs) {
         workspaceState.paragraph += 1;
-        workspaceState.step = 1;
       } else {
         renderReview();
         return;
