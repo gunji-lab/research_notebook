@@ -104,11 +104,11 @@ $("#translateAbstract").addEventListener("click",()=>{
   alert("翻訳APIは未接続です。UI確認用のデモです。");
 });
 
-$("#finishQuick").addEventListener("click",()=>{
+$("#finishQuick").addEventListener("click",async()=>{
   state.level="quick-complete";
   $("#map-careful").classList.remove("locked");
   $("#map-deep").classList.remove("locked");
-  save();
+  await save();
   show("page-quick-complete");
 });
 $("#startCareful").addEventListener("click",()=>{
@@ -120,7 +120,7 @@ $("#startCareful").addEventListener("click",()=>{
 
 async function saveAndFinish(level){
   state.level=level;
-  save();
+  await save();
   location.href="my_notebook.html";
 }
 
@@ -513,8 +513,62 @@ function collect(){
     }
   };
 }
-function save(){
-  // Frontend-only preview: deliberately no persistence.
+
+function stableHash(text){
+  let hash=2166136261;
+  for(let i=0;i<text.length;i+=1){
+    hash^=text.charCodeAt(i);
+    hash=Math.imul(hash,16777619);
+  }
+  return (hash>>>0).toString(36);
+}
+
+function notebookPaperId(data){
+  const paper=data.paper||{};
+  const doi=normalizeDoi(paper.doi||"").toLowerCase();
+  if(doi)return `doi:${doi}`;
+  const fingerprint=[paper.title,paper.authors,paper.year]
+    .map(value=>String(value||"").trim().toLowerCase())
+    .filter(Boolean)
+    .join("|");
+  if(fingerprint)return `pt_${stableHash(fingerprint)}`;
+  if(currentNotebookId)return currentNotebookId;
+  if(window.crypto?.randomUUID)return `pt_${window.crypto.randomUUID()}`;
+  return `pt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,10)}`;
+}
+
+async function save(){
+  try{
+    const localStore=window.PaperTrailLocalStore;
+    if(!localStore?.saveNotebook)return null;
+    const data=collect();
+    if(data.state?.level!=="quick-complete")return null;
+    const paper=data.paper||{};
+    const quick=data.quick||{};
+    const abstractMap=quick.abstractMap||{};
+    const paperId=notebookPaperId(data);
+    currentNotebookId=paperId;
+    return await localStore.saveNotebook({
+      paperId,
+      notebookId:paperId,
+      title:paper.title||paper.doi||"Untitled",
+      paperTitle:paper.title||"",
+      doi:paper.doi||"",
+      authors:paper.authors||"",
+      journal:paper.journal||"",
+      year:paper.year||"",
+      keywordsJa:paper.keywordsJa||"",
+      keywordsEn:paper.keywordsEn||"",
+      readingLevel:data.state?.level||"quick-complete",
+      objective:abstractMap.objective||paper.reason||"",
+      shortSummary:quick.summaries?.[0]||abstractMap.result||abstractMap.interpretation||"",
+      question:abstractMap.gap||"",
+      notebookJson:data
+    });
+  }catch(error){
+    console.error("PaperTrail IndexedDB save failed",error);
+    return null;
+  }
 }
 
 document.body.addEventListener("input",()=>{});

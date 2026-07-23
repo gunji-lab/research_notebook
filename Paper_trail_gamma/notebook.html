@@ -127,12 +127,66 @@
       width:100%;
       justify-self:center;
     }
+    .quick-complete-actions{
+      display:grid;
+      gap:10px;
+      justify-items:center;
+    }
+    .quick-complete-actions .quick-next-row{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+    .rn-main.gamma-deep-mode > #deep-page.active{
+      display:contents;
+    }
+    .rn-main.gamma-deep-mode > #pdfViewerPanel{
+      grid-column:1;
+      grid-row:5;
+      align-self:start;
+      position:static;
+      max-height:none;
+      overflow:visible;
+      margin-top:0;
+    }
+    .rn-main.gamma-deep-mode > #pdfViewerPanel .pdf-reader-layout{
+      grid-template-columns:1fr;
+    }
+    .rn-main.gamma-deep-mode > #deep-page > .rn-page-head{
+      grid-column:1 / -1;
+      grid-row:4;
+      max-width:1040px;
+      width:100%;
+      justify-self:center;
+      padding-bottom:8px;
+    }
+    .rn-main.gamma-deep-mode > #deep-page > .rn-block{
+      grid-column:2;
+      grid-row:5;
+      align-self:start;
+      margin-bottom:0;
+    }
+    .rn-main.gamma-deep-mode > #deep-page > .rn-actions{
+      grid-column:2;
+      grid-row:6;
+    }
     @media(max-width:760px){
       .gamma-step-input{
         padding:20px;
       }
       .gamma-pdf-host #pdfViewerPanel .pdf-canvas-wrap{
         max-height:38vh;
+      }
+      .rn-main.gamma-deep-mode > #deep-page.active{
+        display:block;
+      }
+      .rn-main.gamma-deep-mode > #pdfViewerPanel,
+      .rn-main.gamma-deep-mode > #deep-page > .rn-page-head,
+      .rn-main.gamma-deep-mode > #deep-page > .rn-block,
+      .rn-main.gamma-deep-mode > #deep-page > .rn-actions{
+        grid-column:auto;
+        grid-row:auto;
       }
     }
   </style>
@@ -447,9 +501,11 @@
       </blockquote>
 
       <p>Abstractだけでも、この論文の概要をつかめました。今日はここまででも大丈夫です。</p>
-      <div class="completion-actions">
-        <button type="button" class="primary" id="startCareful">📖 じっくり読む</button>
-        <button type="button" class="secondary" id="startDeepFromQuick">🔍 気になるところを深掘りする</button>
+      <div class="completion-actions quick-complete-actions">
+        <div class="quick-next-row">
+          <button type="button" class="primary" id="startCareful">📖 じっくり読む</button>
+          <button type="button" class="secondary" id="startDeepFromQuick">🔍 気になるところを深掘りする</button>
+        </div>
         <button type="button" class="secondary" id="finishQuickNotebook">📚 Notebookに保存して終わる</button>
       </div>
     </div>
@@ -1130,6 +1186,7 @@
     if (!main) return;
     const active = $(".rn-page.active");
     main.classList.toggle("gamma-section-select", active?.id === "page-careful-overview");
+    main.classList.toggle("gamma-deep-mode", active?.id === "deep-page");
     if (active?.id !== "careful-reading-workspace") restorePdfPanel();
   }
 

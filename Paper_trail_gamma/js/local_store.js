@@ -1,7 +1,12 @@
 (() => {
   const DB_NAME = "papertrail-gamma";
-  const DB_VERSION = 1;
-  const memory = { papers: new Map(), entries: new Map(), readingStates: new Map() };
+  const DB_VERSION = 2;
+  const memory = {
+    papers: new Map(),
+    entries: new Map(),
+    readingStates: new Map(),
+    notebooks: new Map()
+  };
   let dbPromise = null;
 
   function openDb() {
@@ -17,6 +22,10 @@
           store.createIndex("paperId", "paperId", { unique: false });
         }
         if (!db.objectStoreNames.contains("readingStates")) db.createObjectStore("readingStates", { keyPath: "paperId" });
+        if (!db.objectStoreNames.contains("notebooks")) {
+          const store = db.createObjectStore("notebooks", { keyPath: "paperId" });
+          store.createIndex("updatedAt", "updatedAt", { unique: false });
+        }
       };
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => resolve(null);
@@ -93,12 +102,46 @@
     return get("readingStates", paperId);
   }
 
+  async function saveNotebook(notebook) {
+    const existing = notebook?.paperId ? await loadNotebook(notebook.paperId) : null;
+    const now = new Date().toISOString();
+    return put("notebooks", {
+      ...existing,
+      ...notebook,
+      notebookId: notebook.notebookId || notebook.paperId,
+      createdAt: existing?.createdAt || notebook.createdAt || now,
+      updatedAt: now
+    });
+  }
+
+  async function loadNotebook(paperId) {
+    return get("notebooks", paperId);
+  }
+
+  async function loadNotebooks() {
+    const db = await openDb();
+    if (!db) {
+      return [...memory.notebooks.values()]
+        .sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
+    }
+    return new Promise(resolve => {
+      const tx = db.transaction("notebooks", "readonly");
+      const request = tx.objectStore("notebooks").getAll();
+      request.onsuccess = () => resolve((request.result || [])
+        .sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || ""))));
+      request.onerror = () => resolve([]);
+    });
+  }
+
   window.PaperTrailLocalStore = {
     savePaper,
     loadPaper,
     saveNotebookEntry,
     loadNotebookEntries,
     saveReadingState,
-    loadReadingState
+    loadReadingState,
+    saveNotebook,
+    loadNotebook,
+    loadNotebooks
   };
 })();

@@ -314,6 +314,20 @@
   ];
 
   async function loadMyNotebookCards() {
+    try {
+      const localStore = window.PaperTrailLocalStore;
+      const localNotebooks = localStore?.loadNotebooks ? await localStore.loadNotebooks() : [];
+      const localCards = (localNotebooks || []).map(item => notebookItemToCard({
+        ...item,
+        notebookId: item.notebookId || item.paperId,
+        title: item.title || item.notebookJson?.paper?.title || "Untitled"
+      }));
+      if (localCards.length) {
+        return localCards.map(card => ({ ...card, backend: false, local: true }));
+      }
+    } catch (error) {
+      console.error("PaperTrail IndexedDB load failed", error);
+    }
     return mockNotebookCards.map(card => ({ ...card, backend: false }));
   }
 
