@@ -90,6 +90,7 @@
     return {
       id: item.notebookId,
       notebookId: item.notebookId,
+      hasNotebookData: Boolean(item.notebookJson),
       backend: true,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
@@ -147,8 +148,8 @@
   }
 
   function notebookUrl(card) {
-    const id = card.notebookId || card.id || "";
-    const filename = id ? `notebook_detail.html?notebook=${encodeURIComponent(id)}` : "notebook.html";
+    const id = card.notebookId || (card.hasNotebookData ? card.id : "") || "";
+    const filename = id ? `notebook.html?notebook=${encodeURIComponent(id)}` : "notebook.html";
     return isInsideGasShell() ? filename : getPaperTrailRouteUrl("mine", filename);
   }
 

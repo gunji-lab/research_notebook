@@ -1,4 +1,4 @@
-const requestedNotebookId="";
+const requestedNotebookId=new URLSearchParams(location.search).get("notebook")||"";
 let currentNotebookId="";
 let deepReturnPage="page-quick-complete";
 const $=(s,r=document)=>r.querySelector(s);
@@ -79,6 +79,27 @@ function addSummary(value=""){
 }
 addSummary();addSummary();addSummary();
 $("#addAbstractSummary")?.addEventListener("click",()=>addSummary());
+
+function setInputValue(id,value){
+  const el=$("#"+id);
+  if(!el)return;
+  el.value=value||"";
+}
+
+function setCheckedValues(name,values=[]){
+  const selected=new Set(values||[]);
+  $$(`input[name="${name}"]`).forEach(input=>{
+    input.checked=selected.has(input.value);
+  });
+}
+
+function replaceSummaryRows(values=[]){
+  const list=$("#abstractSummaryList");
+  if(!list)return;
+  list.innerHTML="";
+  const summaries=values.length ? values : ["","",""];
+  summaries.forEach(value=>addSummary(value));
+}
 
 function addStageVocabularyRow(stage,japanese="",english="",note=""){
   const list=$("#"+stage+"VocabularyList");
@@ -277,6 +298,134 @@ function loadSectionSummary(){
   }else{
     $("#discussionTakeaway").value=state.discussionReflection.takeaway||"";
     $("#discussionQuestion").value=state.discussionReflection.question||"";
+  }
+}
+
+function restoreNotebookData(data){
+  if(!data||typeof data!=="object")return;
+  const paper=data.paper||{};
+  const quick=data.quick||{};
+  const abstractMap=quick.abstractMap||{};
+  const reflections=data.reflections||{};
+  const careful=reflections.careful||{};
+  const deepReflection=reflections.deep||{};
+  const methods=data.methods||{};
+  const deep=data.deep||{};
+
+  setInputValue("doi",paper.doi);
+  setInputValue("title",paper.title);
+  setInputValue("authors",paper.authors);
+  setInputValue("journal",paper.journal);
+  setInputValue("year",paper.year);
+  setInputValue("keywordsJa",paper.keywordsJa);
+  setInputValue("keywordsEn",paper.keywordsEn);
+  setInputValue("discoverySource",paper.discoverySource);
+  setInputValue("introducedBy",paper.introducedBy);
+  setInputValue("searchKeywords",paper.searchKeywords);
+  setInputValue("reason",paper.reason);
+  if(paper.pdfStatus){
+    const pdfStatus=$(`input[name="pdfStatus"][value="${paper.pdfStatus}"]`);
+    if(pdfStatus)pdfStatus.checked=true;
+  }
+  setCheckedValues("reasonType",paper.reasons||[]);
+  setCheckedValues("usePurpose",paper.usePurposes||[]);
+
+  setInputValue("abstractBackground",abstractMap.background);
+  setInputValue("abstractGap",abstractMap.gap);
+  setInputValue("abstractObjective",abstractMap.objective);
+  setInputValue("abstractResult",abstractMap.result);
+  setInputValue("abstractInterpretation",abstractMap.interpretation);
+  replaceSummaryRows(quick.summaries||[]);
+
+  $("#carefulVocabularyList")?.replaceChildren();
+  (careful.vocabulary||[]).forEach(item=>addStageVocabularyRow("careful",item.japanese,item.english,item.note));
+  if(!(careful.vocabulary||[]).length)addStageVocabularyRow("careful");
+  setInputValue("carefulQuestion",careful.question);
+  setCheckedValues("carefulHarvest",careful.harvest||[]);
+  if(careful.recommendation?.level){
+    const carefulRecommend=$(`input[name="carefulRecommendLab"][value="${careful.recommendation.level}"]`);
+    if(carefulRecommend)carefulRecommend.checked=true;
+  }
+  setInputValue("carefulRecommendReason",careful.recommendation?.reason);
+
+  $("#deepVocabularyList")?.replaceChildren();
+  (deepReflection.vocabulary||[]).forEach(item=>addStageVocabularyRow("deep",item.japanese,item.english,item.note));
+  if(!(deepReflection.vocabulary||[]).length)addStageVocabularyRow("deep");
+  setInputValue("deepQuestion",deepReflection.question);
+  setCheckedValues("deepHarvest",deepReflection.harvest||[]);
+  if(deepReflection.recommendation?.level){
+    const deepRecommend=$(`input[name="deepRecommendLab"][value="${deepReflection.recommendation.level}"]`);
+    if(deepRecommend)deepRecommend.checked=true;
+  }
+  setInputValue("deepRecommendReason",deepReflection.recommendation?.reason);
+
+  setInputValue("methodSubject",methods.subject);
+  setInputValue("sampleSize",methods.sampleSize);
+  setInputValue("studyDesign",methods.design);
+  setInputValue("measurements",methods.measurements);
+  setInputValue("analyses",methods.analyses);
+  setInputValue("methodReference",methods.reference);
+  setInputValue("methodQuestion",methods.question);
+
+  setInputValue("deepFocus",deep.focus);
+  setInputValue("deepThinking",deep.thinking);
+  setInputValue("deepQuestions",deep.questions);
+  setInputValue("deepNextStep",deep.nextStep);
+  setInputValue("deepConnection",deep.connection);
+  setInputValue("deepAnalysis",deep.analysis);
+  setInputValue("deepCitations",deep.citations);
+  setInputValue("limitations",deep.limitations);
+  setInputValue("nextStudy",deep.nextStudy);
+  setInputValue("relation",deep.relation);
+
+  Object.assign(state,data.state||{});
+  if(state.figures?.length){
+    setInputValue("figureCount",String(state.figures.length));
+    buildFigureMap();
+  }
+  ["background","discussion"].forEach(section=>{
+    const count=state.paragraphs?.[section]?.length||0;
+    if(count){
+      setInputValue(`${section}Count`,String(count));
+      buildOverview(section);
+    }
+  });
+  Object.entries(state.completed||{}).forEach(([section,done])=>{
+    if(!done)return;
+    const el=$(`[data-status="${section}"]`);
+    if(el){
+      el.textContent="完了";
+      el.classList.add("done");
+    }
+  });
+  currentNotebookId=requestedNotebookId||currentNotebookId;
+  if(state.level&&state.level!=="quick"){
+    $("#map-careful")?.classList.remove("locked");
+    $("#map-deep")?.classList.remove("locked");
+  }
+}
+
+function pageForReadingLevel(level){
+  const normalized=String(level||"quick").toLowerCase();
+  if(normalized.startsWith("deep"))return "deep-page";
+  if(normalized.startsWith("careful"))return "page-careful-overview";
+  return "page-quick-basic";
+}
+
+async function restoreRequestedNotebook(){
+  if(!requestedNotebookId)return;
+  try{
+    const store=window.PaperTrailLocalStore;
+    const notebook=store?.loadNotebook ? await store.loadNotebook(requestedNotebookId) : null;
+    const data=notebook?.notebookJson;
+    if(!data)return;
+    restoreNotebookData(data);
+    show(pageForReadingLevel(notebook.readingLevel||data.state?.level),{
+      replaceHash:true,
+      scroll:false
+    });
+  }catch(error){
+    console.error("PaperTrail notebook restore failed",error);
   }
 }
 
@@ -542,7 +691,6 @@ async function save(){
     const localStore=window.PaperTrailLocalStore;
     if(!localStore?.saveNotebook)return null;
     const data=collect();
-    if(data.state?.level!=="quick-complete")return null;
     const paper=data.paper||{};
     const quick=data.quick||{};
     const abstractMap=quick.abstractMap||{};
@@ -579,6 +727,7 @@ async function saveWithTimeout(timeoutMs=4000){
 }
 
 document.body.addEventListener("input",()=>{});
+void restoreRequestedNotebook();
 
 /* =========================================================
    OpenAlex integration v2.3.0
