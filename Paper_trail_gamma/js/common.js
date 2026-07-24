@@ -153,6 +153,12 @@
     return isInsideGasShell() ? filename : getPaperTrailRouteUrl("mine", filename);
   }
 
+  function notebookDetailUrl(card) {
+    const id = card.notebookId || (card.hasNotebookData ? card.id : "") || "";
+    const filename = id ? `notebook_detail.html?notebook=${encodeURIComponent(id)}` : "notebook.html";
+    return isInsideGasShell() ? filename : getPaperTrailRouteUrl("mine", filename);
+  }
+
   function cardHtml(card, { lab=false, variant="paper" }={}) {
     const tags = (card.tags || []).map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join("");
     const reactions = card.reactions || { like:0, curious:0, useful:0 };
@@ -162,6 +168,7 @@
     const minimalMeta = [firstAuthor, card.year].filter(Boolean).join(" · ");
     const owner = lab ? `<span class="nickname-badge">${escapeHtml(card.displayName || card.owner || "Lab member")}</span>` : "";
     const href = notebookUrl(card);
+    const detailHref = notebookDetailUrl(card);
     const title = variant === "paper" ? paperTitle : card.title || "Untitled";
     const metaText = variant === "minimal" ? minimalMeta : variant === "paper" ? [card.title, meta].filter(Boolean).join(" · ") : meta;
     const showTags = variant !== "minimal";
@@ -182,7 +189,7 @@
           <span class="reaction">👍 ${reactions.like || 0}</span>
           <span class="reaction">📚 ${reactions.curious || 0}</span>
           <span class="reaction">💡 ${reactions.useful || 0}</span>
-        ` : `<a class="primary small button-link" href="${href}">Notebookを開く</a>`}
+        ` : `<a class="primary small button-link" href="${detailHref}">Notebookを開く</a>`}
       </div>
     </article>`;
   }
@@ -353,6 +360,7 @@
     roleMatches,
     searchMatches,
     notebookUrl,
+    notebookDetailUrl,
     cardHtml,
     debugNotebookHtml,
     loadMyNotebookCards
