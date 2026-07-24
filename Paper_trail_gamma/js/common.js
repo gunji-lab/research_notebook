@@ -91,6 +91,7 @@
       id: item.notebookId,
       notebookId: item.notebookId,
       hasNotebookData: Boolean(item.notebookJson),
+      notebookJson: item.notebookJson || null,
       backend: true,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
